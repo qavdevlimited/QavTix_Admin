@@ -1,0 +1,61 @@
+"use client"
+
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { space_grotesk } from "@/lib/fonts";
+import { cn } from "@/lib/utils";
+import ActionButton1 from "../custom-utils/buttons/ActionBtn1";
+import { AnimatedDialog } from "../custom-utils/dialogs/AnimatedDialog";
+import { DialogDescription, DialogTitle } from "../ui/dialog";
+
+interface AdminSignInSuccessProps {
+    open: boolean;
+}
+
+export default function AdminSignInSuccess({ open }: AdminSignInSuccessProps) {
+    const router = useRouter()
+
+    return (
+        <AnimatedDialog open={open} showCloseButton={false} className="rounded-[40px]" childrenContainerStyles="px-8 pt-0! pb-10">
+            <div className="text-center relative overflow-hidden">
+                <Image
+                    src="/images/vectors/confetti.svg"
+                    alt="" aria-hidden="true"
+                    width={500} height={400}
+                    className="block md:hidden absolute w-full top-0 left-0 pointer-events-none select-none"
+                />
+                <Image
+                    src="/images/vectors/confetti-lg.svg"
+                    alt="" aria-hidden="true"
+                    width={500} height={400}
+                    className="hidden md:block absolute w-full top-0 left-0 pointer-events-none select-none"
+                />
+
+                <div className="relative z-10 mt-10">
+                    <Image
+                        src="/images/vectors/success-indicator2.svg"
+                        alt="Success Indicator"
+                        width={190} height={190}
+                        className="mx-auto mb-4 size-32 lg:size-36"
+                    />
+
+                    <DialogTitle className={cn(
+                        "text-2xl font-bold text-brand-secondary-9 mb-2",
+                        space_grotesk.className
+                    )}>
+                        Welcome to QavTix Admin
+                    </DialogTitle>
+                    <DialogDescription className="text-brand-neutral-7 text-sm mb-8">
+                        Manage events, users, and operations from one central dashboard.
+                    </DialogDescription>
+
+                    <ActionButton1
+                        buttonText="Go to Dashboard"
+                        action={() => router.push("/dashboard")}
+                        className="w-full"
+                    />
+                </div>
+            </div>
+        </AnimatedDialog>
+    )
+}

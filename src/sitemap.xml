@@ -1,0 +1,9 @@
+<!-- Don't include redirect sources -->
+<!-- <url>
+    <loc>https://yourdomain.com/dashboard</loc>
+    <priority>1.0</priority>
+</url>
+<url>
+    <loc>https://yourdomain.com/settings/general</loc>
+    <priority>0.8</priority>
+</url> -->
