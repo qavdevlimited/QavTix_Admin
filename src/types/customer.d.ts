@@ -1,8 +1,8 @@
 interface AdminUserCards {
     total_customers: number;
     new_this_period: number;
-    repeat_buyers:   number;
-    average_spend:   string;
+    repeat_buyers: number;
+    average_spend: string;
 }
 
 interface AdminCustomer {
@@ -91,4 +91,106 @@ interface AdminWithdrawalsData {
     next: number | null;
     previous: number | null;
     results: AdminWithdrawal[];
+}
+
+
+
+
+
+// User Profile Types
+interface UserProfileDetails {
+    user_id: number;
+    email: string;
+    full_name: string;
+    phone_number: string;
+    profile_picture: string;
+    dob: string;
+    gender: string;
+    date_joined: string;
+    country: string;
+    state: string;
+    city: string;
+    is_host: boolean;
+    business_name: string | null;
+    business_type: string | null;
+    description: string | null;
+    relevant_links: any[];
+    all_time_spend: string;
+    all_time_tickets: number;
+    first_purchase: string | null;
+    last_purchase: string | null;
+    bank_accounts: any[];
+    account_status: string;
+    is_active: boolean;
+    wallet_balance: string;
+}
+
+interface UserKPICards {
+    total_spent: string;
+    total_spent_change: number;
+    tickets_bought: number;
+    tickets_bought_change: number;
+    refund_count: number;
+    refund_count_change: number;
+    last_order_value: string;
+    last_order_value_change: number;
+}
+
+interface UserChartDataPoint {
+    label: string;
+    amount: string;
+}
+
+interface UserPurchaseOrder {
+    order_id: string;
+    event_name: string;
+    event_category: string;
+    event_image: string;
+    purchase_date: string;
+    quantity: number;
+    amount: string | number;
+    status: "successful" | "cancelled" | "refunded" | "pending" | "failed" | "completed";
+}
+
+// Host Management Types
+interface AdminHost {
+    host_id: number;
+    owner_name: string;
+    owner_email: string;
+    profile_picture: string | null;
+    business_name: string;
+    business_type: string | null;
+    event_count: number;
+    followers: number;
+    total_revenue: string;
+    status: string;
+    verified: boolean;
+    date_joined: string;
+}
+
+
+
+interface AdminHostCards {
+    total_hosts: number;
+    new_this_period: number;
+    new_growth: number;
+    tickets_sold: number;
+    tickets_growth: number;
+    commission_paid: string;
+    commission_growth: number;
+}
+
+interface AdminPendingHost {
+    host_id: number;
+    business_name: string;
+    owner_name: string;
+    owner_email: string;
+    owner_phone: string;
+    profile_picture: string | null;
+    signup_date: string;
+    account_type: string;
+    status: string;
+    registration_number: string | null;
+    tax_id: string | null;
+    nin: string | null;
 }

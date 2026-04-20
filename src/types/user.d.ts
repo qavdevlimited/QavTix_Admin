@@ -2,9 +2,13 @@ interface AuthUser {
     readonly id: string
     readonly full_name: string,
     readonly email: string,
-    readonly phone: string
-    readonly profile_img: string
-    readonly address: string
+    readonly phone_number: string
+    readonly profile_picture: string
+    readonly country: string,
+    readonly state: string,
+    readonly city: string,
+    readonly currency: string,
+    readonly role: string
 }
 
 interface Host extends AuthUser {

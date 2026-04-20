@@ -2,6 +2,13 @@ type ExportFormat = 'csv' | 'xlsx' | 'pdf' | 'json'
 
 type ListingType = 'listed-for-sale' | 'already-resold'
 
+interface LocationValue {
+    country: string
+    city: string
+    state?: string
+    label: string
+}
+
 interface FilterValues {
     dateRange?: DateRange
     dateJoined?: DateRange
@@ -12,14 +19,16 @@ interface FilterValues {
     amount: number | null,
     spendRange: PriceRange | null
     amountRange: PriceRange | null
+    quantityRange: PriceRange | null
     lastActivity?: DateRange
+    purchaseDateRange?: DateRange
     withdrawalDate?: DateRange
     performance: EventPerformance | null
     sort: string | null,
     sortBy?: string | null,
-    quantityRange: number | null,
+    quantityRange: PriceRange | null
     numberOfEvents: number | null,
-    location: string | null,
+    location?: LocationValue | null,
     status: StatusOption["value"] | null
     categories: Category["value"][]
     action: ActionOption["value"][]
@@ -33,7 +42,7 @@ interface FilterValues {
     userStatus?: string | null
 }
 
-type RevalidateTarget = "financials" | "marketing" | "upcoming-events" | "customers" | "checkin" | "events" | "dashboard"
+type RevalidateTarget = "customers" | "customers-profile"
 
 
 // Upcoming Events
@@ -93,16 +102,29 @@ interface GetUpcomingEventsResult {
     message?: string
 }
 
-type DatePreset = 'day' | 'week' | 'month'
+type DatePreset = 'day' | 'week' | 'month' | 'year'
 type ChartPreset = 'year' | 'week' | 'month'
 type TransactionStatus = 'pending' | 'approved' | 'rejected' | 'paid'
 
-type UserActionID = "view-profile" | "suspend" | "export" | "ban" | "unban" | "unsuspend" | "delete"
+type UserActionID =
+    | "view-profile"
+    | "suspend"
+    | "export"
+    | "ban"
+    | "unban"
+    | "unsuspend"
+    | "delete"
+    | "gift-bluetick"
+    | "force-payout"
+    | "approve"
+    | "decline"
+    | "review-documents"
 
 type UserAction = {
     id: UserActionID
     label: string
     icon: string
     variant?: 'default' | 'danger'
+    disabled?: boolean
     onClick?: () => void | Promise<void>
 }

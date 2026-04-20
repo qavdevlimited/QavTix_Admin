@@ -1,4 +1,4 @@
-export type AccountActionType = 'banned' | 'suspended' | 'payoutSuccess' | 'approvalSuccessful' | 'approvalDeclined';
+export type AccountActionType = 'banned' | 'suspended' | 'unsuspended' | 'payoutSuccess' | 'approvalSuccessful' | 'approvalDeclined';
 
 interface UserAccountActionConfig {
     title: string;
@@ -14,8 +14,13 @@ export const useraccountActionConfig: Record<AccountActionType, UserAccountActio
     },
     suspended: {
         title: "User Account Suspended",
-        message: "This account has been temporarily suspended. The user will be unable to perform actions until the suspension is lifted.",
+        message: "This account is now suspended and the user no longer has access.",
         icon: "/images/vectors/user-suspension.svg",
+    },
+    unsuspended: {
+        title: "User Account Restored",
+        message: "This account has been temporarily restored. The user can now perform actions.",
+        icon: "/images/vectors/blue-check.svg",
     },
     payoutSuccess: {
         title: "Payout Successful",

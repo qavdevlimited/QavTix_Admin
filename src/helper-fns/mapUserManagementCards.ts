@@ -94,3 +94,111 @@ export function mapAffiliateCardsToSparkline(cards: AdminAffiliateCards | null):
         },
     ]
 }
+
+
+
+const safeFloat = (val: any): number => {
+    const n = typeof val === 'number' ? val : parseFloat(val)
+    return isFinite(n) ? n : 0
+}
+
+const safeChange = (val: any): number => {
+    const n = typeof val === 'number' ? val : parseFloat(val)
+    return isFinite(n) ? n : 0
+}
+
+export function mapUserProfileCards(cards: UserKPICards | null): UserProfileMetrics[] {
+    if (!cards) return []
+
+    const totalSpent = safeFloat(cards.total_spent)
+    const lastOrderValue = safeFloat(cards.last_order_value)
+    const ticketsBought = safeFloat(cards.tickets_bought)
+    const refundCount = safeFloat(cards.refund_count)
+
+    const totalSpentChange = safeChange(cards.total_spent_change)
+    const ticketsBoughtChange = safeChange(cards.tickets_bought_change)
+    const refundCountChange = safeChange(cards.refund_count_change)
+    const lastOrderChange = safeChange(cards.last_order_value_change)
+
+    const getStatus = (change: number): "good" | "bad" | "moderate" => {
+        if (change > 5) return "good"
+        if (change < 0) return "bad"
+        return "moderate"
+    }
+
+    return [
+        {
+            id: "total-spent",
+            label: "Total Spent",
+            value: `₦${totalSpent.toLocaleString()}`,
+            trendData: makeTrend(totalSpent, totalSpentChange),
+            percentage: `${totalSpentChange > 0 ? "+" : ""}${totalSpentChange.toFixed(1)}%`,
+            status: getStatus(totalSpentChange),
+        },
+        {
+            id: "tickets-bought",
+            label: "Tickets Bought",
+            value: String(ticketsBought),
+            trendData: makeTrend(ticketsBought, ticketsBoughtChange),
+            percentage: `${ticketsBoughtChange > 0 ? "+" : ""}${ticketsBoughtChange.toFixed(1)}%`,
+            status: getStatus(ticketsBoughtChange),
+        },
+        {
+            id: "refund-count",
+            label: "Refund Count",
+            value: String(refundCount),
+            trendData: makeTrend(refundCount, refundCountChange),
+            percentage: `${Math.abs(refundCountChange).toFixed(1)}%`,
+            status: refundCountChange > 0 ? "bad" : "good",
+        },
+        {
+            id: "last-order-value",
+            label: "Last Order Value",
+            value: `₦${lastOrderValue.toLocaleString()}`,
+            trendData: makeTrend(lastOrderValue, lastOrderChange),
+            percentage: `${lastOrderChange > 0 ? "+" : ""}${lastOrderChange.toFixed(1)}%`,
+            status: getStatus(lastOrderChange),
+        },
+    ]
+}
+
+export function mapHostCardsToMetrics(cards: AdminHostCards | null): MetricCardData1[] {
+    if (!cards) return []
+
+    const formatGrowth = (g: number) => `${g > 0 ? "+" : ""}${g.toFixed(1)}%`
+
+    return [
+        {
+            id: "total_hosts",
+            label: "Total Hosts",
+            value: cards.total_hosts.toLocaleString(),
+            description: "All registered hosts",
+            icon: "famicons:people-outline",
+            iconColor: "text-[#359160]",
+        },
+        {
+            id: "new_this_period",
+            label: "New This Period",
+            value: cards.new_this_period.toLocaleString(),
+            description: formatGrowth(cards.new_growth) + " growth",
+            icon: "famicons:gift-outline",
+            iconColor: "text-brand-accent-5",
+        },
+        {
+            id: "tickets_sold",
+            label: "Tickets Sold",
+            value: cards.tickets_sold.toLocaleString(),
+            description: formatGrowth(cards.tickets_growth) + " vs last period",
+            icon: "hugeicons:ticket-02",
+            iconColor: "text-[#5E92DF]",
+        },
+        {
+            id: "commission_paid",
+            label: "Commission Paid",
+            value: `₦${Number(cards.commission_paid).toLocaleString()}`,
+            description: formatGrowth(cards.commission_growth) + " vs last period",
+            icon: "hugeicons:dollar-square",
+            iconColor: "text-[#914613]",
+        },
+    ]
+}

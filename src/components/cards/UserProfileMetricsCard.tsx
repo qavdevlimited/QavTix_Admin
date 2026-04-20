@@ -6,15 +6,16 @@ import { space_grotesk } from "@/lib/fonts";
 import UserProfileMetricSparkline from "../charts/UserProfileMetricsSparkLine";
 
 
-export default function UserProfileMetricCard({ 
-    label, 
-    value, 
+export default function UserProfileMetricCard({
+    label,
+    value,
     trendData,
     status = 'good',
 }: UserProfileMetrics) {
-    
+
     const trend = calculateTrend(trendData)
     const isPositive = trend.direction === 'up';
+    const safePercent = isFinite(trend.percentageChange) ? trend.percentageChange : 0
 
     const statusColors = {
         good: "text-[#10B981]",
@@ -27,7 +28,7 @@ export default function UserProfileMetricCard({
             <div className="flex justify-between items-start">
                 <span className="text-xs text-brand-secondary-9">{label}</span>
                 <span className={cn("text-xs font-bold", statusColors[status])}>
-                    {isPositive ? '+' : '-'}{Math.abs(trend.percentageChange).toFixed(0)}%
+                    {safePercent <= 0 ? '0%' : (isPositive ? '+' : '-') + Math.abs(safePercent).toFixed(0) + '%'}
                 </span>
             </div>
 
@@ -35,13 +36,13 @@ export default function UserProfileMetricCard({
                 <h3 className={cn(space_grotesk.className, "text-xl font-bold text-brand-secondary-9")}>
                     {value}
                 </h3>
-                
+
                 <div className="mb-1">
-                    <UserProfileMetricSparkline 
-                        data={trendData} 
+                    <UserProfileMetricSparkline
+                        data={trendData}
                         status={status}
-                        width={80} 
-                        height={40} 
+                        width={80}
+                        height={40}
                     />
                 </div>
             </div>

@@ -38,7 +38,7 @@ export function buildCustomerActions(
         actions.push({
             id: "unsuspend",
             label: "Undo Suspension",
-            icon: "hugeicons:user-check",
+            icon: 'hugeicons:pause-circle',
         })
         /*
         actions.push({

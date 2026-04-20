@@ -27,6 +27,7 @@ export type FilterKey =
   | 'withdrawalDate'
   | 'transactionStatus'
   | 'amountRange'
+  | 'purchaseDateRange'
 
 
 export const ALL_FILTERS = {
@@ -139,6 +140,11 @@ export const ALL_FILTERS = {
     value: 'amountRange',
     label: 'Amount Range',
     icon: 'hugeicons:dollar-square'
+  },
+  purchaseDateRange: {
+    value: 'purchaseDateRange',
+    label: 'Purchase Date Range',
+    icon: 'solar:calendar-linear'
   }
 } as const satisfies Record<FilterKey, TableDataDisplayFilter>
 
@@ -242,24 +248,6 @@ export type DashboardFilterConfig =
   | typeof DashboardConsumerListFilters
   | typeof DashboardEventsFilters
 
-export const UserProfileTabNFilterOptions = {
-  filterOptions: [
-    ALL_FILTERS.categories,
-    ALL_FILTERS.dateRange,
-    ALL_FILTERS.performance,
-    ALL_FILTERS.sortBy,
-  ] as const,
-
-  tabList: [
-    { value: 'all', label: 'All' },
-    { value: 'live', label: 'Live' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'ended', label: 'Ended' },
-    { value: 'cancelled', label: 'Cancelled' }
-  ] as const
-}
-
-
 export const HostProfileTabNFilterOptions = {
   filterOptions: [
     ALL_FILTERS.categories,
@@ -278,19 +266,20 @@ export const HostProfileTabNFilterOptions = {
 }
 
 export const HostManagementTabNFilterOptions = {
-  filterOptions: [
-    ALL_FILTERS.categories,
-    ALL_FILTERS.status,
-    ALL_FILTERS.performance,
-    ALL_FILTERS.sortBy,
-    ALL_FILTERS.dateRange
-  ] as const,
+  tabFilterOptions: {
+    'all-hosts': [
+      ALL_FILTERS.userStatus,
+      ALL_FILTERS.sortBy,
+      ALL_FILTERS.dateRange,
+    ],
+    'pending-verification': [
+      ALL_FILTERS.sortBy,
+    ],
+  } as Record<string, typeof ALL_FILTERS[keyof typeof ALL_FILTERS][]>,
 
   tabList: [
-    { value: 'all', label: 'All Hosts' },
-    { value: 'active', label: 'Active' },
-    { value: 'suspended', label: 'Suspended' },
-    { value: 'banned', label: 'Banned' }
+    { value: 'all-hosts', label: 'All Hosts' },
+    { value: 'pending-verification', label: 'Pending Verification' },
   ] as const
 }
 
@@ -317,6 +306,14 @@ export const UserManagementTabNFilterOptions = {
     { value: 'users', label: 'Users' },
     { value: 'affiliates', label: 'Affiliates' },
     { value: 'withdrawals', label: 'Withdrawal History' }
+  ] as const
+}
+
+export const UserProfileTabNFilterOptions = {
+  filterOptions: [
+    ALL_FILTERS.purchaseDateRange,
+    ALL_FILTERS.amountRange,
+    ALL_FILTERS.quantityRange,
   ] as const
 }
 

@@ -12,7 +12,7 @@ import { ADMIN_SETTINGS_SUB_LINKS, DASHBOARD_NAVIGATION_LINKS } from "@/enums/na
 function DesktopSideNav() {
 
     const pathName = usePathname()
-    
+
     // Check if we're in the settings section
     const isSettingsActive = pathName?.startsWith(DASHBOARD_NAVIGATION_LINKS.SYSTEM_CONFIGURATION.href)
 
@@ -42,22 +42,22 @@ function DesktopSideNav() {
                                     className={cn(
                                         "relative flex items-center gap-2 text-sm px-3 min-h-12 rounded-md transition-all duration-200",
                                         isActive || (isSettingsLink && isSettingsActive)
-                                            ? "bg-brand-primary-1 text-brand-primary-6" 
+                                            ? "bg-brand-primary-1 text-brand-primary-6"
                                             : "hover:bg-brand-primary-1/50 text-brand-secondary-9 font-normal"
                                     )}
                                 >
                                     <Icon icon={v.icon || ""} width="20" height="20" />
                                     <span>{v.label}</span>
-                                    
-                                    {isSettingsLink && (
-                                        <Icon 
-                                            icon="basil:caret-right-outline" 
-                                            width="24" 
-                                            height="24" 
+
+                                    {isActive && (
+                                        <Icon
+                                            icon="basil:caret-right-outline"
+                                            width="24"
+                                            height="24"
                                             className={cn(
                                                 "absolute right-1 transition-transform duration-300",
                                                 isSettingsActive && "rotate-90"
-                                            )} 
+                                            )}
                                         />
                                     )}
                                 </Link>
@@ -70,7 +70,7 @@ function DesktopSideNav() {
                                     )}>
                                         <ul className="relative ml-3 flex flex-col min-h-0 space-y-1.5">
                                             <div className="absolute left-0 top-0 h-[88%] my-auto bottom-0 w-px bg-brand-neutral-5" />
-                                            
+
                                             {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
                                                 const isSubActive = pathName === sub.href
                                                 return (
@@ -79,13 +79,13 @@ function DesktopSideNav() {
                                                         <div className={cn(
                                                             "absolute -left-[3.5px] z-10 size-2 rounded-full border transition-colors border-brand-secondary-3/50 bg-brand-secondary-2"
                                                         )} />
-                                                        
+
                                                         <Link
                                                             href={sub.href}
                                                             className={cn(
                                                                 "flex-1 py-3 ml-3 pl-3 text-xs transition-colors rounded-md",
-                                                                isSubActive 
-                                                                    ? "text-brand-secondary-9 bg-brand-accent-1 font-medium" 
+                                                                isSubActive
+                                                                    ? "text-brand-secondary-9 bg-brand-accent-1 font-medium"
                                                                     : "text-brand-secondary-7 hover:text-brand-secondary-8 hover:bg-brand-accent-1/40"
                                                             )}
                                                         >

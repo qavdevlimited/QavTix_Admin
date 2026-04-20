@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react'
 import { cn } from '@/lib/utils'
 
 interface ActiveFilterChipsProps {
-    filters:    Partial<FilterValues>
+    filters: Partial<FilterValues>
     categories: Category[]                  // available categories — used to resolve label from id
     setFilters: Dispatch<SetStateAction<Partial<FilterValues>>>
     className?: string
@@ -15,12 +15,13 @@ export default function ActiveFilterChips({ filters, categories, setFilters, cla
 
     const chips: { key: keyof FilterValues; value: string; label: string }[] = []
 
+    console.log(filters.location)
     // categories — only selected ones (filters.categories holds the selected IDs as strings)
     if (filters.categories?.length) {
         filters.categories.forEach(selectedId => {
             const match = categories.find(cat => cat.value === selectedId)
             chips.push({
-                key:   'categories',
+                key: 'categories',
                 value: selectedId,
                 label: match?.label ?? selectedId,
             })
@@ -44,6 +45,51 @@ export default function ActiveFilterChips({ filters, categories, setFilters, cla
         })
     }
 
+    // userStatus — single value
+    if (filters.userStatus) {
+        chips.push({ key: 'userStatus', value: filters.userStatus, label: filters.userStatus })
+    }
+
+    if (filters.location) {
+        chips.push({
+            key: 'location',
+            value: filters.location.country,
+            label: filters.location.label
+        })
+    }
+
+    // event — single value
+    if (filters.event) {
+        chips.push({ key: 'event', value: filters.event, label: filters.event })
+    }
+
+    // performance — single value
+    if (filters.performance) {
+        chips.push({ key: 'performance', value: String(filters.performance), label: String(filters.performance) })
+    }
+
+    // listingType — single value
+    if (filters.listingType) {
+        chips.push({ key: 'listingType', value: filters.listingType, label: filters.listingType })
+    }
+
+    // sortBy — single value
+    if (filters.sortBy) {
+        chips.push({ key: 'sortBy', value: filters.sortBy, label: filters.sortBy })
+    }
+
+    // transactionStatus — single value
+    if (filters.transactionStatus) {
+        chips.push({ key: 'transactionStatus', value: filters.transactionStatus, label: filters.transactionStatus })
+    }
+
+    // action — array of strings
+    if (filters.action?.length) {
+        filters.action.forEach(act => {
+            chips.push({ key: 'action', value: act, label: act })
+        })
+    }
+
     if (!chips.length) return null
 
     const removeChip = (key: keyof FilterValues, value: string) => {
@@ -60,11 +106,24 @@ export default function ActiveFilterChips({ filters, categories, setFilters, cla
         setFilters(prev => ({
             ...prev,
             categories: [],
-            status:     null,
+            status: null,
             ticketType: [],
             priceRange: undefined,
-            dateRange:  undefined,
-            purchaseDate: null
+            dateRange: undefined,
+            purchaseDate: null,
+            userStatus: null,
+            location: null,
+            event: null,
+            performance: null,
+            action: [],
+            listingType: null,
+            sortBy: null,
+            transactionStatus: null,
+            dateJoined: undefined,
+            spendRange: null,
+            lastActivity: undefined,
+            withdrawalDate: undefined,
+            amountRange: null,
         }))
     }
 

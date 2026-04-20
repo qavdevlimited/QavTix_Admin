@@ -1,73 +1,195 @@
 "use client"
 
-import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1";
-import { hostAnalyticsMetricsConfig, HostMetricKey } from "@/components/cards/resources/configs/host-metrics";
-import DataDisplayTableWrapper from "@/components/custom-utils/TableDataDisplayAreas/DataDisplayTableWrapper";
-import DateFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateFilter";
-import { HostManagementTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters";
-import BusinessManagementTable from "@/components/custom-utils/TableDataDisplayAreas/tables/BusinessManagementTable";
-import { buildMetricsFromConfig } from "@/helper-fns/buildMetricsConfig";
-import ExportButton1 from "@/lib/features/export/ExportDataBtn1";
-import { space_grotesk } from "@/lib/fonts";
-import { cn } from "@/lib/utils";
-import { Dispatch, SetStateAction, useState } from "react";
-import { DateRange } from "react-day-picker";
-import HostSignupRequestsTable from "../custom-utils/TableDataDisplayAreas/tables/PendingVerificationTable";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import DateRangePresetFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
+import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
+import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1"
+import MetricsContainerLoader from "@/components/loaders/MetricsContainerLoader"
+import DataDisplayTableWrapper from "@/components/custom-utils/TableDataDisplayAreas/DataDisplayTableWrapper"
+import BusinessManagementTable from "@/components/custom-utils/TableDataDisplayAreas/tables/BusinessManagementTable"
+import HostSignupRequestsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/PendingVerificationTable"
+import { TableDataDisplayFilter, HostManagementTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
+import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
+import { ADMIN_HOSTS_ENDPOINT, ADMIN_HOST_VERIFICATIONS_ENDPOINT } from "@/endpoints"
+import { getAdminHostCards } from "@/actions/host-management"
+import { mapHostCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
+import { Icon } from "@iconify/react"
+import { space_grotesk } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 
-interface IMetricsDataFilter {
-    date: DateRange | null,
+type ActiveTab = "all-hosts" | "pending-verification"
+
+const TAB_LABELS: Record<ActiveTab, string> = {
+    "all-hosts": "Host List",
+    "pending-verification": "Pending Verifications",
 }
 
-export default function HostmanagementPageCW(){
+interface Props {
+    initialHosts: TabSlice<AdminHost>
+    initialHostCards: AdminHostCards | null
+    initialPendingHosts: TabSlice<AdminPendingHost>
+}
 
+export default function HostmanagementPageCW({
+    initialHosts,
+    initialHostCards,
+    initialPendingHosts,
+}: Props) {
 
-    const { filterOptions, tabList } = HostManagementTabNFilterOptions;
-    const [activeTab, setActiveTab] = useState<typeof HostManagementTabNFilterOptions.tabList[number]["value"]>("all-hosts")
-    const [metricsDataFilter, setMetricsDataFilter] =  useState<IMetricsDataFilter>({
-        date: null,
-    })
+    const { tabFilterOptions, tabList } = HostManagementTabNFilterOptions
 
-    const [filters, setFilters] = useState<Partial<FilterValues>>({})
+    const [activeTab, setActiveTab] = useState<ActiveTab>("all-hosts")
+    const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
+    const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null })
+    const [isCardsLoading, setIsCardsLoading] = useState(false)
+    const isMounted = useIsMounted()
 
-    const apiData : Record<HostMetricKey, number>  = {
-        'ticket-hosts': 612,
-        'new-this-month': 547,
-        'tickets-sold': 17,
-        'commision-paid': 5500
+    // KPI Cards with rollback
+    const hostCardsRef = useRef<AdminHostCards | null>(initialHostCards)
+    const [hostCards, _setHostCards] = useState<AdminHostCards | null>(initialHostCards)
+    const [hostCardsError, setHostCardsError] = useState(false)
+
+    const setHostCards = (next: AdminHostCards | null) => {
+        if (next) {
+            hostCardsRef.current = next
+            _setHostCards(next)
+            setHostCardsError(false)
+        } else {
+            _setHostCards(hostCardsRef.current)
+            setHostCardsError(true)
+        }
     }
 
-    const analyticsMetrics = buildMetricsFromConfig(hostAnalyticsMetricsConfig, apiData)
+    // KPI filter only refetches cards — NOT the host table
+    useEffect(() => {
+        if (!isMounted) return;
+
+        const refresh = async () => {
+            setIsCardsLoading(true)
+            try {
+                const { cards } = await getAdminHostCards(datePreset ? { date_range: datePreset } : undefined)
+                setHostCards(cards)
+            } catch {
+                setHostCards(null)
+            } finally {
+                setIsCardsLoading(false)
+            }
+        }
+        refresh()
+    }, [datePreset])
+
+    // useDataDisplay for hosts table
+    const { activeTabState: hostsState } = useDataDisplay<AdminHost>(
+        {
+            endpoint: ADMIN_HOSTS_ENDPOINT,
+            tabs: [{
+                key: "all-hosts",
+                initialData: initialHosts,
+                staticParams: {},
+            }],
+            activeTab: "all-hosts",
+        },
+        filters,
+    )
+
+    // useDataDisplay for pending verifications table (separate, no shared filters)
+    const { activeTabState: pendingState } = useDataDisplay<AdminPendingHost>(
+        {
+            endpoint: ADMIN_HOST_VERIFICATIONS_ENDPOINT,
+            tabs: [{
+                key: "pending-verification",
+                initialData: initialPendingHosts,
+                staticParams: {},
+            }],
+            activeTab: "pending-verification",
+        },
+        filters,
+    )
+
+    const activeState = activeTab === "all-hosts" ? hostsState : pendingState
+    const hostMetrics = mapHostCardsToMetrics(hostCards)
 
     return (
         <main className="pb-12">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
-                <DateFilter value={metricsDataFilter.date} onChange={(v) => setMetricsDataFilter(prev => ({...prev, date: v}))} />
-
-                <ExportButton1 showFormatSelector />
+                <DateRangePresetFilter
+                    value={datePreset}
+                    onChange={setDatePreset}
+                    label="KPI Range"
+                />
+                <ExportButton1 showFormatSelector label={`Export ${TAB_LABELS[activeTab]}`} />
             </div>
 
-            <div>
-                <MetricCardsContainer1 metricsFor="hosts" metrics={analyticsMetrics} />
+            {/* KPI Cards */}
+            <div className="mb-8">
+                {isCardsLoading ? (
+                    <MetricsContainerLoader />
+                ) : (
+                    <div className="relative">
+                        <MetricCardsContainer1 metricsFor="hosts" metrics={hostMetrics} />
+                        {hostCardsError && (
+                            <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-500">
+                                <Icon icon="lucide:alert-triangle" className="w-3.5 h-3.5" />
+                                <span>Could not refresh stats — showing last available data</span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <section className="mt-10">
-                <h3 className={cn(space_grotesk.className, "text-brand-secondary-8 font-bold text-lg mb-4")}>Hosts</h3>
-                <DataDisplayTableWrapper 
-                    filters={filters}
-                    setFilters={setFilters}
+                <h3 className={cn(space_grotesk.className, "text-brand-secondary-8 font-bold text-lg mb-4")}>
+                    {TAB_LABELS[activeTab]}
+                </h3>
+
+                <DataDisplayTableWrapper
                     tabs={tabList}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab as Dispatch<SetStateAction<string>>}
-                    filterOptions={filterOptions}
-                    showSearch={true}
-                    searchPlaceholder="Search by Owner or Business Name"
+                    filters={filters}
+                    filterOptions={(tabFilterOptions[activeTab] ?? []) as readonly TableDataDisplayFilter[]}
+                    setFilters={setFilters as Dispatch<SetStateAction<Partial<FilterValues>>>}
+                    showSearch
+                    searchPlaceholder={activeTab === "all-hosts" ? "Search by owner or business name..." : "Search verifications..."}
+                    onSearch={activeState?.handleSearch}
+                    isLoading={activeState?.isLoading}
                 >
-                    {
-                        activeTab === "all-hosts" ?
-                        <BusinessManagementTable  />
-                        :
-                        <HostSignupRequestsTable />
-                    }
+                    {activeTab === "all-hosts" && (
+                        <BusinessManagementTable
+                            items={(hostsState?.items ?? []) as AdminHost[]}
+                            isLoading={hostsState?.isLoading ?? false}
+                            isLoadingMore={hostsState?.isLoadingMore ?? false}
+                            hasNext={hostsState?.hasNext ?? false}
+                            count={hostsState?.count ?? 0}
+                            onLoadMore={hostsState?.loadMore}
+                            isEmpty={hostsState?.isEmpty ?? false}
+                            isError={hostsState?.isError ?? false}
+                            search={hostsState?.search ?? ""}
+                            currentPage={hostsState?.currentPage ?? 1}
+                            totalPages={hostsState?.totalPages ?? 1}
+                            fetchPage={hostsState?.fetchPage}
+                            onRefresh={hostsState?.refresh}
+                        />
+                    )}
+
+                    {activeTab === "pending-verification" && (
+                        <HostSignupRequestsTable
+                            items={(pendingState?.items ?? []) as AdminPendingHost[]}
+                            isLoading={pendingState?.isLoading ?? false}
+                            isLoadingMore={pendingState?.isLoadingMore ?? false}
+                            hasNext={pendingState?.hasNext ?? false}
+                            count={pendingState?.count ?? 0}
+                            onLoadMore={pendingState?.loadMore}
+                            isEmpty={pendingState?.isEmpty ?? false}
+                            isError={pendingState?.isError ?? false}
+                            search={pendingState?.search ?? ""}
+                            currentPage={pendingState?.currentPage ?? 1}
+                            totalPages={pendingState?.totalPages ?? 1}
+                            fetchPage={pendingState?.fetchPage}
+                            onRefresh={pendingState?.refresh}
+                        />
+                    )}
                 </DataDisplayTableWrapper>
             </section>
         </main>

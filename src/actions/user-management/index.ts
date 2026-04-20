@@ -6,6 +6,10 @@ import {
     ADMIN_AFFILIATES_ENDPOINT,
     ADMIN_AFFILIATES_CARDS_ENDPOINT,
     ADMIN_WITHDRAWALS_ENDPOINT,
+    ADMIN_USER_PROFILE_ENDPOINT,
+    ADMIN_USER_CARDS_ENDPOINT,
+    ADMIN_USER_CHART_ENDPOINT,
+    ADMIN_USER_PURCHASE_HISTORY_ENDPOINT,
 } from "@/endpoints"
 import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
@@ -71,4 +75,38 @@ export async function toggleUserSuspension(userId: string | number): Promise<{ s
     } catch (error: any) {
         return { success: false, message: error?.response?.data?.message || "Failed to toggle user suspension" }
     }
+}
+
+export async function getAdminUserProfile(userId: string | number): Promise<{ data: UserProfileDetails | null }> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_USER_PROFILE_ENDPOINT(userId)}`)
+        return { data: data?.data ?? null }
+    } catch {
+        return { data: null }
+    }
+}
+
+export async function getAdminUserCards(userId: string | number, dateRange?: DatePreset): Promise<{ cards: UserKPICards | null }> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_USER_CARDS_ENDPOINT(userId)}`, { params: dateRange ? { date_range: dateRange } : {} })
+        return { cards: data?.data ?? null }
+    } catch {
+        return { cards: null }
+    }
+}
+
+export async function getAdminUserChart(userId: string | number, dateRange?: DatePreset): Promise<{ chart: UserChartDataPoint[] }> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_USER_CHART_ENDPOINT(userId)}`, { params: dateRange ? { date_range: dateRange } : {} })
+        return { chart: data?.data && Object.keys(data.data).length > 0 ? data.data : {} }
+    } catch {
+        return { chart: [] }
+    }
+}
+
+export async function getAdminUserOrders(userId: string | number): Promise<TabSlice<UserPurchaseOrder>> {
+    return fetchPage<UserPurchaseOrder>(ADMIN_USER_PURCHASE_HISTORY_ENDPOINT(userId))
 }

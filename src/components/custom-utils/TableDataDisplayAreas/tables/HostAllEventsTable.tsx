@@ -3,7 +3,6 @@ import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 import { usePagination } from "@/custom-hooks/PaginationHook"
 import PaginationControls from "../tools/PaginationControl"
-import TableItemDropdown from "../../dropdown/TableItemDropdown"
 import { Dispatch, SetStateAction } from "react"
 import { mockUpcomingEvents } from "@/components-data/demo-data"
 import getStatusConfig from "@/helper-fns/getStatusColor"
@@ -18,10 +17,10 @@ interface EventsTableProps {
 }
 
 export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }: EventsTableProps) {
-    
+
     const pagination = usePagination(mockUpcomingEvents, 10)
 
-    const isAllSelected = pagination.currentItems.length > 0 && 
+    const isAllSelected = pagination.currentItems.length > 0 &&
         pagination.currentItems.every(event => selectedEvents.includes(event.id))
 
     const handleSelectAll = () => {
@@ -36,7 +35,7 @@ export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }
         setSelectedEvents(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])
     }
 
-    const isSelected = (id: string) =>  selectedEvents.includes(id)
+    const isSelected = (id: string) => selectedEvents.includes(id)
 
     return (
         <div className="w-full space-y-4">
@@ -59,7 +58,7 @@ export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-5 bg-white">
                             {pagination.currentItems.map((event) => (
-                                <tr 
+                                <tr
                                     key={event.id}
                                     className={cn(
                                         "hover:bg-brand-neutral-3/70 transition-colors",
@@ -67,12 +66,12 @@ export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }
                                     )}
                                     onClick={() => toggleSelection(event.id)}
 
-                                    >
+                                >
                                     <td className="p-4">
-                                        <Checkbox 
-                                            checked={selectedEvents.includes(event.id)} 
+                                        <Checkbox
+                                            checked={selectedEvents.includes(event.id)}
                                             onClick={(e) => e.stopPropagation()}
-                                            onCheckedChange={() => toggleSelection(event.id)} 
+                                            onCheckedChange={() => toggleSelection(event.id)}
                                         />
                                     </td>
                                     <td className="p-4">
@@ -84,7 +83,7 @@ export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <EventInfo 
+                                        <EventInfo
                                             variant="desktop"
                                             category={event.category}
                                             image={event.image}
@@ -113,7 +112,7 @@ export default function HostAllEventsTable({ selectedEvents, setSelectedEvents }
                                         ₦{event.revenue.toLocaleString()}
                                     </td>
                                     <td className="py-4 px-4 text-right">
-                                        <TableItemDropdown id={event.id} actions={getHostProfileActions(event.status as any, event.id)} />
+                                        {/* <TableItemDropdown id={event.id} actions={getHostProfileActions(event.status as any, event.id)} /> */}
                                     </td>
                                 </tr>
                             ))}

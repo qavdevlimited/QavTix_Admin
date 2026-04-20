@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import SearchTableInput1 from "./tools/SearchTableInput"
 import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 import DataCountIndicator from "./tools/DataCountIndicator";
-import { DashboardUpcomingEventsFilters, MarketingToolsFilter, MyEventsPageFilters, SystemCheckInDataTableFilters, TableDataDisplayFilter, UserManagementTabNFilterOptions } from "./resources/avaliable-filters";
+import { DashboardUpcomingEventsFilters, HostManagementTabNFilterOptions, MarketingToolsFilter, MyEventsPageFilters, SystemCheckInDataTableFilters, TableDataDisplayFilter, UserManagementTabNFilterOptions } from "./resources/avaliable-filters";
 import ActiveFilterChips from "./filters/ActiveFilterChip";
 import { FilterRenderer } from "./filters/FilterRenderer";
 
@@ -12,7 +12,8 @@ interface DataDisplayTableWrapperProps {
     typeof MarketingToolsFilter.tabList |
     typeof SystemCheckInDataTableFilters.tabList |
     typeof MyEventsPageFilters.tabList |
-    typeof UserManagementTabNFilterOptions.tabList
+    typeof UserManagementTabNFilterOptions.tabList |
+    typeof HostManagementTabNFilterOptions.tabList
 
     activeTab?:         string
     setActiveTab?:      Dispatch<SetStateAction<string>>

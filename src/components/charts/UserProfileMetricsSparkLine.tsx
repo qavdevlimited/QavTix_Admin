@@ -9,11 +9,11 @@ interface SparklineProps {
     status?: 'good' | 'moderate' | 'bad';
 }
 
-export default function UserProfileMetricSparkline({ 
-    data, 
-    width = 80, 
-    height = 40, 
-    status = 'good' 
+export default function UserProfileMetricSparkline({
+    data,
+    width = 80,
+    height = 40,
+    status = 'good'
 }: SparklineProps) {
 
     const colors = {
@@ -27,21 +27,20 @@ export default function UserProfileMetricSparkline({
     const { pathData, lastX, lastY } = useMemo(() => {
         if (!data || data.length < 2) return { pathData: "", lastX: 0, lastY: 0 };
 
-        const min = Math.min(...data);
-        const max = Math.max(...data);
+        const clean = data.map(v => (isFinite(v) ? v : 0))
+
+        const min = Math.min(...clean);
+        const max = Math.max(...clean);
         const range = max - min || 1;
         const padding = 6;
         const innerHeight = height - padding * 2;
 
-        const points = data.map((val, i) => ({
-            x: (i / (data.length - 1)) * width,
+        const points = clean.map((val, i) => ({
+            x: (i / (clean.length - 1)) * width,
             y: padding + (innerHeight - ((val - min) / range) * innerHeight)
         }));
 
-        // Create a smooth curve using Cubic Bezier points
-        // M x,y starts the path, then C (controlPoint1) (controlPoint2) (targetPoint)
         let d = `M ${points[0].x},${points[0].y}`;
-        
         for (let i = 0; i < points.length - 1; i++) {
             const curr = points[i];
             const next = points[i + 1];
@@ -49,10 +48,11 @@ export default function UserProfileMetricSparkline({
             d += ` C ${centerX},${curr.y} ${centerX},${next.y} ${next.x},${next.y}`;
         }
 
+        const last = points[points.length - 1]
         return {
             pathData: d,
-            lastX: points[points.length - 1].x,
-            lastY: points[points.length - 1].y
+            lastX: isFinite(last.x) ? last.x : 0,
+            lastY: isFinite(last.y) ? last.y : 0,
         };
     }, [data, width, height]);
 
@@ -80,11 +80,11 @@ export default function UserProfileMetricSparkline({
                 strokeLinejoin="round"
             />
             {/* End Indicator Dot */}
-            <circle 
-                cx={lastX} 
-                cy={lastY} 
-                r="3.5" 
-                fill={strokeColor} 
+            <circle
+                cx={lastX}
+                cy={lastY}
+                r="3.5"
+                fill={strokeColor}
                 className="drop-shadow-sm"
             />
         </svg>

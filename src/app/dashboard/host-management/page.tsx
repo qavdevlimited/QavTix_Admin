@@ -1,7 +1,19 @@
-import HostmanagementPageCW from "@/components/page-content-wrappers/HostManagementPageCW";
+import HostmanagementPageCW from "@/components/page-content-wrappers/HostManagementPageCW"
+import { getAdminHosts, getAdminHostCards, getAdminPendingHosts } from "@/actions/host-management"
 
-export default function HostManagementPage(){
+export default async function HostManagementPage() {
+
+    const [initialHosts, { cards: initialHostCards }, initialPendingHosts] = await Promise.all([
+        getAdminHosts(),
+        getAdminHostCards(),
+        getAdminPendingHosts(),
+    ])
+
     return (
-        <HostmanagementPageCW />
+        <HostmanagementPageCW
+            initialHosts={initialHosts}
+            initialHostCards={initialHostCards}
+            initialPendingHosts={initialPendingHosts}
+        />
     )
 }

@@ -13,17 +13,15 @@ import ActionButton1 from '../custom-utils/buttons/ActionBtn1';
 export default function ConfirmationModal() {
     const dispatch = useAppDispatch()
     const pathName = usePathname()
-    
-    const { isOpen, title, description, confirmText, cancelText, actionType } = useAppSelector(
+
+    const { isOpen, title, description, confirmText, cancelText, actionType, isPerforming } = useAppSelector(
         (state) => state.confirmation
     )
 
     const handleConfirm = () => {
         if (actionType) {
             const action = getConfirmationAction(actionType)
-            
             action()
-
             dispatch(confirmAction())
         } else {
             dispatch(closeConfirmation())
@@ -53,12 +51,14 @@ export default function ConfirmationModal() {
                     buttonText={cancelText || "Cancel"}
                     action={() => dispatch(closeConfirmation())}
                     className="w-full"
+                    isDisabled={isPerforming}
                 />
-
                 <ActionButton1
-                    buttonText={confirmText || "Yes, I am"}
+                    buttonText={isPerforming ? "Processing..." : (confirmText || "Yes, I am")}
                     action={handleConfirm}
                     className="w-full"
+                    disabled={isPerforming}
+                    isLoading={isPerforming}
                 />
             </DialogFooter>
         </AnimatedDialog>

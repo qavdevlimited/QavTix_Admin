@@ -26,6 +26,7 @@ import { Icon } from "@iconify/react"
 import { exportData } from "@/helper-fns/exportData"
 import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 
 type ActiveTab = "users" | "affiliates" | "withdrawals"
 
@@ -57,6 +58,8 @@ export default function UserManagementPageCW({
     const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
     const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null, location: null })
     const [isCardsLoading, setIsCardsLoading] = useState(false)
+
+    const isMounted = useIsMounted()
 
     // KPI Cards state with rollback
     const userCardsRef = useRef<AdminUserCards | null>(initialUserCards)
@@ -96,10 +99,13 @@ export default function UserManagementPageCW({
 
     // Manually fetch cards when date filter changes since they are on separate endpoints
     useEffect(() => {
+        if (!isMounted) {
+            return
+        }
+
         const refreshCards = async () => {
             setIsCardsLoading(true)
             const params = { date_range: datePreset }
-
             try {
                 const [usersRes, affiliatesRes] = await Promise.all([
                     getAdminUsersCards(params),
@@ -113,6 +119,7 @@ export default function UserManagementPageCW({
                 setIsCardsLoading(false)
             }
         }
+
         refreshCards()
     }, [datePreset])
 
@@ -125,6 +132,7 @@ export default function UserManagementPageCW({
                 initialData: initialUsers as TabSlice<AdminCustomer | AdminAffiliate | AdminWithdrawal>,
                 staticParams: {},
             }],
+            revalidateTarget: "customers",
         },
         mergedFilters,
     )
@@ -137,6 +145,7 @@ export default function UserManagementPageCW({
                 initialData: initialAffiliates,
                 staticParams: {},
             }],
+            revalidateTarget: "customers",
         },
         mergedFilters,
     )
@@ -149,6 +158,7 @@ export default function UserManagementPageCW({
                 initialData: initialWithdrawals,
                 staticParams: {},
             }],
+            revalidateTarget: "customers",
         },
         mergedFilters,
     )

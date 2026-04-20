@@ -9,6 +9,7 @@ interface ConfirmationState {
     cancelText?: string;
     actionType?: ConfirmationActionType;
     isConfirmed: boolean;
+    isPerforming: boolean;
     lastConfirmedAction: ConfirmationActionType | null;
 }
 
@@ -20,6 +21,7 @@ const initialState: ConfirmationState = {
     cancelText: 'Cancel',
     actionType: undefined,
     isConfirmed: false,
+    isPerforming: false,
     lastConfirmedAction: null
 }
 
@@ -36,8 +38,8 @@ export const confirmationSlice = createSlice({
         }>) => {
             state.isOpen = true;
             state.isConfirmed = false;
-            // Clear previous confirmation records when a new one starts
-            state.lastConfirmedAction = null; 
+            state.isPerforming = false;
+            state.lastConfirmedAction = null;
             state.title = action.payload.title;
             state.description = action.payload.description;
             state.confirmText = action.payload.confirmText || 'Yes, I am';
@@ -46,18 +48,20 @@ export const confirmationSlice = createSlice({
         },
         confirmAction: (state) => {
             state.isConfirmed = true;
-            state.isOpen = false;
-            // Record exactly what was confirmed before clearing actionType
-            state.lastConfirmedAction = state.actionType || null; 
+            state.isPerforming = true;
+            state.isOpen = true;
+            state.lastConfirmedAction = state.actionType || null;
         },
         closeConfirmation: (state) => {
             state.isOpen = false;
             state.isConfirmed = false;
+            state.isPerforming = false;
             state.actionType = undefined;
-            // Make Ur Mind De: We don't clear lastConfirmedAction here so the component can still read it
         },
         resetConfirmationStatus: (state) => {
             state.isConfirmed = false;
+            state.isPerforming = false;
+            state.isOpen = false;
             state.lastConfirmedAction = null;
             state.actionType = undefined;
         }

@@ -107,6 +107,10 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
     component: QuantityFilter,
     stateKey: 'quantityRange'
   },
+  purchaseDateRange: {
+    component: DateFilter,
+    stateKey: 'purchaseDateRange'
+  },
   user: {
     component: UserFilter,
     stateKey: 'user'

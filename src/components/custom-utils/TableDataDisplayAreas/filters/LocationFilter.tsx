@@ -1,124 +1,246 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import { Search } from 'lucide-react'
-import EventFilterTypeBtn from './buttons-and-inputs/EventFilterTypeBtn'
-import FilterButtonsActions1 from './buttons-and-inputs/FilterActionButtons1'
-import { useMediaQuery } from '@/custom-hooks/UseMediaQuery'
-import { MobileBottomSheet } from '../../dialogs/EventFilterDropdownMobileBottomSheet'
+import { useState, useRef, useEffect } from "react"
+import { Icon } from "@iconify/react"
+import { cn } from "@/lib/utils"
+import { Country, State, City } from "country-state-city"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
 
-interface LocationFilterProps {
-    value?: string | null
-    onChange: (value: string | null) => void
+
+interface LocationResult {
+    label: string
+    country: string
+    city: string
+    state?: string
+    type: 'city' | 'state'
+    flag: string
+}
+
+interface LocationSearchFilterProps {
+    value?: LocationValue | null
+    onChange: (value: LocationValue | null) => void
     icon?: string
 }
 
-export default function LocationFilter({ value, onChange, icon }: LocationFilterProps) {
+function buildResults(query: string): LocationResult[] {
+    if (!query || query.trim().length < 2) return []
+    const q = query.trim().toLowerCase()
+
+    const results: LocationResult[] = []
+
+    const countries = Country.getAllCountries()
+
+    for (const country of countries) {
+        // Search cities
+        const cities = City.getCitiesOfCountry(country.isoCode) ?? []
+        for (const city of cities) {
+            if (city.name.toLowerCase().startsWith(q)) {
+                const state = State.getStateByCodeAndCountry(city.stateCode, country.isoCode)
+                results.push({
+                    label: `${city.name}, ${state?.name ?? city.stateCode}, ${country.name}`,
+                    country: country.isoCode,
+                    city: city.name,
+                    state: state?.name,
+                    type: 'city',
+                    flag: country.flag ?? '',
+                })
+                if (results.length >= 30) break
+            }
+        }
+
+        // Search states too
+        if (results.length < 30) {
+            const states = State.getStatesOfCountry(country.isoCode) ?? []
+            for (const state of states) {
+                if (state.name.toLowerCase().startsWith(q)) {
+                    results.push({
+                        label: `${state.name}, ${country.name}`,
+                        country: country.isoCode,
+                        city: state.name,
+                        state: state.name,
+                        type: 'state',
+                        flag: country.flag ?? '',
+                    })
+                }
+            }
+        }
+
+        if (results.length >= 30) break
+    }
+
+    // Deduplicate and cap
+    const seen = new Set<string>()
+    return results.filter(r => {
+        if (seen.has(r.label)) return false
+        seen.add(r.label)
+        return true
+    }).slice(0, 20)
+}
+
+export default function LocationFilter({ value, onChange, icon = "hugeicons:location-01" }: LocationSearchFilterProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const isTablet = useMediaQuery('(min-width: 768px)')
-    
-    // Internal state to hold the input before "Apply" is clicked
-    const [searchInput, setSearchInput] = useState<string>(value || '')
+    const [search, setSearch] = useState("")
+    const [results, setResults] = useState<LocationResult[]>([])
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    // Sync internal state if external value changes (e.g., cleared from parent)
+    // Debounced search
     useEffect(() => {
-        setSearchInput(value || '')
-    }, [value])
+        if (debounceRef.current) clearTimeout(debounceRef.current)
 
-    const hasActiveFilter = !!value && value.trim().length > 0
+        if (!search.trim()) {
+            setResults([])
+            return
+        }
 
-    const displayText = hasActiveFilter ? value : 'Location'
+        debounceRef.current = setTimeout(() => {
+            setResults(buildResults(search))
+        }, 250)
 
-    const handleApply = () => {
-        // Only trigger the change if there is actual content
-        onChange(searchInput.trim() ? searchInput.trim() : null)
+        return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    }, [search])
+
+    // Reset on close
+    useEffect(() => {
+        if (!isOpen) setSearch("")
+    }, [isOpen])
+
+    const handleSelect = (result: LocationResult) => {
+        const value = {
+            country: result.country,
+            city: result.city,
+            state: result.state,
+            label: result.label,
+        }
+        console.log("LocationFilter selected:", value)
+        console.log("country type:", typeof value.country, "| value:", value.country)
+        onChange(value)
         setIsOpen(false)
     }
-
     const handleClear = () => {
-        setSearchInput('')
         onChange(null)
-        // Optionally keep open or close based on UX preference
+        setSearch("")
     }
 
-    const filterContent = (
-        <div className="relative w-full">
-            <Search 
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] w-5 h-5" 
-            />
-            <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Enter Location here"
-                className={cn(
-                    "w-full h-14 pl-12 pr-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl outline-none",
-                    "focus:border-[#0052FF] focus:ring-1 focus:ring-[#0052FF]/10 transition-all",
-                    "text-brand-secondary-9 placeholder:text-[#94A3B8]"
-                )}
-                onKeyDown={(e) => e.key === 'Enter' && handleApply()}
-            />
-        </div>
-    )
-
     return (
-        <>
-            {/* Mobile View */}
-            {!isTablet && (
-                <>
-                    <EventFilterTypeBtn 
-                        icon={icon}
-                        onClick={() => setIsOpen(true)}
-                        displayText={displayText} 
-                        hasActiveFilter={hasActiveFilter}
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+            <DropdownMenuTrigger asChild>
+                <EventFilterTypeBtn
+                    icon={icon}
+                    displayText={value ? value.label.split(',')[0] : "All Locations"}
+                    hasActiveFilter={!!value}
+                />
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+                align="start"
+                sideOffset={8}
+                className={cn(
+                    "w-80 p-4 rounded-2xl shadow-xl bg-white border-none z-50",
+                    "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+                    "data-[state=open]:duration-300 data-[state=open]:zoom-in-95",
+                    "data-[state=open]:slide-in-from-top-2",
+                    "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+                    "data-[state=closed]:duration-200 data-[state=closed]:zoom-out-95",
+                    "data-[state=closed]:slide-out-to-top-2",
+                )}
+            >
+                {/* Search input */}
+                <div className="relative mb-3">
+                    <Icon
+                        icon="mage:search"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-brand-neutral-7"
                     />
+                    <input
+                        autoFocus
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Enter locations here"
+                        className="w-full bg-brand-neutral-1 rounded-xl py-3 pl-10 pr-4 text-xs placeholder:text-xs outline-none focus:ring-1 focus:ring-brand-primary-5 placeholder:text-brand-neutral-6"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                        >
+                            <Icon icon="lucide:x" className="size-3.5 text-brand-neutral-7" />
+                        </button>
+                    )}
+                </div>
 
-                    <MobileBottomSheet
-                        isOpen={isOpen}
-                        onClose={() => setIsOpen(false)}
-                        title="Location"
-                    >
-                        <div className="space-y-6 pt-2">
-                            {filterContent}
-                            <FilterButtonsActions1
-                                onApply={handleApply}
-                                onClear={handleClear}
-                            />
-                        </div>
-                    </MobileBottomSheet>
-                </>
-            )}
+                {/* Results list */}
+                <div className="max-h-60 overflow-y-auto space-y-0.5 custom-scrollbar">
+                    {results.length > 0 ? (
+                        results.map((result, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handleSelect(result)}
+                                className={cn(
+                                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors",
+                                    value?.label === result.label
+                                        ? "bg-brand-primary-1 text-brand-primary-6"
+                                        : "hover:bg-brand-neutral-1 text-brand-neutral-8"
+                                )}
+                            >
+                                {/* Flag / icon */}
+                                <span className="text-base shrink-0">
+                                    {result.flag || '📍'}
+                                </span>
 
-            {/* Tablet/Desktop View */}
-            {isTablet && (
-                <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                    <DropdownMenuTrigger asChild>
-                        <EventFilterTypeBtn 
-                            icon={icon}
-                            displayText={displayText} 
-                            hasActiveFilter={hasActiveFilter}
-                        />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                        className={cn(
-                            "w-[25em] p-6 rounded-[24px] shadow-[0px_10px_30px_rgba(0,0,0,0.08)] border-none",
-                            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-                            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-                        )}
-                        align="start"
+                                <div className="min-w-0">
+                                    <p className={cn(
+                                        "text-xs font-medium truncate",
+                                        value?.label === result.label
+                                            ? "text-brand-primary-6"
+                                            : "text-brand-secondary-8"
+                                    )}>
+                                        {result.type === 'city'
+                                            ? result.city
+                                            : result.state}
+                                    </p>
+                                    <p className="text-[10px] text-brand-neutral-7 truncate">
+                                        {result.label.split(',').slice(1).join(',').trim()}
+                                    </p>
+                                </div>
+
+                                {/* Type badge */}
+                                <span className={cn(
+                                    "ml-auto shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full",
+                                    result.type === 'city'
+                                        ? "bg-brand-accent-1 text-brand-accent-7"
+                                        : "bg-brand-primary-1 text-brand-primary-6"
+                                )}>
+                                    {result.type === 'city' ? 'City' : 'State'}
+                                </span>
+                            </button>
+                        ))
+                    ) : search.trim().length >= 2 ? (
+                        <p className="py-8 text-center text-xs text-brand-neutral-7">
+                            No locations found for "{search}"
+                        </p>
+                    ) : (
+                        <p className="py-8 text-center text-xs text-brand-neutral-7">
+                            Start typing to search locations
+                        </p>
+                    )}
+                </div>
+
+
+
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-brand-neutral-2">
+                    <button
+                        type="button"
+                        onClick={handleClear}
+                        className="flex-1 h-10 text-brand-secondary-8 max-w-36 border border-brand-neutral-6 rounded-full font-medium text-sm transition-all hover:bg-brand-neutral-2 hover:shadow-sm active:scale-[0.98]"
                     >
-                        <div className="space-y-8">
-                            {filterContent}
-                            <FilterButtonsActions1
-                                onApply={handleApply}
-                                onClear={handleClear}
-                            />
-                        </div>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
-        </>
+                        Clear
+                    </button>
+                </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     )
 }

@@ -6,6 +6,7 @@ interface UserInfoProps {
     id: string | number;
     name: string;
     email: string;
+    profileImg?: string;
   };
   variant?: "desktop" | "mobile";
   className?: string;
