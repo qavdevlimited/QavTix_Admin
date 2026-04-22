@@ -22,8 +22,9 @@ import { TicketTypeFilter } from "./TicketTypeFilter"
 import { PackageFilter } from "./PackageFilter"
 import { BillingCycleFilter } from "./BillingCycleFilter"
 import { AdminAuditActionFilter } from "./AdminAuditActionFilter"
-import { AdminTimestampFilter } from "./AdminTimestampFilter"
 import { PackageStatusFilter } from "./PackageStatusFilter"
+import AdminTimestampFilter from "./AdminTImestampFilter"
+
 
 type FilterComponentProps<T> = {
   value: T
@@ -131,10 +132,6 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
     component: UserFilter,
     stateKey: 'user'
   },
-  listingType: {
-    component: ListingTypeFilter,
-    stateKey: 'listingType'
-  },
   userStatus: {
     component: UserStatusFilter,
     stateKey: 'userStatus'
@@ -160,11 +157,11 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
     stateKey: 'billingCycle'
   },
   auditAction: {
-    component: AdminAuditActionFilter as ComponentType<FilterComponentProps<any>>,
+    component: AdminAuditActionFilter,
     stateKey: 'auditAction'
   },
   timestamp: {
-    component: AdminTimestampFilter as ComponentType<FilterComponentProps<any>>,
+    component: AdminTimestampFilter,
     stateKey: 'timestamp'
   }
 }

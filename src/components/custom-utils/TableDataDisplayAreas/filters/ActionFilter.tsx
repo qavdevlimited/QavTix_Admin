@@ -29,7 +29,7 @@ export function ActionsFilter({ value, onChange, icon }: ActionsFilterProps) {
     const next = selectedActions.includes(actionValue)
       ? selectedActions.filter(v => v !== actionValue)
       : [...selectedActions, actionValue]
-    
+
     setSelectedActions(next)
     onChange(next)
   }
@@ -44,9 +44,9 @@ export function ActionsFilter({ value, onChange, icon }: ActionsFilterProps) {
           hasActiveFilter={selectedActions.length > 0}
         />
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent 
-        align="start" 
+
+      <DropdownMenuContent
+        align="start"
         sideOffset={5}
         className={cn(
           "w-100 z-200! p-4 rounded-xl shadow-[0px_3.69px_14.76px_0px_rgba(51,38,174,0.08)]",
@@ -64,10 +64,10 @@ export function ActionsFilter({ value, onChange, icon }: ActionsFilterProps) {
           "data-[state=closed]:slide-out-to-top-4"
         )}
       >
-        <p className="px-2 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand-neutral-5">
+        <p className="px-2 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand-neutral-6">
           Filter by Actions
         </p>
-        
+
         <div className="grid grid-cols-2 gap-2 mt-2">
           {actionOptions.map(action => {
             const isSelected = selectedActions.includes(action.value)
@@ -84,14 +84,14 @@ export function ActionsFilter({ value, onChange, icon }: ActionsFilterProps) {
                 )}
               >
                 {isSelected ? (
-                  <Icon 
-                    icon="mdi:checkbox-marked" 
-                    className="size-4 text-brand-primary-6 shrink-0" 
+                  <Icon
+                    icon="mdi:checkbox-marked"
+                    className="size-4 text-brand-primary-6 shrink-0"
                   />
                 ) : (
-                  <Icon 
-                    icon="mdi:checkbox-blank-outline" 
-                    className="size-4 text-brand-neutral-5 shrink-0" 
+                  <Icon
+                    icon="mdi:checkbox-blank-outline"
+                    className="size-4 text-brand-neutral-5 shrink-0"
                   />
                 )}
                 <span className={cn(
@@ -104,11 +104,11 @@ export function ActionsFilter({ value, onChange, icon }: ActionsFilterProps) {
             )
           })}
         </div>
-        
+
         {selectedActions.length > 0 && (
           <>
             <DropdownMenuSeparator className="my-2 bg-brand-neutral-2" />
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation()
                 setSelectedActions([])

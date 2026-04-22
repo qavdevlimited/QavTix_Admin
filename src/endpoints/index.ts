@@ -71,3 +71,10 @@ export const ADMIN_PAYOUT_FORCE_ENDPOINT = (payoutId: string) => `administrator/
 
 // Admin Audit Logs
 export const ADMIN_AUDIT_LOGS_ENDPOINT = 'administrator/admin/audit-logs/';
+
+// Admin Config / Settings
+export const ADMIN_CONFIG_GENERAL_ENDPOINT      = 'administrator/admin/config/general/';
+export const ADMIN_CONFIG_FEES_ENDPOINT         = 'administrator/admin/config/fees/';
+export const ADMIN_CONFIG_FRAUD_ENDPOINT        = 'administrator/admin/config/fraud/';
+export const ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT = 'administrator/admin/config/notifications/';
+export const ADMIN_CONFIG_LOCALIZATION_ENDPOINT  = 'administrator/admin/config/localization/';
