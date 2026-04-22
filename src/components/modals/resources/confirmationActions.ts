@@ -6,6 +6,13 @@ export const CONFIRMATION_ACTION_TYPES = {
     GIFT_BADGE: 'GIFT_BADGE',
     APPROVE_HOST: 'APPROVE_HOST',
     DECLINE_HOST: 'DECLINE_HOST',
+    FORCE_PAYOUT: 'FORCE_PAYOUT',
+    SUSPEND_EVENT: 'SUSPEND_EVENT',
+    DELETE_EVENT: 'DELETE_EVENT',
+    UNSUSPEND_EVENT: 'UNSUSPEND_EVENT',
+    APPROVE_PAYOUT: 'APPROVE_PAYOUT',
+    DECLINE_PAYOUT: 'DECLINE_PAYOUT',
+    TOGGLE_AUTO_PAYOUT: 'TOGGLE_AUTO_PAYOUT',
 } as const;
 
 export type ConfirmationActionType = keyof typeof CONFIRMATION_ACTION_TYPES;
@@ -16,7 +23,7 @@ export type ConfirmationActionType = keyof typeof CONFIRMATION_ACTION_TYPES;
  * @param data - Contextual data, usually the user object or ID
  */
 export const getConfirmationAction = (
-    type: ConfirmationActionType, 
+    type: ConfirmationActionType,
     data?: { id: string; name?: string }
 ) => {
     switch (type) {

@@ -2,37 +2,41 @@ import { cn } from "@/lib/utils"
 import SearchTableInput1 from "./tools/SearchTableInput"
 import { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 import DataCountIndicator from "./tools/DataCountIndicator";
-import { DashboardUpcomingEventsFilters, HostManagementTabNFilterOptions, MarketingToolsFilter, MyEventsPageFilters, SystemCheckInDataTableFilters, TableDataDisplayFilter, UserManagementTabNFilterOptions } from "./resources/avaliable-filters";
+import { AdminEventsTabNFilterOptions, DashboardUpcomingEventsFilters, EventProfileTabNFilterOptions, FinancialsTabNFilterOptions, HostManagementTabNFilterOptions, HostProfileTabNFilterOptions, MarketingToolsFilter, MyEventsPageFilters, SystemCheckInDataTableFilters, TableDataDisplayFilter, UserManagementTabNFilterOptions } from "./resources/avaliable-filters";
 import ActiveFilterChips from "./filters/ActiveFilterChip";
 import { FilterRenderer } from "./filters/FilterRenderer";
 
 
 interface DataDisplayTableWrapperProps {
-    tabs?: typeof DashboardUpcomingEventsFilters.tabList | 
+    tabs?: typeof DashboardUpcomingEventsFilters.tabList |
     typeof MarketingToolsFilter.tabList |
     typeof SystemCheckInDataTableFilters.tabList |
     typeof MyEventsPageFilters.tabList |
     typeof UserManagementTabNFilterOptions.tabList |
-    typeof HostManagementTabNFilterOptions.tabList
+    typeof HostManagementTabNFilterOptions.tabList |
+    typeof HostProfileTabNFilterOptions.tabList |
+    typeof EventProfileTabNFilterOptions.tabList |
+    typeof AdminEventsTabNFilterOptions.tabList |
+    typeof FinancialsTabNFilterOptions.tabList
 
-    activeTab?:         string
-    setActiveTab?:      Dispatch<SetStateAction<string>>
-    filters?:           Partial<FilterValues>
-    categories?:        Category[]
-    setFilters?:        Dispatch<SetStateAction<Partial<FilterValues>>>
-    filterOptions?:     readonly TableDataDisplayFilter[]
-    showSearch?:        boolean
+    activeTab?: string
+    setActiveTab?: Dispatch<SetStateAction<string>>
+    filters?: Partial<FilterValues>
+    categories?: Category[]
+    setFilters?: Dispatch<SetStateAction<Partial<FilterValues>>>
+    filterOptions?: readonly TableDataDisplayFilter[]
+    showSearch?: boolean
     searchPlaceholder?: string
-    onTabChange?:       (tab: string) => void
-    onSearch?:          (query: string) => void
-    onFilterChange?:    (filters: FilterValues) => void
-    children:           ReactNode
-    isLoading?:         boolean
-    className?:         string
-    currentSearch?:      string
-    statusOptions?:      StatusOption[]
-    viewMode?:          "grid" | "list"
-    setViewMode?:       Dispatch<SetStateAction<"grid" | "list">>
+    onTabChange?: (tab: string) => void
+    onSearch?: (query: string) => void
+    onFilterChange?: (filters: FilterValues) => void
+    children: ReactNode
+    isLoading?: boolean
+    className?: string
+    currentSearch?: string
+    statusOptions?: StatusOption[]
+    viewMode?: "grid" | "list"
+    setViewMode?: Dispatch<SetStateAction<"grid" | "list">>
 }
 
 export default function DataDisplayTableWrapper({
@@ -45,6 +49,7 @@ export default function DataDisplayTableWrapper({
     setActiveTab,
     statusOptions,
     onSearch,
+    onTabChange,
     currentSearch,
     setFilters,
     categories = [],
@@ -56,11 +61,12 @@ export default function DataDisplayTableWrapper({
 
     const handleTabChange = (value: string) => {
         setActiveTab?.(value)
+        onTabChange?.(value)
         setTimeout(() => {
             wrapperRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
         }, 100)
     }
-    
+
     return (
         <div ref={wrapperRef} className={cn(
             'pt-8 pb-16 bg-white rounded-3xl shadow-[0px_5.8px_23.17px_0px_#3326AE14] overflow-hidden',

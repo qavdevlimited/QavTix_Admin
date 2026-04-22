@@ -17,6 +17,7 @@ import { Icon } from "@iconify/react"
 import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 type ActiveTab = "all-hosts" | "pending-verification"
 
@@ -44,6 +45,7 @@ export default function HostmanagementPageCW({
     const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null })
     const [isCardsLoading, setIsCardsLoading] = useState(false)
     const isMounted = useIsMounted()
+    const { user } = useAppSelector(store => store.authUser)
 
     // KPI Cards with rollback
     const hostCardsRef = useRef<AdminHostCards | null>(initialHostCards)
@@ -108,7 +110,7 @@ export default function HostmanagementPageCW({
     )
 
     const activeState = activeTab === "all-hosts" ? hostsState : pendingState
-    const hostMetrics = mapHostCardsToMetrics(hostCards)
+    const hostMetrics = mapHostCardsToMetrics(hostCards, user?.currency!)
 
     return (
         <main className="pb-12">

@@ -16,6 +16,14 @@ import { ActionsFilter } from "./ActionFilter"
 import LocationFilter from "./LocationFilter"
 import QuantityFilter from "./QuantityFilter"
 import { TransactionStatusFilter } from "./TransactionFilter"
+import { HostFilter } from "./HostFilter"
+import { TicketStatusFilter } from "./TicketStatusFilter"
+import { TicketTypeFilter } from "./TicketTypeFilter"
+import { PackageFilter } from "./PackageFilter"
+import { BillingCycleFilter } from "./BillingCycleFilter"
+import { AdminAuditActionFilter } from "./AdminAuditActionFilter"
+import { AdminTimestampFilter } from "./AdminTimestampFilter"
+import { PackageStatusFilter } from "./PackageStatusFilter"
 
 type FilterComponentProps<T> = {
   value: T
@@ -42,6 +50,10 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
   status: {
     component: StatusFilter,
     stateKey: 'status'
+  },
+  listingStatus: {
+    component: ListingTypeFilter,
+    stateKey: 'listingStatus'
   },
   dateRange: {
     component: DateFilter,
@@ -103,6 +115,10 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
     component: LocationFilter,
     stateKey: 'location'
   },
+  ticketType: {
+    component: TicketTypeFilter,
+    stateKey: 'ticketType'
+  },
   quantityRange: {
     component: QuantityFilter,
     stateKey: 'quantityRange'
@@ -122,5 +138,33 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
   userStatus: {
     component: UserStatusFilter,
     stateKey: 'userStatus'
+  },
+  packageStatus: {
+    component: PackageStatusFilter,
+    stateKey: 'packageStatus'
+  },
+  host: {
+    component: HostFilter,
+    stateKey: 'host'
+  },
+  ticketStatus: {
+    component: TicketStatusFilter,
+    stateKey: 'ticketStatus'
+  },
+  package: {
+    component: PackageFilter,
+    stateKey: 'package'
+  },
+  billingCycle: {
+    component: BillingCycleFilter,
+    stateKey: 'billingCycle'
+  },
+  auditAction: {
+    component: AdminAuditActionFilter as ComponentType<FilterComponentProps<any>>,
+    stateKey: 'auditAction'
+  },
+  timestamp: {
+    component: AdminTimestampFilter as ComponentType<FilterComponentProps<any>>,
+    stateKey: 'timestamp'
   }
 }

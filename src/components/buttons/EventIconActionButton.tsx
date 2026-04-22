@@ -9,7 +9,7 @@ function ActionFeedback({ message }: { message: string }) {
             initial={{ scale: 0.6, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.6, opacity: 0, y: 10 }}
-            className="absolute top-8 right-0 bg-secondary-9 text-white text-xs px-3 py-1.5 rounded-md w-[9em] text-center shadow-lg"
+            className="absolute top-8 right-0 bg-brand-secondary-9 text-white text-xs px-3 py-1.5 rounded-md w-[9em] text-center shadow-lg"
         >
             {message}
         </motion.div>
@@ -33,7 +33,7 @@ export function EventIconActionButton({
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
-        
+
         setShowFeedback(true)
         onClick()
         setTimeout(() => setShowFeedback(false), 1200)
@@ -47,11 +47,11 @@ export function EventIconActionButton({
                 onClick={handleClick}
                 className={`flex w-fit p-1 aspect-square rounded-full text-brand-secondary-8 items-center justify-center hover:bg-brand-primary-5 ${className}`}
             >
-            <Icon
-                icon={icon}
-                className="text-inherit"
-                width="20"
-            />
+                <Icon
+                    icon={icon}
+                    className="text-inherit"
+                    width="20"
+                />
             </motion.button>
 
 

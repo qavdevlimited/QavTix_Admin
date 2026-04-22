@@ -1,6 +1,5 @@
 'use client'
 
-
 import { useState } from 'react'
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils"
@@ -13,32 +12,31 @@ import {
 } from "@/components/ui/dropdown-menu"
 import EventFilterTypeBtn from './buttons-and-inputs/EventFilterTypeBtn'
 
-const statusOptions = [
-  { value: 'live', label: 'Live', color: 'bg-green-500' },
-  { value: 'upcoming', label: 'Upcoming', color: 'bg-blue-500' },
-  { value: 'ended', label: 'Ended', color: 'bg-slate-400' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
-  { value: 'draft', label: 'Draft', color: 'bg-amber-400' },
+const TICKET_STATUS_OPTIONS = [
+  { value: 'active',   label: 'Active',   color: 'bg-green-500' },
+  { value: 'used',     label: 'Used',     color: 'bg-brand-neutral-5' },
+  { value: 'cancelled',label: 'Cancelled',color: 'bg-red-500' },
+  { value: 'resold',   label: 'Resold',   color: 'bg-amber-400' },
 ] as const
 
-interface StatusFilterProps {
+interface TicketStatusFilterProps {
   value?: string[]
   onChange: (value: string[]) => void
   icon: string
+  label?: string
 }
 
-export function StatusFilter({ value, onChange, icon }: StatusFilterProps) {
-
+export function TicketStatusFilter({ value, onChange, icon, label = "Ticket Status" }: TicketStatusFilterProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(value || [])
+  const [selected, setSelected] = useState<string[]>(value || [])
 
-  const handleToggle = (statusValue: string) => {
-    const next = selectedStatuses.includes(statusValue)
-      ? selectedStatuses.filter(v => v !== statusValue)
-      : [...selectedStatuses, statusValue]
-    
-    setSelectedStatuses(next)
+  const handleToggle = (val: string) => {
+    const next = selected.includes(val)
+      ? selected.filter(v => v !== val)
+      : [...selected, val]
+    setSelected(next)
     onChange(next)
+    setIsOpen(false)
   }
 
   return (
@@ -46,56 +44,47 @@ export function StatusFilter({ value, onChange, icon }: StatusFilterProps) {
       <DropdownMenuTrigger asChild>
         <EventFilterTypeBtn
           icon={icon}
-          displayText="Status"
+          displayText={label}
           onClick={() => setIsOpen(true)}
-          hasActiveFilter={selectedStatuses.length > 0}
+          hasActiveFilter={selected.length > 0}
         />
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent 
-        align="start" 
+
+      <DropdownMenuContent
+        align="start"
         sideOffset={5}
         className={cn(
           "w-full z-200! p-4 rounded-xl shadow-[0px_3.69px_14.76px_0px_rgba(51,38,174,0.08)]",
-          // Open animation
-          "data-[state=open]:animate-in",
-          "data-[state=open]:fade-in-0",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0",
           "data-[state=open]:duration-500 data-[state=open]:ease-[cubic-bezier(0.16,1,0.3,1)]",
-          "data-[state=open]:zoom-in-90",
-          "data-[state=open]:slide-in-from-top-4",
-          // Close animation
-          "data-[state=closed]:animate-out",
-          "data-[state=closed]:fade-out-0",
+          "data-[state=open]:zoom-in-90 data-[state=open]:slide-in-from-top-4",
+          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
           "data-[state=closed]:duration-400 data-[state=closed]:ease-in",
-          "data-[state=closed]:zoom-out-90",
-          "data-[state=closed]:slide-out-to-top-4"
+          "data-[state=closed]:zoom-out-90 data-[state=closed]:slide-out-to-top-4",
         )}
       >
         <p className="px-2 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand-neutral-5">
-          Filter by Status
+          Filter by {label}
         </p>
-        
-        {statusOptions.map(status => {
-          const isSelected = selectedStatuses.includes(status.value)
+
+        {TICKET_STATUS_OPTIONS.map(opt => {
+          const isSelected = selected.includes(opt.value)
           return (
             <DropdownMenuItem
-              key={status.value}
-              onSelect={(e) => {
-                e.preventDefault()
-                handleToggle(status.value)
-              }}
+              key={opt.value}
+              onSelect={(e) => { e.preventDefault(); handleToggle(opt.value) }}
               className={cn(
                 "flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors outline-none",
                 "focus:bg-brand-neutral-1 active:scale-[0.98]",
-                isSelected ? "bg-brand-primary-1/40" : ""
+                isSelected ? "bg-brand-primary-1/40" : "",
               )}
             >
-              <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", status.color)} />
+              <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", opt.color)} />
               <span className={cn(
                 "text-xs flex-1",
-                isSelected ? "font-semibold text-brand-primary-9" : "text-brand-secondary-8"
+                isSelected ? "font-semibold text-brand-primary-9" : "text-brand-secondary-8",
               )}>
-                {status.label}
+                {opt.label}
               </span>
               {isSelected && (
                 <Icon icon="iconamoon:check-bold" className="text-brand-primary-6 size-3" />
@@ -103,16 +92,12 @@ export function StatusFilter({ value, onChange, icon }: StatusFilterProps) {
             </DropdownMenuItem>
           )
         })}
-        
-        {selectedStatuses.length > 0 && (
+
+        {selected.length > 0 && (
           <>
             <DropdownMenuSeparator className="my-1 bg-brand-neutral-2" />
-            <button 
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedStatuses([])
-                onChange([])
-              }}
+            <button
+              onClick={(e) => { e.stopPropagation(); setSelected([]); onChange([]) }}
               className="w-full text-center py-1.5 text-[11px] font-medium text-brand-neutral-6 hover:text-red-500 transition-colors"
             >
               Reset Filters

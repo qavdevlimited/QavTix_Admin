@@ -8,7 +8,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
 import { delay } from "@/helper-fns/delay"
@@ -16,16 +15,22 @@ import { delay } from "@/helper-fns/delay"
 
 const listingOptions = [
     {
-        value: 'listed-for-sale' satisfies ListingType,
+        value: 'active' satisfies ListingType,
         label: 'Listed For Sale',
         icon: 'hugeicons:ticket-01',
         description: 'Primary tickets available for purchase'
     },
     {
-        value: 'already-resold' satisfies ListingType,
+        value: 'sold' satisfies ListingType,
         label: 'Already Resold',
         icon: 'solar:ticket-sale-outline',
         description: 'Secondary market resale history'
+    },
+    {
+        value: 'cancelled' satisfies ListingType,
+        label: 'Event Cancelled',
+        icon: 'solar:ticket-sale-outline',
+        description: 'Event was cancelled'
     }
 ] as const
 
@@ -38,11 +43,11 @@ interface ListingTypeFilterProps {
 export function ListingTypeFilter({ value, onChange, icon }: ListingTypeFilterProps) {
     const [isOpen, setIsOpen] = useState(false)
 
-    const handleSelect = async(val: string) => {
+    const handleSelect = async (val: string) => {
         // If clicking the same one, we toggle it off (standard filter behavior)
         const nextValue = value === val ? undefined : val
         onChange(nextValue)
-        await delay(500)
+        await delay(300)
         setIsOpen(false)
     }
 
@@ -98,7 +103,7 @@ export function ListingTypeFilter({ value, onChange, icon }: ListingTypeFilterPr
                                         className={cn('size-4', isSelected ? 'text-white' : 'text-brand-neutral-7')}
                                     />
                                 </div>
-                                
+
                                 <div className="flex-1 min-w-0">
                                     <p className={cn(
                                         'text-xs font-semibold',

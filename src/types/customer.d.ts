@@ -194,3 +194,75 @@ interface AdminPendingHost {
     tax_id: string | null;
     nin: string | null;
 }
+
+// Host Profile Types
+interface HostBankAccount {
+    id: string;
+    account_name: string;
+    account_number: string;
+    bank_name: string;
+    is_default: boolean;
+}
+
+interface HostProfileDetails {
+    host_id: number;
+    full_name: string;
+    email: string;
+    phone_number: string;
+    profile_picture: string | null;
+    profile_banner: string | null;
+    business_name: string;
+    business_type: string | null;
+    description: string | null;
+    registration_number: string | null;
+    tax_id: string | null;
+    nin: string | null;
+    dob?: string | null;
+    country: string;
+    auto_payout?: boolean;
+    state: string;
+    city: string;
+    followers: number;
+    verified: boolean;
+    relevant_links: { [key: string]: string }[]
+    date_joined: string;
+    bank_accounts: HostBankAccount[];
+    account_status: string;
+    is_subscribed: boolean;
+    is_verified: boolean;
+}
+
+interface HostEarningsCards {
+    all_time_earnings: string;
+    current_balance: string;
+    all_time_payouts: string;
+    next_payout_date: string | null;
+}
+
+interface HostChartPoint {
+    label: string;
+    value: number;
+}
+
+
+
+
+interface AdminEventCards {
+    live: number;
+    suspended: number;
+    ended: number;
+    sold_out: number;
+}
+
+
+interface AdminEventAttendee {
+    ticket_id: string;
+    ticket_type: string;
+    status: string;
+    purchase_date: string;
+    amount: string;
+    quantity: string;
+    attendee_name: string;
+    attendee_email: string;
+    profile_picture: string | null;
+}

@@ -3,101 +3,173 @@
 import { Dispatch, SetStateAction } from 'react'
 import { Icon } from '@iconify/react'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 
 interface ActiveFilterChipsProps {
     filters: Partial<FilterValues>
-    categories: Category[]                  // available categories — used to resolve label from id
+    categories?: Category[]
     setFilters: Dispatch<SetStateAction<Partial<FilterValues>>>
     className?: string
 }
 
-export default function ActiveFilterChips({ filters, categories, setFilters, className }: ActiveFilterChipsProps) {
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const fmt = (d: Date | string) => format(new Date(d), 'MMM d, yyyy')
+
+const formatDateRange = (range?: { from?: Date | string; to?: Date | string } | null): string | null => {
+    if (!range) return null
+    if (range.from && range.to) return `${fmt(range.from)} – ${fmt(range.to)}`
+    if (range.from) return `From ${fmt(range.from)}`
+    if (range.to) return `Until ${fmt(range.to)}`
+    return null
+}
+
+const formatPriceRange = (range?: { min?: number; max?: number } | null, prefix = ''): string | null => {
+    if (!range) return null
+    if (range.min != null && range.max != null) return `${prefix}${range.min} – ${prefix}${range.max}`
+    if (range.min != null) return `${prefix}Min ${range.min}`
+    if (range.max != null) return `${prefix}Max ${range.max}`
+    return null
+}
+
+const DATE_PRESET_LABELS: Record<string, string> = {
+    day: 'Today',
+    week: 'This Week',
+    month: 'This Month',
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export default function ActiveFilterChips({
+    filters,
+    categories = [],
+    setFilters,
+    className,
+}: ActiveFilterChipsProps) {
 
     const chips: { key: keyof FilterValues; value: string; label: string }[] = []
 
-    console.log(filters.location)
-    // categories — only selected ones (filters.categories holds the selected IDs as strings)
-    if (filters.categories?.length) {
-        filters.categories.forEach(selectedId => {
-            const match = categories.find(cat => cat.value === selectedId)
-            chips.push({
-                key: 'categories',
-                value: selectedId,
-                label: match?.label ?? selectedId,
-            })
-        })
-    }
+    // categories — resolve label from id
+    filters.categories?.forEach(selectedId => {
+        const match = categories.find(c => c.value === selectedId)
+        chips.push({ key: 'categories', value: selectedId, label: match?.label ?? selectedId })
+    })
 
-    // status — single value
-    if (filters.status) {
-        chips.push({ key: 'status', value: filters.status, label: filters.status })
-    }
+    // simple string / enum singles
+    if (filters.status) chips.push({ key: 'status', value: filters.status, label: filters.status })
+    if (filters.userStatus) chips.push({ key: 'userStatus', value: filters.userStatus, label: filters.userStatus })
+    if (filters.transactionStatus) chips.push({ key: 'transactionStatus', value: filters.transactionStatus, label: filters.transactionStatus })
+    if (filters.listingType) chips.push({ key: 'listingType', value: filters.listingType, label: filters.listingType })
+    if (filters.sortBy) chips.push({ key: 'sortBy', value: filters.sortBy, label: `Sort: ${filters.sortBy}` })
+    if (filters.sort) chips.push({ key: 'sort', value: filters.sort, label: `Sort: ${filters.sort}` })
+    if (filters.event) chips.push({ key: 'event', value: filters.event, label: filters.event })
+    if (filters.package) chips.push({ key: 'package', value: filters.package, label: filters.package })
+    if (filters.billingCycle) chips.push({ key: 'billingCycle', value: filters.billingCycle, label: filters.billingCycle })
+    if (filters.performance) chips.push({ key: 'performance', value: String(filters.performance), label: String(filters.performance) })
 
+    // numeric singles
+    if (filters.walletBalance != null) chips.push({ key: 'walletBalance', value: String(filters.walletBalance), label: `Balance: ${filters.walletBalance}` })
+    if (filters.spend != null) chips.push({ key: 'spend', value: String(filters.spend), label: `Spend: ${filters.spend}` })
+    if (filters.amount != null) chips.push({ key: 'amount', value: String(filters.amount), label: `Amount: ${filters.amount}` })
+    if (filters.revenue != null) chips.push({ key: 'revenue', value: String(filters.revenue), label: `Revenue: ${filters.revenue}` })
+    if (filters.numberOfEvents != null) chips.push({ key: 'numberOfEvents', value: String(filters.numberOfEvents), label: `Events: ${filters.numberOfEvents}` })
 
-    if (filters.purchaseDate) {
-        chips.push({ key: 'purchaseDate', value: filters.purchaseDate.toLocaleDateString(), label: filters.purchaseDate.toLocaleDateString() })
-    }
+    // date ranges
+    const dateRangeLabel = formatDateRange(filters.dateRange)
+    const dateJoinedLabel = formatDateRange(filters.dateJoined)
+    const lastActivityLabel = formatDateRange(filters.lastActivity)
+    const purchaseDateRangeLabel = formatDateRange(filters.purchaseDateRange)
+    const withdrawalDateLabel = formatDateRange(filters.withdrawalDate)
 
-    // ticketType — array of strings
-    if (filters.ticketType?.length) {
-        filters.ticketType.forEach(type => {
-            chips.push({ key: 'ticketType', value: type, label: type })
-        })
-    }
+    if (dateRangeLabel) chips.push({ key: 'dateRange', value: dateRangeLabel, label: `Date: ${dateRangeLabel}` })
+    if (dateJoinedLabel) chips.push({ key: 'dateJoined', value: dateJoinedLabel, label: `Joined: ${dateJoinedLabel}` })
+    if (lastActivityLabel) chips.push({ key: 'lastActivity', value: lastActivityLabel, label: `Activity: ${lastActivityLabel}` })
+    if (purchaseDateRangeLabel) chips.push({ key: 'purchaseDateRange', value: purchaseDateRangeLabel, label: `Purchase: ${purchaseDateRangeLabel}` })
+    if (withdrawalDateLabel) chips.push({ key: 'withdrawalDate', value: withdrawalDateLabel, label: `Withdrawal: ${withdrawalDateLabel}` })
 
-    // userStatus — single value
-    if (filters.userStatus) {
-        chips.push({ key: 'userStatus', value: filters.userStatus, label: filters.userStatus })
-    }
+    // single date
+    if (filters.purchaseDate) chips.push({ key: 'purchaseDate', value: filters.purchaseDate.toISOString(), label: `Purchase: ${fmt(filters.purchaseDate)}` })
+    if (filters.timestamp) chips.push({ key: 'timestamp', value: filters.timestamp.toISOString(), label: `Time: ${fmt(filters.timestamp)}` })
 
-    if (filters.location) {
+    // date preset
+    if (filters.dateRangePreset) {
         chips.push({
-            key: 'location',
-            value: filters.location.country,
-            label: filters.location.label
+            key: 'dateRangePreset',
+            value: filters.dateRangePreset,
+            label: DATE_PRESET_LABELS[filters.dateRangePreset] ?? filters.dateRangePreset,
         })
     }
 
-    // event — single value
-    if (filters.event) {
-        chips.push({ key: 'event', value: filters.event, label: filters.event })
+    // price / amount ranges
+    const priceRangeLabel = formatPriceRange(filters.priceRange, '₦')
+    const spendRangeLabel = formatPriceRange(filters.spendRange, '₦')
+    const amountRangeLabel = formatPriceRange(filters.amountRange, '₦')
+    const quantityRangeLabel = formatPriceRange(filters.quantityRange)
+
+    if (priceRangeLabel) chips.push({ key: 'priceRange', value: priceRangeLabel, label: `Price: ${priceRangeLabel}` })
+    if (spendRangeLabel) chips.push({ key: 'spendRange', value: spendRangeLabel, label: `Spend: ${spendRangeLabel}` })
+    if (amountRangeLabel) chips.push({ key: 'amountRange', value: amountRangeLabel, label: `Amount: ${amountRangeLabel}` })
+    if (quantityRangeLabel) chips.push({ key: 'quantityRange', value: quantityRangeLabel, label: `Qty: ${quantityRangeLabel}` })
+
+    // location
+    if (filters.location) {
+        chips.push({ key: 'location', value: filters.location.country, label: filters.location.label })
     }
 
-    // performance — single value
-    if (filters.performance) {
-        chips.push({ key: 'performance', value: String(filters.performance), label: String(filters.performance) })
-    }
-
-    // listingType — single value
-    if (filters.listingType) {
-        chips.push({ key: 'listingType', value: filters.listingType, label: filters.listingType })
-    }
-
-    // sortBy — single value
-    if (filters.sortBy) {
-        chips.push({ key: 'sortBy', value: filters.sortBy, label: filters.sortBy })
-    }
-
-    // transactionStatus — single value
-    if (filters.transactionStatus) {
-        chips.push({ key: 'transactionStatus', value: filters.transactionStatus, label: filters.transactionStatus })
-    }
+    // ticketType — array of objects
+    filters.ticketType?.forEach(type => {
+        chips.push({ key: 'ticketType', value: type.id.toString(), label: type.ticket_type })
+    })
 
     // action — array of strings
-    if (filters.action?.length) {
-        filters.action.forEach(act => {
-            chips.push({ key: 'action', value: act, label: act })
-        })
+    filters.action?.forEach(act => {
+        chips.push({ key: 'action', value: act, label: act })
+    })
+
+    // auditAction — array of strings
+    filters.auditAction?.forEach(act => {
+        chips.push({ key: 'auditAction', value: act, label: act })
+    })
+
+    // ticketStatus — array of strings
+    filters.ticketStatus?.forEach(s => {
+        chips.push({ key: 'ticketStatus', value: s, label: s })
+    })
+
+    // user
+    if (filters.user) {
+        chips.push({ key: 'user', value: String(filters.user.id), label: filters.user.full_name ?? 'User' })
     }
 
     if (!chips.length) return null
 
+    // ── Removal logic ─────────────────────────────────────────────────────────
+
     const removeChip = (key: keyof FilterValues, value: string) => {
         setFilters(prev => {
             const current = prev[key]
-            if (Array.isArray(current)) {
-                return { ...prev, [key]: current.filter(v => v !== value) }
+
+            // arrays of primitives (categories, action, auditAction, ticketStatus)
+            if (Array.isArray(current) && current.every(v => typeof v === 'string')) {
+                return { ...prev, [key]: (current as string[]).filter(v => v !== value) }
             }
+
+            // ticketType — array of objects keyed by id
+            if (key === 'ticketType' && Array.isArray(current)) {
+                return { ...prev, ticketType: (current as TicketType[]).filter(t => t.id.toString() !== value) }
+            }
+
+            // date ranges — clear the whole range object
+            if (['dateRange', 'dateJoined', 'lastActivity', 'purchaseDateRange', 'withdrawalDate'].includes(key)) {
+                return { ...prev, [key]: undefined }
+            }
+
+            // price / quantity ranges — clear the whole range object
+            if (['priceRange', 'spendRange', 'amountRange', 'quantityRange'].includes(key)) {
+                return { ...prev, [key]: null }
+            }
+
+            // everything else — null it out
             return { ...prev, [key]: null }
         })
     }
@@ -106,24 +178,40 @@ export default function ActiveFilterChips({ filters, categories, setFilters, cla
         setFilters(prev => ({
             ...prev,
             categories: [],
-            status: null,
-            ticketType: [],
-            priceRange: undefined,
-            dateRange: undefined,
-            purchaseDate: null,
-            userStatus: null,
-            location: null,
-            event: null,
-            performance: null,
             action: [],
+            auditAction: [],
+            ticketStatus: [],
+            ticketType: [],
+            status: null,
+            userStatus: null,
+            transactionStatus: null,
             listingType: null,
             sortBy: null,
-            transactionStatus: null,
-            dateJoined: undefined,
+            sort: null,
+            event: null,
+            host: null,
+            package: null,
+            billingCycle: null,
+            performance: null,
+            walletBalance: null,
+            spend: null,
+            amount: null,
+            revenue: null,
+            numberOfEvents: null,
+            priceRange: null,
             spendRange: null,
-            lastActivity: undefined,
-            withdrawalDate: undefined,
             amountRange: null,
+            quantityRange: null,
+            location: null,
+            user: null,
+            dateRangePreset: null,
+            purchaseDate: null,
+            timestamp: null,
+            dateRange: undefined,
+            dateJoined: undefined,
+            lastActivity: undefined,
+            purchaseDateRange: undefined,
+            withdrawalDate: undefined,
         }))
     }
 

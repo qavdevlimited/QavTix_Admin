@@ -89,7 +89,7 @@ export default function BusinessManagementTable({
                                             <div className="flex items-center gap-2">
                                                 <p className="text-xs font-medium text-brand-secondary-9">{host.business_name}</p>
                                                 {host.verified && (
-                                                    <Icon icon="hugeicons:checkmark-badge-01" className="size-4 text-blue-500 shrink-0" />
+                                                    <Icon icon="hugeicons:checkmark-badge-01" className="size-4 text-yellow-500 shrink-0" />
                                                 )}
                                             </div>
                                             {host.business_type && (

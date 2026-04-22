@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { format } from "date-fns"
 import { fetchPaginatedData } from "@/actions/paginated-data"
 import { useOnRevalidate } from "./UseRevalidate"
-import { countries } from "@/components-data/location"
 import { Country } from "country-state-city"
 
 export interface PageData<T> {
@@ -27,6 +26,7 @@ export interface TabConfig<T> {
     key: string
     initialData: TabSlice<T>
     staticParams: Record<string, string>
+    endpoint?: string
     onCards?: (cards: any | null) => void
     resultsKey?: string
 }
@@ -62,20 +62,36 @@ export interface TabState<T> {
 
 const buildFilterParams = (filters: Partial<FilterValues>): Record<string, string | string[]> => {
     const params: Record<string, string | string[]> = {}
+
+    const activeStatus =
+        filters.ticketStatus?.length ? filters.ticketStatus :
+            filters.listingStatus ? filters.listingStatus :
+                filters.packageStatus ? filters.packageStatus :
+                    filters.userStatus ? filters.userStatus :
+                        filters.status ? filters.status :
+                            null
+
+    if (activeStatus) params.status = activeStatus
+
+    if (filters.host) params.seller_id = filters.host
     if (filters.categories?.length) params.category = filters.categories
     if (filters.dateRange?.from) params.start_date = format(new Date(filters.dateRange.from), 'yyyy-MM-dd')
     if (filters.dateRange?.to) params.end_date = format(new Date(filters.dateRange.to), 'yyyy-MM-dd')
-    if (filters.purchaseDate) params.start_date = format(filters.purchaseDate, 'yyyy-MM-dd')
-    if (filters.purchaseDate) params.end_date = format(filters.purchaseDate, 'yyyy-MM-dd')
+    if (filters.purchaseDate) {
+        params.start_date = format(filters.purchaseDate, 'yyyy-MM-dd')
+        params.end_date = format(filters.purchaseDate, 'yyyy-MM-dd')
+    }
+
     if (filters.priceRange?.min != null && filters.priceRange.min > 0) params.min_price = String(filters.priceRange.min)
     if (filters.priceRange?.max != null) params.max_price = String(filters.priceRange.max)
     if (filters.status) params.status = filters.status
-    if (filters.ticketType?.length) params.ticket_type = filters.ticketType
+    if (filters.ticketType?.length) params.ticket_type = filters.ticketType.map(t => String(t.id))
     if (filters.performance != null) params.performance = String(filters.performance)
     if (filters.sortBy) params.ordering = filters.sortBy
     if (filters.dateRangePreset) params.date_range = filters.dateRangePreset
     if (filters.event) params.event = filters.event
     if (filters.userStatus) params.status = filters.userStatus
+    if (filters.packageStatus) params.status = filters.packageStatus
 
     if (filters.location) {
         const countryName = Country.getCountryByCode(filters.location.country)?.name ?? filters.location.country
@@ -83,28 +99,31 @@ const buildFilterParams = (filters: Partial<FilterValues>): Record<string, strin
         if (filters.location.state) params.state = filters.location.state
         if (filters.location.city) params.city = filters.location.city
     }
+
     if (filters.dateJoined?.from) params.date_joined_from = format(new Date(filters.dateJoined.from), 'yyyy-MM-dd')
     if (filters.dateJoined?.to) params.date_joined_to = format(new Date(filters.dateJoined.to), 'yyyy-MM-dd')
     if (filters.spendRange?.min != null && filters.spendRange.min > 0) params.min_spend = String(filters.spendRange.min)
     if (filters.spendRange?.max != null) params.max_spend = String(filters.spendRange.max)
-
     if (filters.lastActivity?.from) params.last_activity_from = format(new Date(filters.lastActivity.from), 'yyyy-MM-dd')
     if (filters.lastActivity?.to) params.last_activity_to = format(new Date(filters.lastActivity.to), 'yyyy-MM-dd')
-
     if (filters.withdrawalDate?.from) params.date_from = format(new Date(filters.withdrawalDate.from), 'yyyy-MM-dd')
     if (filters.withdrawalDate?.to) params.date_to = format(new Date(filters.withdrawalDate.to), 'yyyy-MM-dd')
-
     if (filters.purchaseDateRange?.from) params.date_from = format(new Date(filters.purchaseDateRange.from), 'yyyy-MM-dd')
     if (filters.purchaseDateRange?.to) params.date_to = format(new Date(filters.purchaseDateRange.to), 'yyyy-MM-dd')
-
     if (filters.amountRange?.min != null && filters.amountRange.min > 0) params.min_amount = String(filters.amountRange.min)
     if (filters.amountRange?.max != null) params.max_amount = String(filters.amountRange.max)
-
     if (filters.quantityRange?.min != null && filters.quantityRange.min > 0) params.qty_min = String(filters.quantityRange.min)
     if (filters.quantityRange?.max != null) params.qty_max = String(filters.quantityRange.max)
+    if (filters.ticketStatus?.length) params.status = filters.ticketStatus
+    if (filters.package) params.plan_slug = filters.package
+    if (filters.billingCycle) params.billing_cycle = filters.billingCycle
+    if (filters.auditAction?.length) params.action = filters.auditAction
+    if (filters.timestamp) params.timestamp = filters.timestamp.toISOString()
 
     return params
 }
+
+
 
 const hasActiveFilters = (filters: Partial<FilterValues>): boolean =>
     !!(
@@ -114,13 +133,19 @@ const hasActiveFilters = (filters: Partial<FilterValues>): boolean =>
         filters.priceRange?.min ||
         filters.priceRange?.max ||
         filters.status ||
+        filters.userStatus ||
+        filters.listingStatus ||
+        filters.packageStatus ||
         filters.ticketType?.length ||
+        filters.ticketStatus?.length ||
         filters.performance != null ||
         filters.purchaseDate ||
+        filters.purchaseDateRange?.from ||
+        filters.purchaseDateRange?.to ||
         filters.sortBy ||
         filters.dateRangePreset ||
         filters.event ||
-        filters.userStatus?.length ||
+        filters.host ||
         filters.location?.country ||
         filters.dateJoined?.from ||
         filters.dateJoined?.to ||
@@ -132,11 +157,14 @@ const hasActiveFilters = (filters: Partial<FilterValues>): boolean =>
         filters.withdrawalDate?.to ||
         filters.amountRange?.min ||
         filters.amountRange?.max ||
-        filters.purchaseDateRange?.from ||
-        filters.purchaseDateRange?.to ||
         filters.quantityRange?.min ||
-        filters.quantityRange?.max
+        filters.quantityRange?.max ||
+        filters.package ||
+        filters.billingCycle ||
+        filters.auditAction?.length ||
+        filters.timestamp
     )
+
 
 const useTabState = <T>(
     config: TabConfig<T>,
@@ -151,7 +179,9 @@ const useTabState = <T>(
     const [currentPage, setCurrentPage] = useState(1)
     const [hasNext, setHasNext] = useState(!!config.initialData.next)
     const [search, setSearch] = useState("")
-    const [status, setStatus] = useState<FetchStatus>("idle")
+    const [status, setStatus] = useState<FetchStatus>(
+        () => config.initialData.results.length === 0 ? "empty" : "idle"
+    )
 
     const configRef = useRef(config)
     configRef.current = config
@@ -174,15 +204,21 @@ const useTabState = <T>(
         filters.dateRange?.from?.toString() ?? '',
         filters.dateRange?.to?.toString() ?? '',
         filters.status ?? '',
-        filters.ticketType?.join(',') ?? '',
+        filters.userStatus ?? '',
+        filters.listingStatus ?? '',
+        filters.packageStatus ?? '',
+        filters.ticketType?.map(t => t.id).join(',') ?? '',
+        filters.ticketStatus?.join(',') ?? '',
         String(filters.priceRange?.min ?? ''),
         String(filters.priceRange?.max ?? ''),
         String(filters.performance ?? ''),
         filters.dateRangePreset ?? '',
         filters.sortBy ?? '',
         filters.purchaseDate?.toString() ?? '',
+        filters.purchaseDateRange?.from?.toString() ?? '',
+        filters.purchaseDateRange?.to?.toString() ?? '',
         filters.event ?? '',
-        filters.userStatus ?? '',
+        filters.host ?? '',
         filters.location?.country ?? '',
         filters.location?.state ?? '',
         filters.location?.city ?? '',
@@ -194,13 +230,16 @@ const useTabState = <T>(
         filters.lastActivity?.to?.toString() ?? '',
         filters.withdrawalDate?.from?.toString() ?? '',
         filters.withdrawalDate?.to?.toString() ?? '',
-        filters.purchaseDateRange?.from?.toString() ?? '',
-        filters.purchaseDateRange?.to?.toString() ?? '',
         String(filters.amountRange?.min ?? ''),
         String(filters.amountRange?.max ?? ''),
         String(filters.quantityRange?.min ?? ''),
         String(filters.quantityRange?.max ?? ''),
+        filters.package ?? '',
+        filters.billingCycle ?? '',
+        filters.auditAction?.join(',') ?? '',
+        filters.timestamp?.toISOString() ?? '',
     ].join('|')
+
 
     const prevFilterKey = useRef(filterKey)
 
@@ -212,7 +251,7 @@ const useTabState = <T>(
 
         const result = await fetchPaginatedData<T>({
             endpoint,
-            staticParams: config.staticParams,
+            staticParams: configRef.current.staticParams,
             filterParams: buildFilterParams(filtersRef.current),
             page: p,
             search: s,
@@ -257,11 +296,6 @@ const useTabState = <T>(
     })
 
     useEffect(() => {
-        initialized.current = true
-        return () => { initialized.current = false }
-    }, [])
-
-    useEffect(() => {
         if (!initialized.current) return
         if (prevFilterKey.current === filterKey) return
 
@@ -283,6 +317,11 @@ const useTabState = <T>(
         pageRef.current = 1
         fetchData.current(1, "", false)
     }, [filterKey])
+
+    useEffect(() => {
+        initialized.current = true
+        return () => { initialized.current = false }
+    }, [])
 
     const handleSearch = useCallback((query: string) => {
         const trimmed = query.trim()
@@ -370,7 +409,7 @@ export function useDataDisplay<T>(
 
     const stateEntries = config.tabs.map(tab =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        [tab.key, useTabState(tab, filters, config.endpoint)] as const
+        [tab.key, useTabState(tab, filters, tab.endpoint ?? config.endpoint)] as const
     )
 
     const tabStates = Object.fromEntries(stateEntries) as Record<string, TabState<T>>

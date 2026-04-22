@@ -1,186 +1,208 @@
-'use client'
+"use client"
 
-import { useState } from "react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Icon } from "@iconify/react"
-import FilterButtonsActions1 from "./buttons-and-inputs/FilterActionButtons1"
 import { cn } from "@/lib/utils"
-import { useMediaQuery } from '@/custom-hooks/UseMediaQuery'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
+import FilterButtonsActions1 from "./buttons-and-inputs/FilterActionButtons1"
+import { useMediaQuery } from "@/custom-hooks/UseMediaQuery"
 import { MobileBottomSheet } from "../../dropdown/EventFilterDropdownMobileBottomSheet"
+import { useParams } from "next/navigation"
+import { fetchTicketTypes } from "@/actions/filters"
 
-interface TicketTypeOption {
-    value: string
-    label: string
-    icon: string
-    description: string
+
+export interface TicketType {
+    id: number
+    ticket_type: string
+    price: string
+    quantity: number
+    sold_count: number
 }
 
-const ticketTypeOptions: TicketTypeOption[] = [
-    {
-        value: 'free',
-        label: 'Free',
-        icon: 'mdi:gift-outline',
-        description: 'No cost to attend'
-    },
-    {
-        value: 'paid',
-        label: 'Paid',
-        icon: 'mdi:currency-usd',
-        description: 'Requires payment'
-    },
-    {
-        value: 'donation',
-        label: 'Donation',
-        icon: 'mdi:hand-heart',
-        description: 'Pay what you can'
-    }
-]
-
 interface TicketTypeFilterProps {
-    value?: string[]
-    onChange: (value: string[]) => void
+    value?: TicketType[]
+    onChange: (value: TicketType[]) => void
     icon?: string
     label?: string
 }
 
-export function TicketTypeFilter({ 
-    value = [], 
-    onChange, 
-    icon, 
-    label = "Ticket Type" 
-}: TicketTypeFilterProps) {
-    const [isOpen, setIsOpen] = useState(false)
-    const isTablet = useMediaQuery('(min-width: 768px)')
-    const [selectedTypes, setSelectedTypes] = useState<string[]>(value)
 
-    const hasActiveFilter = selectedTypes.length > 0
+export function TicketTypeFilter({
+    value = [],
+    onChange,
+    icon,
+    label = "Ticket Type",
+}: TicketTypeFilterProps) {
+    const isTablet = useMediaQuery("(min-width: 768px)")
+    const [isOpen, setIsOpen] = useState(false)
+    const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
+    const [loading, setLoading] = useState(false)
+    const [selected, setSelected] = useState<TicketType[]>(value)
+
+    const cache = useRef<Map<string, TicketType[]>>(new Map())
+    const hasFetched = useRef(false)
+    const { event_id: paramsEventId } = useParams()
+    const eventId = paramsEventId as string
+
+    const loadTicketTypes = useCallback(async () => {
+        if (cache.current.has(eventId)) {
+            setTicketTypes(cache.current.get(eventId)!)
+            return
+        }
+        setLoading(true)
+        const result = await fetchTicketTypes(eventId)
+        cache.current.set(eventId, result)
+        setTicketTypes(result)
+        setLoading(false)
+    }, [eventId])
+
+    // Fetch on first open only
+    useEffect(() => {
+        if (!isOpen || hasFetched.current) return
+        hasFetched.current = true
+        loadTicketTypes()
+    }, [isOpen, loadTicketTypes])
+
+
+    const hasActiveFilter = selected.length > 0
 
     const displayText = (() => {
         if (!hasActiveFilter) return label
-        if (selectedTypes.length === 1) {
-            return ticketTypeOptions.find(opt => opt.value === selectedTypes[0])?.label || label
-        }
-        return `${selectedTypes.length} selected`
+        if (selected.length === 1) return selected[0].ticket_type
+        return `${selected.length} types`
     })()
 
-    const handleToggle = (typeValue: string) => {
-        setSelectedTypes((prev) =>
-            prev.includes(typeValue)
-                ? prev.filter((v) => v !== typeValue)
-                : [...prev, typeValue]
+
+    const handleToggle = (type: TicketType) => {
+        setSelected((prev) =>
+            prev.some((t) => t.id === type.id)
+                ? prev.filter((t) => t.id !== type.id)
+                : [...prev, type]
         )
     }
 
     const handleApply = () => {
-        onChange(selectedTypes)
+        onChange(selected)
         setIsOpen(false)
     }
 
     const handleClear = () => {
-        setSelectedTypes([])
+        setSelected([])
         onChange([])
     }
 
+    const formatPrice = (price: string) => `₦${Number(price).toLocaleString()}`
+
+
     const filterContent = (
-        <div className="grid grid-cols-1 gap-3">
-            {ticketTypeOptions.map((type) => {
-                const isSelected = selectedTypes.includes(type.value)
-                return (
-                    <button
-                        key={type.value}
-                        onClick={() => handleToggle(type.value)}
-                        className={cn(
-                            'flex items-center gap-4 p-5 rounded-2xl border-2 transition-all',
-                            isSelected
-                                ? 'border-brand-primary-6 bg-linear-to-br from-primary-1 to-primary-2 shadow-md'
-                                : 'border-neutral-3 hover:border-brand-primary-3 hover:bg-brand-neutral-1'
-                        )}
-                    >
-                        <div className={cn(
-                            'w-12 h-12 rounded-xl flex items-center justify-center transition-colors',
-                            isSelected ? 'bg-brand-primary-6' : 'bg-brand-neutral-2'
-                        )}>
-                            <Icon
-                                icon={type.icon}
-                                className={cn('w-6 h-6', isSelected ? 'text-white' : 'text-brand-neutral-7')}
-                            />
-                        </div>
-                        <div className="flex-1 text-left">
-                            <p className={cn('font-semibold', isSelected ? 'text-brand-primary-8' : 'text-brand-secondary-9')}>
-                                {type.label}
-                            </p>
-                            <p className="text-sm text-brand-neutral-6">{type.description}</p>
-                        </div>
-                        {isSelected && (
-                            <Icon icon="mdi:check-circle" className="w-6 h-6 text-brand-primary-6" />
-                        )}
-                    </button>
-                )
-            })}
+        <div className="space-y-2">
+            {loading ? (
+                <div className="flex items-center justify-center py-8">
+                    <Icon icon="svg-spinners:ring-resize" className="size-5 text-brand-primary-5" />
+                </div>
+            ) : ticketTypes.length === 0 ? (
+                <p className="py-6 text-center text-xs text-brand-neutral-5">
+                    No ticket types found
+                </p>
+            ) : (
+                ticketTypes.map((type) => {
+                    const isSelected = selected.some((t) => t.id === type.id)
+                    const available = type.quantity - type.sold_count
+                    return (
+                        <button
+                            key={type.id}
+                            onClick={() => handleToggle(type)}
+                            className={cn(
+                                "w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left",
+                                isSelected
+                                    ? "border-brand-primary-6 bg-brand-primary-1 shadow-[0px_5.8px_23.17px_0px_#3326AE14]"
+                                    : "border-brand-neutral-3 hover:border-brand-primary-3 hover:bg-brand-neutral-1"
+                            )}
+                        >
+                            <div className={cn(
+                                "size-4 shrink-0 rounded-[4px] border-2 flex items-center justify-center transition-colors",
+                                isSelected ? "border-brand-primary-6 bg-brand-primary-6" : "border-brand-neutral-4 bg-white"
+                            )}>
+                                {isSelected && <Icon icon="mdi:check" className="size-2.5 text-white" />}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                                <p className={cn(
+                                    "text-sm font-semibold truncate",
+                                    isSelected ? "text-brand-primary-8" : "text-brand-secondary-9"
+                                )}>
+                                    {type.ticket_type}
+                                </p>
+                                <p className="text-xs text-brand-neutral-6 mt-0.5">{available} left</p>
+                            </div>
+
+                            <span className={cn(
+                                "text-xs font-semibold shrink-0",
+                                isSelected ? "text-brand-primary-6" : "text-brand-neutral-7"
+                            )}>
+                                {formatPrice(type.price)}
+                            </span>
+                        </button>
+                    )
+                })
+            )}
         </div>
+    )
+
+    const dropdownClasses = cn(
+        "w-72 p-4 rounded-2xl shadow-xl bg-white border-none z-50",
+        "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "data-[state=open]:duration-500 data-[state=open]:ease-[cubic-bezier(0.16,1,0.3,1)]",
+        "data-[state=open]:zoom-in-90 data-[state=open]:slide-in-from-top-4",
+        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+        "data-[state=closed]:duration-400 data-[state=closed]:ease-in",
+        "data-[state=closed]:zoom-out-90 data-[state=closed]:slide-out-to-top-4"
     )
 
     return (
         <>
-            {/* Mobile - Bottom Sheet */}
+            {/* Mobile — Bottom Sheet */}
             {!isTablet && (
                 <>
-                    <EventFilterTypeBtn 
+                    <EventFilterTypeBtn
                         onClick={() => setIsOpen(true)}
-                        displayText={displayText} 
+                        displayText={displayText}
                         hasActiveFilter={hasActiveFilter}
                         icon={icon}
                     />
-
                     <MobileBottomSheet
                         isOpen={isOpen}
                         onClose={() => setIsOpen(false)}
                         title="Ticket Type"
                     >
                         {filterContent}
-                        <FilterButtonsActions1
-                            onApply={handleApply}
-                            onClear={handleClear}
-                        />
+                        <FilterButtonsActions1 onApply={handleApply} onClear={handleClear} />
                     </MobileBottomSheet>
                 </>
             )}
 
-            {/* Tablet - Dropdown */}
+            {/* Tablet — Dropdown */}
             {isTablet && (
                 <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
-                        <EventFilterTypeBtn 
-                            displayText={displayText} 
+                        <EventFilterTypeBtn
+                            displayText={displayText}
                             hasActiveFilter={hasActiveFilter}
                             icon={icon}
                         />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                        className={cn(
-                            "w-[25em] z-100! p-4 rounded-xl shadow-[0px_3.69px_14.76px_0px_rgba(51,38,174,0.08)]",
-                            // Open animation
-                            "data-[state=open]:animate-in",
-                            "data-[state=open]:fade-in-0",
-                            "data-[state=open]:duration-500 data-[state=open]:ease-[cubic-bezier(0.16,1,0.3,1)]",
-                            "data-[state=open]:zoom-in-90",
-                            "data-[state=open]:slide-in-from-top-4",
-                            // Close animation
-                            "data-[state=closed]:animate-out",
-                            "data-[state=closed]:fade-out-0",
-                            "data-[state=closed]:duration-400 data-[state=closed]:ease-in",
-                            "data-[state=closed]:zoom-out-90",
-                            "data-[state=closed]:slide-out-to-top-4"
-                        )}
-                        align="start"
-                    >
-                        <div className="space-y-6">
+                    <DropdownMenuContent align="start" sideOffset={8} className={dropdownClasses}>
+                        <div className="space-y-4">
+                            <p className="text-xs font-semibold text-brand-neutral-6 uppercase tracking-wide px-1">
+                                Ticket Type
+                            </p>
                             {filterContent}
-                            <FilterButtonsActions1
-                                onApply={handleApply}
-                                onClear={handleClear}
-                            />
+                            <FilterButtonsActions1 onApply={handleApply} onClear={handleClear} />
                         </div>
                     </DropdownMenuContent>
                 </DropdownMenu>

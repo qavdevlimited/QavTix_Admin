@@ -1,104 +1,206 @@
-import Image from "next/image";
-import HostDetailsArea from "./HostDetailsArea";
-import EventOverviewDetails from "./EventProfileOverviewDetails";
-import { Icon } from "@iconify/react";
-import Link from "next/link";
-import TicketPricingArea from "./TicketPricingArea";
-import { Badge } from "../ui/badge";
-import { EventIconActionButton } from "../buttons/EventIconActionButton";
-import { EventStatusBadgeMap, eventStatusBadgeRegistry } from "../custom-utils/TableDataDisplayAreas/resources/status-config";
-import { copyToClipboard } from "@/helper-fns/copyToClipboard";
-import { space_grotesk } from "@/lib/fonts";
-import TableItemDropdown from "../custom-utils/dropdown/TableItemDropdown";
-import { getEventProfileActions } from "../custom-utils/dropdown/resources/management-actions";
-import { useParams } from "next/navigation";
+"use client"
 
-export default function EventProfileOverviewTabContainer(){
+import Image from "next/image"
+import HostDetailsArea from "./HostDetailsArea"
+import EventOverviewDetails from "./EventProfileOverviewDetails"
+import { Icon } from "@iconify/react"
+import Link from "next/link"
+import TicketPricingArea from "./TicketPricingArea"
+import { Badge } from "@/components/ui/badge"
+import { EventIconActionButton } from "@/components/buttons/EventIconActionButton"
+import { copyToClipboard } from "@/helper-fns/copyToClipboard"
+import { space_grotesk } from "@/lib/fonts"
+import { cn } from "@/lib/utils"
+import { format, parseISO } from "date-fns"
+import AdminEventActionDropdown from "@/components/custom-utils/dropdown/AdminEventActionDropdown"
+import { useState } from "react"
+import ShareEventModal from "../modals/ShareEventModal"
+import { EVENT_DETAILS_LINK } from "@/enums/navigation"
 
-    const params = useParams<{ event_id: string }>()
+const STATUS_CONFIG: Record<string, { text: string; bg: string }> = {
+    active: { text: "text-emerald-700", bg: "bg-emerald-50" },
+    live: { text: "text-emerald-700", bg: "bg-emerald-50" },
+    draft: { text: "text-amber-600", bg: "bg-amber-50" },
+    suspended: { text: "text-orange-600", bg: "bg-orange-50" },
+    ended: { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2" },
+    cancelled: { text: "text-red-600", bg: "bg-red-50" },
+    banned: { text: "text-red-700", bg: "bg-red-100" },
+    "sold-out": { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2" },
+}
+
+interface EventProfileOverviewTabContainerProps {
+    event: EventDetails
+    eventId: string
+}
+
+export default function EventProfileOverviewTabContainer({
+    event,
+    eventId,
+}: EventProfileOverviewTabContainerProps) {
+
+    const imageUrl = event.event_media?.image_url ?? null
+    const [showShare, setShowShare] = useState(false)
+    const statusCfg = STATUS_CONFIG[event.event_status] ?? { text: "text-brand-secondary-6", bg: "bg-brand-neutral-2" }
+
+    const eventUrl = EVENT_DETAILS_LINK.replace("[event_id]", event.id)
+
+    const startDate = (() => {
+        try { return format(parseISO(event.start_datetime), "eeee, MMM d, yyyy · h:mm a") } catch { return event.start_datetime }
+    })()
+    const endDate = (() => {
+        try { return format(parseISO(event.end_datetime), "h:mm a") } catch { return event.end_datetime }
+    })()
+
+    const handleShare = () => {
+        setShowShare(true)
+    }
+
+    const location = event.event_location
+    const locationStr = location
+        ? [location.venue_name, location.address, location.city, location.state].filter(Boolean).join(", ")
+        : null
+
+    const mapsUrl = locationStr
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`
+        : null
 
     return (
-        <section>
-            <div className="md:flex justify-between gap-8">
-                <div className="md:w-95">
-                    <figure>
-                        <Image 
-                            src="/images/demo-images/event-detail-img.png"
-                            alt="Event Image"
-                            width={900}
-                            height={900}
-                            className="rounded-4xl h-60 object-cover md:h-75"
+        <>
+            <section>
+                <div className="md:flex justify-between gap-8">
+
+                    <div className="md:w-95">
+                        <figure>
+                            {imageUrl ? (
+                                <Image
+                                    src={imageUrl}
+                                    alt={event.title}
+                                    width={900}
+                                    height={900}
+                                    className="rounded-4xl h-60 object-cover md:h-75 w-full"
+                                    unoptimized
+                                />
+                            ) : (
+                                <div className="rounded-4xl h-60 md:h-75 w-full bg-brand-neutral-3 flex flex-col items-center justify-center gap-2 text-brand-neutral-5">
+                                    <Icon icon="solar:image-linear" className="size-10" />
+                                    <p className="text-xs">No image</p>
+                                </div>
+                            )}
+                        </figure>
+                        <HostDetailsArea
+                            className="md:mt-8"
+                            organizerName={event.organizer_display_name}
+                            organizerDescription={event.organizer_description}
+                            organizerId={event.organizer_id}
+                            tags={event.tags ?? []}
                         />
-                    </figure>
-                    <HostDetailsArea className="md:mt-8" />
-                </div>
-                
-                <div className="flex-1">
-                    <div className="flex justify-between gap-5 items-start">
-                        <h1 className={`${space_grotesk.className} font-bold text-2xl text-brand-secondary-9`}>Learn to create visually appealing  and user-friendly interfaces.</h1>
-                        <TableItemDropdown actions={getEventProfileActions("live", params.event_id)} id={params.event_id} />
                     </div>
-                    <div className="flex items-center flex-wrap gap-8 gap-y-4 md:justify-between">
-                        <div className="mt-3 space-x-3">
-                            <Badge variant="outline" className="py-1.5 px-3 outline outline-secondary-9 border-0">
-                                <Icon icon="noto:fire" width="128" height="128" />Trending
-                            </Badge>
-                            <Badge variant="default" className={`py-1 px-2 rounded-2xl text-center text-[14px] font-medium ${eventStatusBadgeRegistry["filling-fast" as keyof EventStatusBadgeMap].bg} ${eventStatusBadgeRegistry["filling-fast" as keyof EventStatusBadgeMap].text} capitalize`}>
-                                Filling Fast
-                            </Badge>
-                            <Image src="/images/vectors/18+.svg" width={40} height={40} alt="18+" className="inline size-7 pointer-events-none select-auto" />
-                        </div>
-        
-                        <div className="flex justify-end text-secondary-9 gap-3 items-center">
-                            <EventIconActionButton 
-                                icon="hugeicons:share-08" 
-                                onClick={() => {}} 
-                                className="hover:text-white"
-                                feedback=""
-                            />
-                            <EventIconActionButton 
-                                icon="ph:link-bold" 
-                                onClick={() => copyToClipboard("Hello")} 
-                                className="hover:text-white"
-                                feedback="Event link copied"
-                            />
-                            <EventIconActionButton 
-                                icon="hugeicons:favourite" 
-                                onClick={() => {}} 
-                                className="hover:text-white"
-                                feedback="Added to favourites"
+
+                    <div className="flex-1 mt-6 md:mt-0">
+                        {/* Title row */}
+                        <div className="flex justify-between gap-5 items-start">
+                            <h1 className={cn(space_grotesk.className, "font-bold text-xl md:text-2xl text-brand-secondary-9")}>
+                                {event.title}
+                            </h1>
+                            <AdminEventActionDropdown
+                                eventId={eventId}
+                                eventTitle={event.title}
+                                eventStatus={"active"}
+                                actionsFor="event-profile"
                             />
                         </div>
-                    </div>
-        
-                    {/* Date/Location */}
-                    <div className="space-y-3 mt-7">
-                        <div className="flex items-center gap-1">
-                            <div className="flex items-center gap-0.5">
-                                <Icon icon="hugeicons:calendar-04" className="size-4 shrink-0 text-accent-6" />
-                                <hr className="w-px h-2 border border-neutral-6" />
-                                <Icon icon="hugeicons:clock-01" className="size-4 shrink-0 text-accent-6" />
+
+                        {/* Status + action icons */}
+                        <div className="flex items-center flex-wrap gap-8 gap-y-4 md:justify-between mt-3">
+                            <div className="space-x-3">
+                                {statusCfg && (
+                                    <Badge
+                                        variant="default"
+                                        className={cn(
+                                            "py-1 px-2 rounded-2xl text-center text-[14px] font-medium capitalize",
+                                            statusCfg.bg, statusCfg.text,
+                                        )}
+                                    >
+                                        {event.event_status}
+                                    </Badge>
+                                )}
+                                {event.age_restriction && (
+                                    <Image src="/images/vectors/18+.svg" width={40} height={40} alt="18+" className="inline size-7 pointer-events-none select-auto" />
+                                )}
                             </div>
-                            <span className="text-brand-neutral-7 text-sm truncate flex-1">
-                                Tomorrow, March 22, 9AM - 12PM WAT
-                            </span>
+
+                            <div className="flex justify-end text-secondary-9 gap-3 items-center">
+                                <EventIconActionButton
+                                    icon="ph:link-bold"
+                                    onClick={() => copyToClipboard(`${window.location.origin}/events/${eventId}`)}
+                                    className="hover:text-white"
+                                    feedback="Event link copied"
+                                />
+                                <EventIconActionButton
+                                    icon="hugeicons:share-08"
+                                    onClick={handleShare}
+                                    className="hover:text-white"
+                                    feedback=""
+                                />
+                            </div>
                         </div>
-        
-                        <div className="flex items-center gap-1">
-                            <Icon icon="hugeicons:location-01" className="size-4 shrink-0 text-accent-6" />
-                            <Link href="" className="flex-1 text-brand-neutral-7 flex items-center gap-1">
-                                <span className="text-sm truncate">
-                                    1234, Shima Road, Victoria Island, Lagos
+
+                        {/* Date / Location */}
+                        <div className="space-y-3 mt-7">
+                            <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5">
+                                    <Icon icon="hugeicons:calendar-04" className="size-4 shrink-0 text-accent-6" />
+                                    <hr className="w-px h-2 border border-neutral-6" />
+                                    <Icon icon="hugeicons:clock-01" className="size-4 shrink-0 text-accent-6" />
+                                </div>
+                                <span className="text-brand-neutral-7 text-sm truncate flex-1">
+                                    {startDate} {endDate ? `– ${endDate}` : ""}
                                 </span>
-                                <Icon icon="system-uicons:arrow-top-right" width="21" height="21" />
-                            </Link>
+                            </div>
+
+                            {locationStr && (
+                                <div className="flex items-center gap-1">
+                                    <Icon icon="hugeicons:location-01" className="size-4 shrink-0 text-accent-6" />
+                                    {mapsUrl ? (
+                                        <Link href={mapsUrl} target="_blank" className="flex-1 text-brand-neutral-7 flex items-center gap-1">
+                                            <span className="text-sm truncate">{locationStr}</span>
+                                            <Icon icon="system-uicons:arrow-top-right" width="21" height="21" />
+                                        </Link>
+                                    ) : (
+                                        <span className="text-sm text-brand-neutral-7 truncate flex-1">{locationStr}</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {event.location_type === "online" && (
+                                <div className="flex items-center gap-1">
+                                    <Icon icon="hugeicons:internet" className="size-4 shrink-0 text-accent-6" />
+                                    <span className="text-sm text-brand-neutral-7">Online Event</span>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Tickets */}
+                        <TicketPricingArea
+                            tickets={event.tickets ?? []}
+                            currency={event.currency}
+                        />
                     </div>
-    
-                    <TicketPricingArea />
                 </div>
-            </div>
-            <EventOverviewDetails className="" />
-        </section>
+
+                {/* Description + Map */}
+                <EventOverviewDetails
+                    className=""
+                    description={event.full_description || event.short_description}
+                    location={event.event_location}
+                />
+            </section>
+
+            <ShareEventModal
+                isOpen={showShare}
+                onClose={() => setShowShare(false)}
+                shareUrl={eventUrl}
+            />
+        </>
     )
 }

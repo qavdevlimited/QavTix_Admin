@@ -11,15 +11,16 @@ export type FilterKey =
   | 'dateRange'
   | 'purchaseDate'
   | 'performance'
+  | 'packageStatus'
   | 'sortBy'
   | 'priceRange'
   | 'dateRangePreset'
   | 'event'
   | 'action'
+  | 'listingStatus'
   | 'location'
   | 'quantityRange'
   | 'user'
-  | 'listingType'
   | 'userStatus'
   | 'dateJoined'
   | 'spendRange'
@@ -28,6 +29,12 @@ export type FilterKey =
   | 'transactionStatus'
   | 'amountRange'
   | 'purchaseDateRange'
+  | 'host'
+  | 'ticketStatus'
+  | 'package'
+  | 'billingCycle'
+  | 'auditAction'
+  | 'timestamp'
 
 
 export const ALL_FILTERS = {
@@ -38,6 +45,16 @@ export const ALL_FILTERS = {
   },
   status: {
     value: 'status',
+    label: 'Status',
+    icon: 'ic:round-radio-button-checked'
+  },
+  listingStatus: {
+    value: 'listingStatus',
+    label: 'Status',
+    icon: 'ic:round-radio-button-checked'
+  },
+  packageStatus: {
+    value: 'packageStatus',
     label: 'Status',
     icon: 'ic:round-radio-button-checked'
   },
@@ -101,11 +118,6 @@ export const ALL_FILTERS = {
     label: 'User',
     icon: 'hugeicons:user-group'
   },
-  listingType: {
-    value: 'listingType',
-    label: 'Listing Type',
-    icon: 'hugeicons:property-view'
-  },
   userStatus: {
     value: 'userStatus',
     label: 'User Status',
@@ -144,6 +156,36 @@ export const ALL_FILTERS = {
   purchaseDateRange: {
     value: 'purchaseDateRange',
     label: 'Purchase Date Range',
+    icon: 'solar:calendar-linear'
+  },
+  host: {
+    value: 'host',
+    label: 'Host',
+    icon: 'hugeicons:user-multiple-02'
+  },
+  ticketStatus: {
+    value: 'ticketStatus',
+    label: 'Ticket Status',
+    icon: 'ic:round-radio-button-checked'
+  },
+  package: {
+    value: 'package',
+    label: 'Package',
+    icon: 'hugeicons:package-01'
+  },
+  billingCycle: {
+    value: 'billingCycle',
+    label: 'Billing Cycle',
+    icon: 'hugeicons:calendar-03'
+  },
+  auditAction: {
+    value: 'auditAction',
+    label: 'Action',
+    icon: 'hugeicons:cursor-magic-selection-02'
+  },
+  timestamp: {
+    value: 'timestamp',
+    label: 'Timestamp',
     icon: 'solar:calendar-linear'
   }
 } as const satisfies Record<FilterKey, TableDataDisplayFilter>
@@ -253,17 +295,19 @@ export const HostProfileTabNFilterOptions = {
     ALL_FILTERS.categories,
     ALL_FILTERS.dateRange,
     ALL_FILTERS.performance,
+    ALL_FILTERS.location,
     ALL_FILTERS.sortBy,
   ] as const,
 
   tabList: [
     { value: 'all', label: 'All' },
-    { value: 'live', label: 'Live' },
+    { value: 'active', label: 'Active' },
     { value: 'draft', label: 'Draft' },
     { value: 'ended', label: 'Ended' },
     { value: 'cancelled', label: 'Cancelled' }
   ] as const
 }
+
 
 export const HostManagementTabNFilterOptions = {
   tabFilterOptions: {
@@ -317,3 +361,116 @@ export const UserProfileTabNFilterOptions = {
   ] as const
 }
 
+// Event Profile page tabs (overview + attendee-list)
+export const EventProfileTabNFilterOptions = {
+  filterOptions: [
+    ALL_FILTERS.categories,
+    ALL_FILTERS.status,
+    ALL_FILTERS.dateRange,
+  ] as const,
+
+  tabList: [
+    { value: 'overview', label: 'Overview' },
+    { value: 'attendee-list', label: 'Attendee List' },
+  ] as const
+}
+
+
+// Admin Events Listing page
+export const AdminEventsTabNFilterOptions = {
+  filterOptions: [
+    ALL_FILTERS.categories,
+    ALL_FILTERS.performance,
+    ALL_FILTERS.location,
+    ALL_FILTERS.dateRange,
+    ALL_FILTERS.sortBy,
+    ALL_FILTERS.host,
+  ] as const,
+
+  tabList: [
+    { value: 'all', label: 'All' },
+    { value: 'live', label: 'Live' },
+    { value: 'suspended', label: 'Suspended' },
+    { value: 'ended', label: 'Ended' },
+    { value: 'cancelled', label: 'Cancelled' },
+  ] as const
+}
+
+
+// Attendee filter options (used on Admin Event Profile attendee tab)
+export const AdminEventAttendeeFilterOptions = {
+  filterOptions: [
+    ALL_FILTERS.purchaseDateRange,
+    ALL_FILTERS.ticketType,
+    ALL_FILTERS.amountRange,
+    ALL_FILTERS.ticketStatus,
+  ] as const
+}
+
+
+// ─── Financials ──────────────────────────────────────────────────────────────
+
+export const financialsFilterOptions = [
+  ALL_FILTERS.purchaseDateRange,
+  ALL_FILTERS.amountRange,
+  ALL_FILTERS.sortBy,
+] as const
+
+export const financialsFilterOptionsForResaleOrders = [
+  ALL_FILTERS.purchaseDateRange,
+  ALL_FILTERS.amountRange,
+  ALL_FILTERS.status,
+] as const
+
+export const FinancialsTabNFilterOptions = {
+  tabFilterOptions: {
+    'pending-payout': [
+      { ...ALL_FILTERS.purchaseDateRange, label: "Request Date" },
+      ALL_FILTERS.amountRange,
+      ALL_FILTERS.host,
+    ],
+    'payout-history': [
+      { ...ALL_FILTERS.purchaseDateRange, label: "Request Date" },
+      ALL_FILTERS.amountRange,
+      ALL_FILTERS.host
+    ],
+    'resale-orders': [
+      { ...ALL_FILTERS.purchaseDateRange, label: "Request Date" },
+      ALL_FILTERS.amountRange,
+      ALL_FILTERS.listingStatus,
+      ALL_FILTERS.host
+    ],
+    'featured-payments': [
+      { ...ALL_FILTERS.purchaseDateRange, label: "Payment Date" },
+      ALL_FILTERS.amountRange,
+      ALL_FILTERS.package,
+    ],
+    'subscriptions': [
+      { ...ALL_FILTERS.purchaseDateRange, label: "Payment Date" },
+      ALL_FILTERS.amountRange,
+      ALL_FILTERS.status,
+      ALL_FILTERS.package,
+      ALL_FILTERS.billingCycle,
+      ALL_FILTERS.sortBy,
+    ],
+  } as Record<string, typeof ALL_FILTERS[keyof typeof ALL_FILTERS][]>,
+
+  tabList: [
+    { value: 'pending-payout', label: 'Pending Payouts' },
+    { value: 'payout-history', label: 'Payout History' },
+    { value: 'resale-orders', label: 'Resale Orders' },
+    { value: 'featured-payments', label: 'Featured Payments' },
+    { value: 'subscriptions', label: 'Subscriptions' },
+  ] as const
+}
+
+
+// ─── Audit Logs ───────────────────────────────────────────────────────────────
+
+export const AuditTabNFilterOptions = {
+  filterOptions: [
+    ALL_FILTERS.timestamp,
+    ALL_FILTERS.auditAction,
+    ALL_FILTERS.dateRangePreset,
+  ] as const,
+}

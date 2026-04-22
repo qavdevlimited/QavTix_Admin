@@ -1,103 +1,284 @@
 "use client"
 
-import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1";
-import { hostAnalyticsMetricsConfig, HostMetricKey } from "@/components/cards/resources/configs/host-metrics";
-import DataDisplayTableWrapper from "@/components/custom-utils/TableDataDisplayAreas/DataDisplayTableWrapper";
-import DateFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateFilter";
-import { financialsFilterOptions, financialsFilterOptionsForResaleOrders, FinancialsTabNFilterOptions, HostManagementTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters";
-import BusinessManagementTable from "@/components/custom-utils/TableDataDisplayAreas/tables/BusinessManagementTable";
-import { buildMetricsFromConfig } from "@/helper-fns/buildMetricsConfig";
-import ExportButton1 from "@/lib/features/export/ExportDataBtn1";
-import { space_grotesk } from "@/lib/fonts";
-import { cn } from "@/lib/utils";
-import { Dispatch, SetStateAction, useState } from "react";
-import { DateRange } from "react-day-picker";
-import HostSignupRequestsTable from "../custom-utils/TableDataDisplayAreas/tables/PendingVerificationTable";
-import { FinancialMetricKey, financialMetricsConfig } from "../cards/resources/configs/financials-metrics";
-import PendingPayoutsTable from "../custom-utils/TableDataDisplayAreas/tables/financials/PendingPayoutTable";
-import PayoutHistoryTable from "../custom-utils/TableDataDisplayAreas/tables/financials/PayoutHistoryTable";
-import ListedForSaleTable from "../custom-utils/TableDataDisplayAreas/tables/financials/ListedForSaleTable";
-import ResoldTicketsTable from "../custom-utils/TableDataDisplayAreas/tables/financials/ResoldTicketsTable";
-import CategoryFilter from "../custom-utils/TableDataDisplayAreas/filters/CategoryFilter";
-import { EventTypeFilter } from "../custom-utils/TableDataDisplayAreas/filters/EventTypeFilter";
+import { Dispatch, SetStateAction, useState, useTransition } from "react"
+import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1"
+import DataDisplayTableWrapper from "@/components/custom-utils/TableDataDisplayAreas/DataDisplayTableWrapper"
+import { FinancialsTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
+import DateRangePresetFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
+import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
+import { useDataDisplay, TabSlice } from "@/custom-hooks/UseDataDisplay"
+import {
+    ADMIN_FINANCIALS_PENDING_PAYOUTS_ENDPOINT,
+    ADMIN_FINANCIALS_APPROVED_PAYOUTS_ENDPOINT,
+    ADMIN_FINANCIALS_MARKETPLACE_ENDPOINT,
+    ADMIN_FINANCIALS_FEATURED_PAYMENTS_ENDPOINT,
+    ADMIN_FINANCIALS_SUBSCRIPTIONS_ENDPOINT,
+} from "@/endpoints"
+import {
+    mapAdminFinancialCardsToMetrics,
+    mapAdminResaleCardsToMetrics,
+} from "@/helper-fns/mapUserManagementCards"
+import { getAdminFinancialCards, getAdminResaleCards } from "@/actions/financials"
+import AdminPendingPayoutsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPendingPayoutsTable"
+import AdminPayoutHistoryTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPayoutHistoryTable"
+import AdminMarketplaceTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminMarketplaceTable"
+import AdminFeaturedPaymentsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminFeaturedPaymentsTable"
+import AdminSubscriptionsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminSubscriptionsTable"
+import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
+import { EventFilter } from "../custom-utils/TableDataDisplayAreas/filters/EventFilter"
 
-interface IMetricsDataFilter {
-    date: DateRange | null,
-    categories: string[],
-    eventType: string[]
+interface FinancialsPageCWProps {
+    initialPendingPayouts: TabSlice<AdminPayout>
+    initialApprovedPayouts: TabSlice<AdminPayout>
+    initialMarketplace: TabSlice<AdminMarketplaceListing>
+    initialFeaturedPayments: TabSlice<AdminFeaturedPayment>
+    initialSubscriptions: TabSlice<AdminSubscription>
+    initialCards: AdminFinancialCards | null
+    initialResaleCards: AdminResaleCards | null
 }
 
-export default function FinancialsPageCW(){
+type FinancialsTab = typeof FinancialsTabNFilterOptions.tabList[number]["value"]
 
+export default function FinancialsPageCW({
+    initialPendingPayouts,
+    initialApprovedPayouts,
+    initialMarketplace,
+    initialFeaturedPayments,
+    initialSubscriptions,
+    initialCards,
+    initialResaleCards,
+}: FinancialsPageCWProps) {
 
-    const { tabList } = FinancialsTabNFilterOptions;
-    const [activeTab, setActiveTab] = useState<typeof FinancialsTabNFilterOptions.tabList[number]["value"]>("pending-payout")
-    const [metricsDataFilter, setMetricsDataFilter] =  useState<IMetricsDataFilter>({
-        date: null,
-        categories: [],
-        eventType: []
-    })
+    const { tabList } = FinancialsTabNFilterOptions
 
-    const filterOptions = activeTab !== "resale-orders" ? financialsFilterOptions : financialsFilterOptionsForResaleOrders
+    const [activeTab, setActiveTab] = useState<FinancialsTab>("pending-payout")
+    const [filters, setFilters] = useState<Partial<FilterValues>>({})
+    const [cards, setCards] = useState<AdminFinancialCards | null>(initialCards)
+    const [resaleCards, setResaleCards] = useState<AdminResaleCards | null>(initialResaleCards)
+    const [isCardsLoading, startCardsTransition] = useTransition()
 
-    const [filters, setFilters] = useState<Partial<FilterValues>>({
-        listingType: "listed-for-sale"
-    })
+    const isResaleTab = activeTab === "resale-orders"
+    const kpiMetrics = isResaleTab
+        ? mapAdminResaleCardsToMetrics(resaleCards)
+        : mapAdminFinancialCardsToMetrics(cards)
 
-    const apiData : Record<FinancialMetricKey, number>  = {
-        'total-sales-gmv': 612,
-        'platform-fees': 547,
-        'affiliate-balance': 17,
-        'payouts-pending': 5500
+    const { tabStates } = useDataDisplay<any>(
+        {
+            endpoint: ADMIN_FINANCIALS_PENDING_PAYOUTS_ENDPOINT, // fallback; each tab overrides
+            tabs: [
+                {
+                    key: "pending-payout",
+                    endpoint: ADMIN_FINANCIALS_PENDING_PAYOUTS_ENDPOINT,
+                    initialData: initialPendingPayouts,
+                    staticParams: {},
+                },
+                {
+                    key: "payout-history",
+                    endpoint: ADMIN_FINANCIALS_APPROVED_PAYOUTS_ENDPOINT,
+                    initialData: initialApprovedPayouts,
+                    staticParams: {},
+                },
+                {
+                    key: "resale-orders",
+                    endpoint: ADMIN_FINANCIALS_MARKETPLACE_ENDPOINT,
+                    initialData: initialMarketplace,
+                    staticParams: {},
+                },
+                {
+                    key: "featured-payments",
+                    endpoint: ADMIN_FINANCIALS_FEATURED_PAYMENTS_ENDPOINT,
+                    initialData: initialFeaturedPayments,
+                    staticParams: {},
+                },
+                {
+                    key: "subscriptions",
+                    endpoint: ADMIN_FINANCIALS_SUBSCRIPTIONS_ENDPOINT,
+                    initialData: initialSubscriptions,
+                    staticParams: {},
+                },
+            ],
+            activeTab,
+            revalidateTarget: "financials",
+        },
+        filters,
+    )
+
+    const activeTabState = tabStates[activeTab]
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab as FinancialsTab)
+        setFilters({})
+
+        if (tab === "resale-orders" && !resaleCards) {
+            startCardsTransition(async () => {
+                const { cards: rc } = await getAdminResaleCards()
+                setResaleCards(rc)
+            })
+        }
     }
 
-    const [selectedPayouts, setSelectedPayouts] = useState<string[]>([])
+    const handleDatePresetChange = (preset: DatePreset | null) => {
+        setFilters(prev => ({ ...prev, dateRangePreset: preset ?? null }))
+        startCardsTransition(async () => {
+            const { cards: freshCards } = await getAdminFinancialCards(
+                preset ? { date_range: preset } : undefined,
+            )
+            setCards(freshCards)
+        })
+    }
 
-    const analyticsMetrics = buildMetricsFromConfig(financialMetricsConfig, apiData)
+    const handleEventChange = (event: string | null) => {
+        setFilters(prev => ({ ...prev, event }))
+        startCardsTransition(async () => {
+            const { cards: freshCards } = await getAdminFinancialCards(
+                event ? { event_id: event } : undefined,
+            )
+            setCards(freshCards)
+        })
+    }
+
+    const currentFilterOptions =
+        FinancialsTabNFilterOptions.tabFilterOptions[activeTab] ??
+        FinancialsTabNFilterOptions.tabFilterOptions["pending-payout"]
 
     return (
         <main className="pb-12">
-            <div className="flex flex-wrap justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
-                <div className="flex flex-wrap items-center gap-3">
-                    <DateFilter value={metricsDataFilter.date} onChange={(v) => setMetricsDataFilter(prev => ({...prev, date: v}))} />
-                    <CategoryFilter onChange={(v) => setMetricsDataFilter(prev => ({ ...prev, categories: v }))} />
-                    <EventTypeFilter onChange={(v) => setMetricsDataFilter(prev => ({ ...prev, eventType: v }))} />
-                </div>
 
+            {/* ── Header controls ───────────────────────────────── */}
+            <div className="flex flex-wrap justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
+                <div className="flex gap-2 items-center">
+                    <DateRangePresetFilter
+                        value={filters.dateRangePreset ?? null}
+                        onChange={handleDatePresetChange}
+                        icon="solar:calendar-linear"
+                    />
+                    <EventFilter
+                        value={filters.event ?? null}
+                        onChange={handleEventChange}
+                        icon="solar:calendar-linear"
+                    />
+                </div>
                 <ExportButton1 showFormatSelector />
             </div>
 
+            {/* ── KPI Cards ─────────────────────────────────────── */}
             <div className="mb-8">
-                <MetricCardsContainer1 metricsFor="hosts" metrics={analyticsMetrics} />
+                {
+                    isCardsLoading ?
+                        <MetricsContainerLoader />
+                        :
+                        <MetricCardsContainer1
+                            metricsFor="financials"
+                            metrics={kpiMetrics}
+                        />
+                }
             </div>
 
-            <DataDisplayTableWrapper 
+            {/* ── Tabbed table ──────────────────────────────────── */}
+            <DataDisplayTableWrapper
                 filters={filters}
                 setFilters={setFilters}
                 tabs={tabList}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab as Dispatch<SetStateAction<string>>}
-                filterOptions={filterOptions}
-                showSearch={true}
-                searchPlaceholder="Search by Owner or Business Name"
+                onTabChange={handleTabChange}
+                filterOptions={currentFilterOptions as any}
+                showSearch
+                searchPlaceholder="Search payouts, events, subscribers…"
+                currentSearch={activeTabState?.search ?? ""}
+                onSearch={activeTabState?.handleSearch}
+                isLoading={activeTabState?.isLoading}
             >
-                {
-                    activeTab === "pending-payout" ?
-                    <PendingPayoutsTable selectedPayouts={selectedPayouts} setSelectedPayouts={setSelectedPayouts}  />
-                    :
-                    activeTab === "payout-history" ?
-                    <PayoutHistoryTable />
-                    :
-                    activeTab === "resale-orders" ?
-                    (
-                        filters.listingType === 'already-resold' ?
-                        <ResoldTicketsTable />
-                        :
-                        <ListedForSaleTable />
-                    )
-                    :
-                    null
-                }
+                {/* Pending Payouts */}
+                {activeTab === "pending-payout" && (
+                    <AdminPendingPayoutsTable
+                        items={(activeTabState?.items ?? []) as AdminPayout[]}
+                        isLoading={activeTabState?.isLoading ?? false}
+                        isLoadingMore={activeTabState?.isLoadingMore ?? false}
+                        hasNext={activeTabState?.hasNext ?? false}
+                        count={activeTabState?.count ?? 0}
+                        onLoadMore={activeTabState?.loadMore ?? (() => { })}
+                        isEmpty={activeTabState?.isEmpty ?? false}
+                        isError={activeTabState?.isError ?? false}
+                        search={activeTabState?.search ?? ""}
+                        currentPage={activeTabState?.currentPage ?? 1}
+                        totalPages={activeTabState?.totalPages ?? 1}
+                        fetchPage={activeTabState?.fetchPage ?? (() => { })}
+                        onRefresh={activeTabState?.refresh}
+                    />
+                )}
+
+                {/* Payout History */}
+                {activeTab === "payout-history" && (
+                    <AdminPayoutHistoryTable
+                        items={(activeTabState?.items ?? []) as AdminPayout[]}
+                        isLoading={activeTabState?.isLoading ?? false}
+                        isLoadingMore={activeTabState?.isLoadingMore ?? false}
+                        hasNext={activeTabState?.hasNext ?? false}
+                        count={activeTabState?.count ?? 0}
+                        onLoadMore={activeTabState?.loadMore ?? (() => { })}
+                        isEmpty={activeTabState?.isEmpty ?? false}
+                        isError={activeTabState?.isError ?? false}
+                        search={activeTabState?.search ?? ""}
+                        currentPage={activeTabState?.currentPage ?? 1}
+                        totalPages={activeTabState?.totalPages ?? 1}
+                        fetchPage={activeTabState?.fetchPage ?? (() => { })}
+                    />
+                )}
+
+                {/* Resale Orders */}
+                {activeTab === "resale-orders" && (
+                    <AdminMarketplaceTable
+                        items={(activeTabState?.items ?? []) as AdminMarketplaceListing[]}
+                        isLoading={activeTabState?.isLoading ?? false}
+                        isLoadingMore={activeTabState?.isLoadingMore ?? false}
+                        hasNext={activeTabState?.hasNext ?? false}
+                        count={activeTabState?.count ?? 0}
+                        onLoadMore={activeTabState?.loadMore ?? (() => { })}
+                        isEmpty={activeTabState?.isEmpty ?? false}
+                        isError={activeTabState?.isError ?? false}
+                        search={activeTabState?.search ?? ""}
+                        currentPage={activeTabState?.currentPage ?? 1}
+                        totalPages={activeTabState?.totalPages ?? 1}
+                        fetchPage={activeTabState?.fetchPage ?? (() => { })}
+                    />
+                )}
+
+                {/* Featured Payments */}
+                {activeTab === "featured-payments" && (
+                    <AdminFeaturedPaymentsTable
+                        items={(activeTabState?.items ?? []) as AdminFeaturedPayment[]}
+                        isLoading={activeTabState?.isLoading ?? false}
+                        isLoadingMore={activeTabState?.isLoadingMore ?? false}
+                        hasNext={activeTabState?.hasNext ?? false}
+                        count={activeTabState?.count ?? 0}
+                        onLoadMore={activeTabState?.loadMore ?? (() => { })}
+                        isEmpty={activeTabState?.isEmpty ?? false}
+                        isError={activeTabState?.isError ?? false}
+                        search={activeTabState?.search ?? ""}
+                        currentPage={activeTabState?.currentPage ?? 1}
+                        totalPages={activeTabState?.totalPages ?? 1}
+                        fetchPage={activeTabState?.fetchPage ?? (() => { })}
+                    />
+                )}
+
+                {/* Subscriptions */}
+                {activeTab === "subscriptions" && (
+                    <AdminSubscriptionsTable
+                        items={(activeTabState?.items ?? []) as AdminSubscription[]}
+                        isLoading={activeTabState?.isLoading ?? false}
+                        isLoadingMore={activeTabState?.isLoadingMore ?? false}
+                        hasNext={activeTabState?.hasNext ?? false}
+                        count={activeTabState?.count ?? 0}
+                        onLoadMore={activeTabState?.loadMore ?? (() => { })}
+                        isEmpty={activeTabState?.isEmpty ?? false}
+                        isError={activeTabState?.isError ?? false}
+                        search={activeTabState?.search ?? ""}
+                        currentPage={activeTabState?.currentPage ?? 1}
+                        totalPages={activeTabState?.totalPages ?? 1}
+                        fetchPage={activeTabState?.fetchPage ?? (() => { })}
+                    />
+                )}
             </DataDisplayTableWrapper>
         </main>
     )

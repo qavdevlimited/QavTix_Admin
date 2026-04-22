@@ -27,6 +27,7 @@ import { exportData } from "@/helper-fns/exportData"
 import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 type ActiveTab = "users" | "affiliates" | "withdrawals"
 
@@ -180,11 +181,13 @@ export default function UserManagementPageCW({
 
     const kpiError = activeTab === "affiliates" ? affiliateCardsError : userCardsError
 
+    const { user } = useAppSelector(store => store.authUser)
+
     // Flat metric cards for Users + Withdrawals tabs
-    const userMetrics = mapUserCardsToMetrics(userCards)
+    const userMetrics = mapUserCardsToMetrics(userCards, user?.currency!)
 
     // Sparkline cards for Affiliates tab
-    const affiliateSparklineCards = mapAffiliateCardsToSparkline(affiliateCards)
+    const affiliateSparklineCards = mapAffiliateCardsToSparkline(affiliateCards, user?.currency!)
 
     const handleExport = (format: any) => {
         const data = activeState?.items ?? []

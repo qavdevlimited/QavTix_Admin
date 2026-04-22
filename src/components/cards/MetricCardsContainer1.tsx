@@ -5,7 +5,7 @@ import UserProfileMetricCard from "./UserProfileMetricsCard"
 interface MetricsCardsConatinerProps {
     metrics: MetricCardData1[] | UserProfileMetrics[]
     className?: string
-    metricsFor?: "user_profile" | "users" | "hosts" | "events"
+    metricsFor?: "user_profile" | "host_profile" | "users" | "hosts" | "events" | "financials"
 }
 
 export default function MetricCardsContainer1({ metrics, className, metricsFor }: MetricsCardsConatinerProps) {
@@ -16,7 +16,7 @@ export default function MetricCardsContainer1({ metrics, className, metricsFor }
             className
         )}>
             {metrics.map((metric) => (
-                metricsFor === "users" || metricsFor === "hosts" || metricsFor === "events" ?
+                metricsFor === "users" || metricsFor === "hosts" || metricsFor === "events" || metricsFor === "host_profile" || metricsFor === "financials" ?
                     <MetricCard1 key={metric.id} data={metric as MetricCardData1} />
                     :
                     metricsFor === "user_profile" ?

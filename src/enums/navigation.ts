@@ -1,7 +1,7 @@
 interface ILink {
-  readonly href: string;
-  label: string;
-  icon?: string;
+    readonly href: string;
+    label: string;
+    icon?: string;
 }
 
 type AuthLinkKey = 'SIGN_IN' | 'SIGN_UP' | 'FORGOT_PASSWORD' | 'RESET_PASSWORD';
@@ -28,16 +28,16 @@ export const AUTH_LINKS: Record<AuthLinkKey, ILink> = {
 
 
 
-type DashboardLinkKey = 
-  | 'DASHBOARD' 
-  | 'USER_MANAGEMENT' 
-  | 'HOST_MANAGEMENT' 
-  | 'EVENTS_LISTING' 
-  | 'FINANCIALS' 
-  | 'CONTENT_MODERATION' 
-  | 'SYSTEM_CONFIGURATION' 
-  | 'AUDIT_LOGS'
-;
+type DashboardLinkKey =
+    | 'DASHBOARD'
+    | 'USER_MANAGEMENT'
+    | 'HOST_MANAGEMENT'
+    | 'EVENTS_LISTING'
+    | 'FINANCIALS'
+    | 'CONTENT_MODERATION'
+    | 'SYSTEM_CONFIGURATION'
+    | 'AUDIT_LOGS'
+    ;
 
 export const DASHBOARD_NAVIGATION_LINKS: Record<DashboardLinkKey, ILink> = {
     DASHBOARD: {
@@ -91,20 +91,22 @@ export const ADMIN_SETTINGS_SUB_LINKS = [
 ]
 
 
-export const USER_PROFILE : ILink = {
+export const USER_PROFILE: ILink = {
     href: `${DASHBOARD_NAVIGATION_LINKS.USER_MANAGEMENT.href}/profile/[user_id]`,
     label: "",
     icon: ""
 }
 
-export const HOST_PROFILE : ILink = {
+export const HOST_PROFILE: ILink = {
     href: `${DASHBOARD_NAVIGATION_LINKS.HOST_MANAGEMENT.href}/profile/[host_id]`,
     label: "",
     icon: ""
 }
 
-export const EVENT_PROFILE : ILink = {
+export const EVENT_PROFILE: ILink = {
     href: `${DASHBOARD_NAVIGATION_LINKS.EVENTS_LISTING.href}/profile/[event_id]`,
     label: "",
     icon: ""
 }
+
+export const EVENT_DETAILS_LINK = `${process.env.NEXT_PUBLIC_APP_DOMAIN}/events/details/[event_id]/` as const;

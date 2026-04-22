@@ -13,7 +13,7 @@ interface FilterRendererProps {
     categories?: Category[]
     statusOptions?: StatusOption[]
     className?: string
-    label?:  string
+    label?: string
 }
 
 export function FilterRenderer({
@@ -22,6 +22,7 @@ export function FilterRenderer({
     filters,
     categories,
     statusOptions,
+    label,
     setFilters,
     className
 }: FilterRendererProps) {
@@ -45,7 +46,7 @@ export function FilterRenderer({
             statusOptions={statusOptions}
             className={className}
             icon={filter.icon}
-            label={filter.label}
+            label={label || filter.label}
             categories={categories}
         />
     )

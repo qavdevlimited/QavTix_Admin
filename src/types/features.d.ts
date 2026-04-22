@@ -1,6 +1,6 @@
 type ExportFormat = 'csv' | 'xlsx' | 'pdf' | 'json'
 
-type ListingType = 'listed-for-sale' | 'already-resold'
+type ListingType = 'active' | 'sold' | 'cancelled'
 
 interface LocationValue {
     country: string
@@ -20,87 +20,45 @@ interface FilterValues {
     spendRange: PriceRange | null
     amountRange: PriceRange | null
     quantityRange: PriceRange | null
+    listingStatus: ListingType | null
     lastActivity?: DateRange
     purchaseDateRange?: DateRange
     withdrawalDate?: DateRange
     performance: EventPerformance | null
     sort: string | null,
+    packageStatus: string | null,
     sortBy?: string | null,
-    quantityRange: PriceRange | null
     numberOfEvents: number | null,
     location?: LocationValue | null,
     status: StatusOption["value"] | null
     categories: Category["value"][]
     action: ActionOption["value"][]
-    ticketType: string[],
+    ticketType: TicketType[] | null,
     revenue: number | null,
     user: AuthUser | null,
     purchaseDate?: Date | null
     listingType?: ListingType | null
-    dateRangePreset?: "day" | "week" | "month" | null
+    dateRangePreset?: DatePreset | null
     event?: string | null
     userStatus?: string | null
+    host?: string | null
+    ticketStatus?: string[]
+    package?: string | null
+    billingCycle?: string | null
+    auditAction?: string[]
+    timestamp?: Date | null
 }
 
-type RevalidateTarget = "customers" | "customers-profile"
+type RevalidateTarget = "customers" | "customers-profile" | "event-listing" | "financials" | "audit"
 
-
-// Upcoming Events
-
-interface UpcomingEventImage {
-    image_url: string
-    video_url: string
+interface TicketType {
+    id: number
+    ticket_type: string
+    price: string
+    quantity: number
+    sold_count: number
 }
 
-interface UpcomingEventCards {
-    live: number
-    draft: number
-    ended: number
-    sold_out: number
-}
-
-interface UpcomingEvent {
-    id: string
-    status: EventStatus
-    title: string
-    category: string
-    event_image: UpcomingEventImage
-    start_datetime: string
-    event_location: string
-    tickets_sold_percentage: number
-    tickets_total_revenue: number
-    tickets_listed: number
-    tickets_sold: number
-    views_count: number
-    saves_count: number
-}
-
-interface UpcomingEventsData {
-    count: number
-    total_pages: number
-    page: number
-    next: number | null
-    previous: number | null
-    cards: UpcomingEventCards
-    results: UpcomingEvent[]
-}
-
-interface UpcomingEventsParams {
-    page?: number
-    search?: string
-    ordering?: string
-    status?: EventStatus
-    category?: number
-    performance?: EventPerformance
-    start_date?: string
-    end_date?: string
-}
-
-interface GetUpcomingEventsResult {
-    success: boolean
-    data?: UpcomingEventsData
-    message?: string
-}
 
 type DatePreset = 'day' | 'week' | 'month' | 'year'
 type ChartPreset = 'year' | 'week' | 'month'
@@ -127,4 +85,19 @@ type UserAction = {
     variant?: 'default' | 'danger'
     disabled?: boolean
     onClick?: () => void | Promise<void>
+}
+
+type BulkEventActionId =
+    | "bulk-unpublish"
+    | "bulk-send-update"
+    | "bulk-download"
+    | "bulk-cancel"
+    | "bulk-delete"
+    | "bulk-unsuspend"
+
+interface BulkEventAction {
+    id: BulkEventActionId
+    label: string
+    icon: string
+    variant?: "danger"
 }

@@ -16,6 +16,7 @@ import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import DateRangePresetFilter from "../custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
 import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_USER_PURCHASE_HISTORY_ENDPOINT } from "@/endpoints"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 interface UserProfilePageCWProps {
     userId: string
@@ -79,7 +80,8 @@ export default function UserProfilePageCW({
         })
     }
 
-    const metrics = mapUserProfileCards(cards)
+    const { user } = useAppSelector(store => store.authUser)
+    const metrics = mapUserProfileCards(cards, user?.currency!)
 
     return (
         <main className="pb-10">

@@ -20,6 +20,15 @@ export const ADMIN_USER_PURCHASE_HISTORY_ENDPOINT = (userId: string | number) =>
 
 export const DASHBOARD_OVERVIEW_ENDPOINT = "host/dashboard/overview/"
 
+
+export const SINGLE_SMS_ENDPOINT = "host/campaigns/send-single-sms/"
+export const SEND_EMAIL_CAMPAIGNS_ENDPOINT = "host/campaigns/send/"
+export const SINGLE_EMAIL_ENDPOINT = "host/campaigns/send-single/"
+
+
+export const CATEGORIES_ENDPOINT = "public/categories"
+export const EVENT_TICKET_TYPES_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/ticket-types/`
+
 // Host Management
 export const ADMIN_HOSTS_ENDPOINT = 'administrator/admin/hosts/';
 export const ADMIN_HOSTS_CARDS_ENDPOINT = 'administrator/admin/hosts/cards/';
@@ -29,3 +38,36 @@ export const ADMIN_HOST_BADGE_ENDPOINT = (hostID: string | number) => `administr
 export const ADMIN_HOST_APPROVE_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/approve/`;
 export const ADMIN_HOST_DECLINE_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/decline/`;
 export const ADMIN_HOST_PAYOUT_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/force-payout/`;
+export const ADMIN_HOST_AUTOPAYOUT_ENDPOINT = (hostID: string | number) => `administrator/admin/auto-payout/${hostID}/`;
+
+// Host Profile
+export const ADMIN_HOST_PROFILE_ENDPOINT = (hostId: string | number) => `administrator/admin/hosts/${hostId}/profile`;
+export const ADMIN_HOST_CARDS_ENDPOINT = (hostId: string | number) => `administrator/admin/hosts/${hostId}/cards`;
+export const ADMIN_HOST_CHART_ENDPOINT = (hostId: string | number) => `administrator/admin/hosts/${hostId}/chart`;
+export const ADMIN_HOST_EVENTS_ENDPOINT = (hostId: string | number) => `administrator/admin/hosts/${hostId}/events/`;
+export const ADMIN_HOST_EVENT_FEATURE_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/feature/`;
+export const ADMIN_HOST_EVENT_SUSPEND_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/suspend/`;
+export const ADMIN_HOST_EVENT_DELETE_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/delete/`;
+
+// Admin Events Listing
+export const ADMIN_EVENTS_ENDPOINT = 'administrator/admin/events/';
+export const ADMIN_EVENTS_CARDS_ENDPOINT = 'administrator/admin/events/cards';
+export const ADMIN_EVENT_DETAIL_ENDPOINT = (eventId: string) => `public/event/${eventId}/`;
+export const ADMIN_EVENT_ATTENDEES_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/attendees/`;
+
+// Admin Financials
+export const ADMIN_FINANCIALS_CARDS_ENDPOINT = 'administrator/admin/financials/cards/';
+export const ADMIN_FINANCIALS_RESALE_CARDS_ENDPOINT = 'administrator/admin/financials/resale-cards/';
+export const ADMIN_FINANCIALS_PENDING_PAYOUTS_ENDPOINT = 'administrator/admin/financials/payouts/pending/';
+export const ADMIN_FINANCIALS_APPROVED_PAYOUTS_ENDPOINT = 'administrator/admin/financials/payouts/approved/';
+export const ADMIN_FINANCIALS_MARKETPLACE_ENDPOINT = 'administrator/admin/financials/marketplace/';
+export const ADMIN_FINANCIALS_FEATURED_PAYMENTS_ENDPOINT = 'administrator/admin/financials/featured/';
+export const ADMIN_FINANCIALS_SUBSCRIPTIONS_ENDPOINT = 'administrator/admin/financials/subscriptions/';
+
+// Payout mutation endpoints
+export const ADMIN_PAYOUT_APPROVE_ENDPOINT = (payoutId: string) => `administrator/admin/financials/payouts/${payoutId}/approve/`;
+export const ADMIN_PAYOUT_DECLINE_ENDPOINT = (payoutId: string) => `administrator/admin/financials/payouts/${payoutId}/decline/`;
+export const ADMIN_PAYOUT_FORCE_ENDPOINT = (payoutId: string) => `administrator/admin/financials/payout/${payoutId}/force/`;
+
+// Admin Audit Logs
+export const ADMIN_AUDIT_LOGS_ENDPOINT = 'administrator/admin/audit-logs/';
