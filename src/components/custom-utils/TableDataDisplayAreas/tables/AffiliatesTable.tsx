@@ -9,20 +9,22 @@ import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "../empty-state"
 import { v4 as randomUUID } from "uuid"
 import { formatDateTime } from "@/helper-fns/date-utils"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 interface AffiliatesTableProps {
-    items:         AdminAffiliate[]
-    isLoading:     boolean
+    items: AdminAffiliate[]
+    isLoading: boolean
     isLoadingMore: boolean
-    hasNext:       boolean
-    count:         number
-    onLoadMore:    () => void
-    isEmpty:       boolean
-    isError:       boolean
-    search:        string
-    currentPage:   number
-    totalPages:    number
-    fetchPage:     (page: number) => void
+    hasNext: boolean
+    count: number
+    onLoadMore: () => void
+    isEmpty: boolean
+    isError: boolean
+    search: string
+    currentPage: number
+    totalPages: number
+    fetchPage: (page: number) => void
 }
 
 export default function AffiliatesTable({
@@ -38,8 +40,9 @@ export default function AffiliatesTable({
 }: AffiliatesTableProps) {
 
     const isMounted = useIsMounted()
+    const currency = useAppSelector(s => s.authUser.user?.currency)
 
-    if (isLoading) return <TableLoader className="my-0" />
+    if (isLoading) return <TableLoader />
 
     if (isError) {
         return (
@@ -95,8 +98,8 @@ export default function AffiliatesTable({
                                         {isMounted && (
                                             <UserInfo
                                                 user={{
-                                                    id:    affiliate.referral_id,
-                                                    name:  affiliate.affiliate_name,
+                                                    id: affiliate.referral_id,
+                                                    name: affiliate.affiliate_name,
                                                     email: affiliate.affiliate_email,
                                                 }}
                                                 variant="desktop"
@@ -124,15 +127,15 @@ export default function AffiliatesTable({
                                             affiliate.conversion >= 10
                                                 ? "bg-green-50 text-green-700"
                                                 : affiliate.conversion >= 5
-                                                ? "bg-amber-50 text-amber-700"
-                                                : "bg-red-50 text-red-700"
+                                                    ? "bg-amber-50 text-amber-700"
+                                                    : "bg-red-50 text-red-700"
                                         )}>
                                             {affiliate.conversion}%
                                         </span>
                                     </td>
                                     <td className="py-4 px-5">
                                         <p className="text-xs font-semibold text-brand-secondary-9 whitespace-nowrap">
-                                            ₦{Number(affiliate.commission_earned).toLocaleString()}
+                                            {isMounted && formatPrice(Number(affiliate.commission_earned), currency)}
                                         </p>
                                     </td>
                                     <td className="py-4 px-5">
@@ -158,8 +161,8 @@ export default function AffiliatesTable({
                             {isMounted && (
                                 <UserInfo
                                     user={{
-                                        id:    affiliate.referral_id,
-                                        name:  affiliate.affiliate_name,
+                                        id: affiliate.referral_id,
+                                        name: affiliate.affiliate_name,
                                         email: affiliate.affiliate_email,
                                     }}
                                     variant="mobile"
@@ -171,8 +174,8 @@ export default function AffiliatesTable({
                                 affiliate.conversion >= 10
                                     ? "bg-green-50 text-green-700"
                                     : affiliate.conversion >= 5
-                                    ? "bg-amber-50 text-amber-700"
-                                    : "bg-red-50 text-red-700"
+                                        ? "bg-amber-50 text-amber-700"
+                                        : "bg-red-50 text-red-700"
                             )}>
                                 {affiliate.conversion}%
                             </span>
@@ -183,7 +186,7 @@ export default function AffiliatesTable({
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-brand-secondary-9">
                             <span><span className="font-bold">Clicks:</span> {affiliate.clicks.toLocaleString()}</span>
                             <span><span className="font-bold">Signups:</span> {affiliate.signups.toLocaleString()}</span>
-                            <span><span className="font-bold">Commission:</span> ₦{Number(affiliate.commission_earned).toLocaleString()}</span>
+                            <span><span className="font-bold">Commission:</span> {isMounted && formatPrice(Number(affiliate.commission_earned), currency)}</span>
                             <span><span className="font-bold">Last Active:</span> {formatDateTime(affiliate.last_activity)}</span>
                         </div>
                     </div>

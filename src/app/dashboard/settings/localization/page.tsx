@@ -22,7 +22,7 @@ import { space_grotesk } from '@/lib/fonts'
 import { LocalizationSettingsFormData, localizationSettingsSchema } from '@/schemas/settings.schema'
 import { COUNTRIES, CURRENCIES, DATE_TIME_FORMATS, LANGUAGES } from '@/components-data/settings-data-options'
 import SettingsLocalizationTag from '@/components/custom-utils/tags/SettingsLocalizationTag'
-import { getLocalizationSettings, updateLocalizationSettings } from '@/actions/settings'
+import { getLocalizationSettings, updateLocalizationSettings, ResetAllSettings } from '@/actions/settings'
 
 // API sends country names like "Nigeria"; our COUNTRIES uses codes like "NG".
 // These helpers bridge the gap.
@@ -31,13 +31,6 @@ const countryNameToCode = (name: string): string | undefined =>
 
 const countryCodeToName = (code: string): string =>
     COUNTRIES.find(c => c.value === code)?.label ?? code
-
-const FACTORY_DEFAULTS: LocalizationSettingsFormData = {
-    supportedCountries: ['GH', 'NG', 'ZA', 'GB', 'US'],
-    supportedCurrencies: ['GHS', 'NGN', 'ZAR', 'GBP', 'USD'],
-    defaultLanguage: 'en',
-    dateTimeFormat: '24h',
-}
 
 export default function LocalizationPage() {
     const dispatch = useAppDispatch()
@@ -54,7 +47,12 @@ export default function LocalizationPage() {
         formState: { isDirty, isSubmitting },
     } = useForm<LocalizationSettingsFormData>({
         resolver: zodResolver(localizationSettingsSchema),
-        defaultValues: FACTORY_DEFAULTS,
+        defaultValues: {
+            supportedCountries: ['GH', 'NG', 'ZA', 'GB', 'US'],
+            supportedCurrencies: ['GHS', 'NGN', 'ZAR', 'GBP', 'USD'],
+            defaultLanguage: 'en',
+            dateTimeFormat: '24h',
+        },
     })
 
     // Fetch initial data
@@ -80,11 +78,27 @@ export default function LocalizationPage() {
         })
     }, [reset, dispatch])
 
-    // RESET_SETTINGS confirmation
+    // RESET_SETTINGS confirmation — call API and use returned factory defaults
     useEffect(() => {
         if (!isConfirmed || lastConfirmedAction !== 'RESET_SETTINGS') return
         dispatch(resetConfirmationStatus())
-        reset(FACTORY_DEFAULTS, { keepDirty: true })
+        ResetAllSettings().then(res => {
+            if (res.success) {
+                const d = res.data.localization
+                const countryCodes = (d.supported_countries ?? [])
+                    .map(countryNameToCode)
+                    .filter(Boolean) as string[]
+                reset({
+                    supportedCountries: countryCodes,
+                    supportedCurrencies: d.supported_currencies ?? [],
+                    defaultLanguage: d.language,
+                    dateTimeFormat: d.date_time_format,
+                })
+                dispatch(openSuccessModal({ title: 'Settings Reset', description: 'All settings restored to factory defaults.', variant: 'success' }))
+            } else {
+                dispatch(showAlert({ title: 'Reset Failed', description: res.message, variant: 'destructive' }))
+            }
+        })
     }, [isConfirmed, lastConfirmedAction, dispatch, reset])
 
     const onSubmit = async (data: LocalizationSettingsFormData) => {

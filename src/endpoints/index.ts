@@ -3,6 +3,11 @@ export const ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT = 'administrator/admin/da
 export const ADMIN_DASHBOARD_REVENUE_ENDPOINT = 'administrator/admin/dashboard/revenue';
 export const ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT = 'administrator/admin/dashboard/activities';
 
+
+export const REFRESH_TOKEN_ENDPOINT = "auth/token/refresh/"
+export const TOKEN_VERIFY_ENDPOINT = "auth/token/verify/"
+
+
 export const ADMIN_LOGIN_ENDPOINT = 'administrator/admin/login/';
 export const ADMIN_VERIFY_OTP_ENDPOINT = 'administrator/admin/login/verify/';
 export const ADMIN_PROFILE_ENDPOINT = 'administrator/admin/profile/';
@@ -37,7 +42,7 @@ export const ADMIN_HOST_SUSPEND_ENDPOINT = (hostID: string | number) => `adminis
 export const ADMIN_HOST_BADGE_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/gift-badge/`;
 export const ADMIN_HOST_APPROVE_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/approve/`;
 export const ADMIN_HOST_DECLINE_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/decline/`;
-export const ADMIN_HOST_PAYOUT_ENDPOINT = (hostID: string | number) => `administrator/admin/hosts/${hostID}/force-payout/`;
+export const ADMIN_HOST_PAYOUT_ENDPOINT = () => `administrator/admin/financials/payout/force/`;
 export const ADMIN_HOST_AUTOPAYOUT_ENDPOINT = (hostID: string | number) => `administrator/admin/auto-payout/${hostID}/`;
 
 // Host Profile
@@ -73,8 +78,10 @@ export const ADMIN_PAYOUT_FORCE_ENDPOINT = (payoutId: string) => `administrator/
 export const ADMIN_AUDIT_LOGS_ENDPOINT = 'administrator/admin/audit-logs/';
 
 // Admin Config / Settings
-export const ADMIN_CONFIG_GENERAL_ENDPOINT      = 'administrator/admin/config/general/';
-export const ADMIN_CONFIG_FEES_ENDPOINT         = 'administrator/admin/config/fees/';
-export const ADMIN_CONFIG_FRAUD_ENDPOINT        = 'administrator/admin/config/fraud/';
+export const ADMIN_CONFIG_GENERAL_ENDPOINT = 'administrator/admin/config/general/';
+export const ADMIN_CONFIG_POLICIES_ENDPOINT = 'administrator/admin/config/policies/';
+export const ADMIN_CONFIG_RESET_ENDPOINT = 'administrator/admin/config/reset-all/';
+export const ADMIN_CONFIG_FEES_ENDPOINT = 'administrator/admin/config/fees/';
+export const ADMIN_CONFIG_FRAUD_ENDPOINT = 'administrator/admin/config/fraud/';
 export const ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT = 'administrator/admin/config/notifications/';
-export const ADMIN_CONFIG_LOCALIZATION_ENDPOINT  = 'administrator/admin/config/localization/';
+export const ADMIN_CONFIG_LOCALIZATION_ENDPOINT = 'administrator/admin/config/localization/';

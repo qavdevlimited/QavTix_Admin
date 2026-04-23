@@ -26,6 +26,8 @@ import AdminFeaturedPaymentsTable from "@/components/custom-utils/TableDataDispl
 import AdminSubscriptionsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminSubscriptionsTable"
 import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import { EventFilter } from "../custom-utils/TableDataDisplayAreas/filters/EventFilter"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 
 interface FinancialsPageCWProps {
     initialPendingPayouts: TabSlice<AdminPayout>
@@ -57,10 +59,13 @@ export default function FinancialsPageCW({
     const [resaleCards, setResaleCards] = useState<AdminResaleCards | null>(initialResaleCards)
     const [isCardsLoading, startCardsTransition] = useTransition()
 
+    const isMounted = useIsMounted()
+    const currency = useAppSelector(s => s.authUser.user?.currency)
+
     const isResaleTab = activeTab === "resale-orders"
     const kpiMetrics = isResaleTab
-        ? mapAdminResaleCardsToMetrics(resaleCards)
-        : mapAdminFinancialCardsToMetrics(cards)
+        ? mapAdminResaleCardsToMetrics(resaleCards, currency)
+        : mapAdminFinancialCardsToMetrics(cards, currency)
 
     const { tabStates } = useDataDisplay<any>(
         {
@@ -164,7 +169,7 @@ export default function FinancialsPageCW({
             {/* ── KPI Cards ─────────────────────────────────────── */}
             <div className="mb-8">
                 {
-                    isCardsLoading ?
+                    (isCardsLoading || !isMounted) ?
                         <MetricsContainerLoader />
                         :
                         <MetricCardsContainer1

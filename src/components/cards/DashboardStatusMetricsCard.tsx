@@ -14,7 +14,7 @@ export default function DashboardStatusMetricsCard({ config }: DashboardStatusMe
 
     return (
         <div className={cn(
-            "flex flex-wrap items-center gap-3 w-full min-w-40 max-h-24 px-4 py-4 rounded-lg border-[1.5px] transition-all duration-200 hover:shadow-md",
+            "flex flex-wrap items-center gap-3 gap-y-1 w-full min-w-40 max-h-20 px-4 py-3 rounded-lg border-[1.5px] transition-all duration-200 hover:shadow-md",
             styles.container
         )}>
             <h4 className={cn(space_grotesk.className, "font-bold text-xl", styles.label)}>{config.value}</h4>

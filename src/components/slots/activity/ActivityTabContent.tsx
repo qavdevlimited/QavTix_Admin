@@ -12,10 +12,10 @@ interface RecentActivityTabProps {
 }
 
 const FILTER_OPTIONS: { label: string; value: string }[] = [
-    { label: "Sales",        value: "sale"            },
-    { label: "Check-ins",    value: "checkin"         },
-    { label: "Refunds",      value: "refund"          },
-    { label: "Withdrawals",  value: "withdrawal"      },
+    { label: "Sales", value: "sale" },
+    { label: "Check-ins", value: "checkin" },
+    { label: "Refunds", value: "refund" },
+    { label: "Withdrawals", value: "withdrawal" },
 ]
 
 const PREVIEW_COUNT = 4
@@ -70,7 +70,7 @@ export default function RecentActivityTab({ activities }: RecentActivityTabProps
             {filtered.length > PREVIEW_COUNT && (
                 <div className="px-4 pt-1 pb-2">
                     <Link
-                        href="/dashboard/activity"
+                        href="/dashboard/all-activities"
                         className="text-xs flex items-center gap-1 text-brand-primary-6 hover:text-brand-primary-7 font-bold transition-colors"
                     >
                         <span>View All Activity</span>

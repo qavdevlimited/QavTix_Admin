@@ -11,7 +11,7 @@ export const accessCookieOptions = {
     secure: isProd,
     sameSite: 'lax' as const,
     path: '/',
-    maxAge: 60 * 60 * 12,
+    maxAge: 60 * 60 * 10,
     ...(isProd && { domain: '.qavtix.com' }),
 }
 
@@ -20,6 +20,6 @@ export const refreshCookieOptions = {
     secure: isProd,
     sameSite: 'strict' as const,
     path: '/api/auth',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 60 * 60 * 24 * 3,
     ...(isProd && { domain: '.qavtix.com' }),
 }

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DASHBOARD_NAVIGATION_LINKS } from "@/enums/navigation";
+import { DASHBOARD_NAVIGATION_LINKS, ADMIN_SETTINGS_SUB_LINKS } from "@/enums/navigation";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
 import AuthUserDetails from "./AuthUserDetails";
@@ -18,12 +18,12 @@ interface MobileNavMenuProps {
 export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
     const pathName = usePathname()
 
+    const isSettingsActive = pathName?.startsWith(DASHBOARD_NAVIGATION_LINKS.SYSTEM_CONFIGURATION.href)
+
     const isActiveRoute = (route: string) => {
         if (!pathName) return false;
-        if (pathName === "/dashboard") return route === pathName;
-        const routeSegment = route.split('/')[1];
-        const currentSegment = pathName.split('/')[1];
-        return currentSegment?.startsWith(routeSegment) ?? false;
+        if (route === "/dashboard") return pathName === "/dashboard";
+        return pathName === route || pathName.startsWith(`${route}/`)
     }
 
     useEffect(() => {
@@ -55,14 +55,14 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                     <motion.div
                         initial={{ x: "-100%" }}
                         animate={{ x: 0 }}
-                        exit={{ x: "-100%" }} 
+                        exit={{ x: "-100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="fixed left-0 top-0 h-full w-70 bg-brand-accent-1 z-100 shadow-2xl flex flex-col justify-between p-6 overflow-y-auto"
                     >
                         <div>
                             <div className="flex items-center justify-between mb-8">
                                 <Logo width={100} />
-                                <button 
+                                <button
                                     onClick={onClose}
                                     className="p-2 rounded-full bg-brand-accent-3/50 text-brand-secondary-9"
                                 >
@@ -72,31 +72,68 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
 
                             <ul className="flex flex-col gap-3">
                                 {Object.values(DASHBOARD_NAVIGATION_LINKS).map((v) => {
-                                    const isActive = isActiveRoute(v.href);
+                                    const isActive = isActiveRoute(v.href)
+                                    const isSettingsLink = v.href === DASHBOARD_NAVIGATION_LINKS.SYSTEM_CONFIGURATION.href;
+
                                     return (
                                         <li key={v.href}>
                                             <Link
-                                                href={v.href}
+                                                href={isSettingsLink ? ADMIN_SETTINGS_SUB_LINKS[0].href : v.href}
                                                 onClick={onClose}
                                                 className={cn(
                                                     "relative flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 text-[13px]",
-                                                    isActive 
-                                                        ? "bg-brand-accent-4 text-white font-bold" 
+                                                    isActive
+                                                        ? "bg-brand-accent-4 text-white font-bold"
                                                         : "text-brand-secondary-9 hover:bg-brand-accent-3/50"
                                                 )}
                                             >
                                                 <Icon icon={v.icon || ""} className="size-5" />
                                                 <span>{v.label}</span>
-                                                
-                                                {isActive && (
-                                                    <Icon 
-                                                        icon="basil:caret-right-outline" 
-                                                        className="absolute right-3 size-5" 
-                                                    />
-                                                )}
+
+                                                <Icon
+                                                    icon="basil:caret-right-outline"
+                                                    className={cn(
+                                                        "absolute right-3 size-5 transition-transform duration-300",
+                                                        (isSettingsLink && isSettingsActive) && "rotate-90",
+                                                        (!isSettingsLink && !isActive) && "hidden"
+                                                    )}
+                                                />
                                             </Link>
+
+                                            {/* Sub-links Rendering for System Configuration */}
+                                            {isSettingsLink && (
+                                                <div className={cn(
+                                                    "grid transition-all duration-300 ease-in-out overflow-hidden",
+                                                    isSettingsActive ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"
+                                                )}>
+                                                    <ul className="relative ml-3 flex flex-col min-h-0">
+                                                        <div className="absolute left-0 top-0 h-[88%] my-auto bottom-0 w-px bg-brand-neutral-5" />
+
+                                                        {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
+                                                            const isSubActive = pathName === sub.href;
+                                                            return (
+                                                                <li key={sub.href} className="relative flex items-center">
+                                                                    <div className="absolute -left-[3.5px] z-10 size-2 rounded-full border border-brand-secondary-3/50 bg-brand-secondary-2" />
+                                                                    <Link
+                                                                        href={sub.href}
+                                                                        onClick={onClose}
+                                                                        className={cn(
+                                                                            "flex-1 py-3 ml-3 pl-3 text-[13px] transition-colors",
+                                                                            isSubActive
+                                                                                ? "text-brand-accent-4 bg-brand-accent-3/30 font-semibold rounded-md"
+                                                                                : "text-brand-secondary-7 hover:text-brand-accent-4"
+                                                                        )}
+                                                                    >
+                                                                        {sub.label}
+                                                                    </Link>
+                                                                </li>
+                                                            )
+                                                        })}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </li>
-                                    );
+                                    )
                                 })}
                             </ul>
                         </div>

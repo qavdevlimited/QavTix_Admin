@@ -22,7 +22,7 @@ export default function SettingsFormActions({
     resetLabel = "Reset to Last Saved"
 }: SettingsFormActionsProps) {
     return (
-        <div className="flex items-center gap-4 mt-8">
+        <div className="flex flex-wrap items-center gap-4 mt-4">
             <ActionButton1
                 buttonText={saveLabel}
                 action={onSave}
@@ -30,12 +30,14 @@ export default function SettingsFormActions({
                 isDisabled={isDisabled}
                 icon="ph:arrow-right"
                 iconPosition="right"
+                className="text-xs! md:text-sm! min-w-32 px-5! w-fit"
             />
 
             <ActionButton2
                 buttonText={resetLabel}
                 action={onReset}
                 isDisabled={isDisabled || isSaving}
+                className="h-14 text-xs! md:text-sm! min-w-32 px-5! w-fit"
             />
         </div>
     )

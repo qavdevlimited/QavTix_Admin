@@ -56,7 +56,7 @@ export default function ConfirmationModal() {
                 <ActionButton1
                     buttonText={isPerforming ? "Processing..." : (confirmText || "Yes, I am")}
                     action={handleConfirm}
-                    className="w-full text-sm!"
+                    className="w-full text-xs! md:text-sm!"
                     disabled={isPerforming}
                     isLoading={isPerforming}
                 />

@@ -15,14 +15,7 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { NotificationsSettingsFormData, notificationsSettingsSchema } from '@/schemas/settings.schema'
 import { NOTIFICATION_TYPES } from '@/components-data/settings-data-options'
-import { getNotificationSettings, updateNotificationSettings } from '@/actions/settings'
-
-const FACTORY_DEFAULTS: NotificationsSettingsFormData = {
-    emailNotificationsEnabled: true,
-    emailNotifications: { adminAlerts: true, fraudAlerts: false, highVolumeSales: false, failedPayouts: false },
-    smsNotificationsEnabled: false,
-    smsNotifications: { adminAlerts: false, fraudAlerts: false, highVolumeSales: false, failedPayouts: false },
-}
+import { getNotificationSettings, updateNotificationSettings, ResetAllSettings } from '@/actions/settings'
 
 export default function NotificationsPage() {
     const dispatch = useAppDispatch()
@@ -37,7 +30,12 @@ export default function NotificationsPage() {
         formState: { isDirty, isSubmitting },
     } = useForm<NotificationsSettingsFormData>({
         resolver: zodResolver(notificationsSettingsSchema),
-        defaultValues: FACTORY_DEFAULTS,
+        defaultValues: {
+            emailNotificationsEnabled: true,
+            emailNotifications: { adminAlerts: true, fraudAlerts: false, highVolumeSales: false, failedPayouts: false },
+            smsNotificationsEnabled: false,
+            smsNotifications: { adminAlerts: false, fraudAlerts: false, highVolumeSales: false, failedPayouts: false },
+        },
     })
 
     // Fetch initial data
@@ -71,11 +69,36 @@ export default function NotificationsPage() {
         })
     }, [reset, dispatch])
 
-    // RESET_SETTINGS confirmation
+    // RESET_SETTINGS confirmation — call API and use returned factory defaults
     useEffect(() => {
         if (!isConfirmed || lastConfirmedAction !== 'RESET_SETTINGS') return
         dispatch(resetConfirmationStatus())
-        reset(FACTORY_DEFAULTS, { keepDirty: true })
+        ResetAllSettings().then(res => {
+            if (res.success) {
+                const d = res.data.notifications
+                const emailOn = Object.values(d.email_notifications).some(Boolean)
+                const smsOn = Object.values(d.sms_notifications).some(Boolean)
+                reset({
+                    emailNotificationsEnabled: emailOn,
+                    emailNotifications: {
+                        adminAlerts: d.email_notifications.admin_alerts,
+                        fraudAlerts: d.email_notifications.fraud_alerts,
+                        highVolumeSales: d.email_notifications.high_volume_sales,
+                        failedPayouts: d.email_notifications.failed_payouts,
+                    },
+                    smsNotificationsEnabled: smsOn,
+                    smsNotifications: {
+                        adminAlerts: d.sms_notifications.admin_alerts,
+                        fraudAlerts: d.sms_notifications.fraud_alerts,
+                        highVolumeSales: d.sms_notifications.high_volume_sales,
+                        failedPayouts: d.sms_notifications.failed_payouts,
+                    },
+                })
+                dispatch(openSuccessModal({ title: 'Settings Reset', description: 'All settings restored to factory defaults.', variant: 'success' }))
+            } else {
+                dispatch(showAlert({ title: 'Reset Failed', description: res.message, variant: 'destructive' }))
+            }
+        })
     }, [isConfirmed, lastConfirmedAction, dispatch, reset])
 
     const onSubmit = async (data: NotificationsSettingsFormData) => {

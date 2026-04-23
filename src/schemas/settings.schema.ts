@@ -5,6 +5,9 @@ export const generalSettingsSchema = z.object({
     platformSupportEmail: z.string().email('Enter a valid email'),
     defaultCurrencyCode: z.string().min(1),
     defaultTimezone: z.string().min(1),
+    // User & Seller Policies
+    sellerVerificationRequired: z.boolean(),
+    autoApproveListing: z.boolean(),
 })
 export type GeneralSettingsForm = z.infer<typeof generalSettingsSchema>
 
@@ -13,9 +16,21 @@ export const feesCommissionsSchema = z.object({
     ticketResellCommission: z.number().min(0).max(100),
     sellerServiceFee: z.number().min(0).max(100),
     buyerServiceFee: z.number().min(0).max(100),
+    vatPercentage: z.number().min(0).max(100).optional().or(z.literal('')),
     vatEnabled: z.boolean(),
     pricesIncludeVat: z.boolean(),
+}).superRefine((data, ctx) => {
+    if (data.vatEnabled) {
+        if (data.vatPercentage === undefined || data.vatPercentage === '' || data.vatPercentage <= 0) {
+            ctx.addIssue({
+                code: "custom",
+                message: "VAT percentage is required when VAT is enabled",
+                path: ["vatPercentage"],
+            })
+        }
+    }
 })
+
 export type FeesCommissionsForm = z.infer<typeof feesCommissionsSchema>
 
 // Security / Fraud

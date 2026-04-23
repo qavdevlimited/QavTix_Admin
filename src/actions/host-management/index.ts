@@ -21,6 +21,14 @@ import {
 import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { handleApiError } from "@/helper-fns/handleApiErrors"
+import { CACHE_TAGS } from "@/cache-tags"
+import { revalidateTag } from "next/cache"
+import { cookies } from "next/headers"
+
+async function getToken(): Promise<string | undefined> {
+    const cookieStore = await cookies()
+    return cookieStore.get("admin_access_token")?.value
+}
 
 
 function logError(context: string, error: unknown) {
@@ -66,13 +74,13 @@ async function fetchCards<T>(endpoint: string, params?: Record<string, any>): Pr
     }
 }
 
-async function postAction(endpoint: string): Promise<{ success: boolean; message?: string }> {
+async function postAction(endpoint: string, body?: Record<string, any>): Promise<{ success: boolean; message?: string }> {
     try {
         const axios = await getServerAxios()
-        await axios.post(endpoint)
+        await axios.post(endpoint, body)
         return { success: true }
     } catch (error) {
-        logError(`postAction(${endpoint})`, error)
+        logError(`postAction(${endpoint},${JSON.stringify(body)})`, error)
         const errorData = (error as any)?.response?.data
         return { success: false, message: handleApiError(errorData) }
     }
@@ -104,20 +112,54 @@ async function putAction(endpoint: string, body: Record<string, any>): Promise<{
 
 
 export async function getAdminHosts(): Promise<TabSlice<AdminHost>> {
-    return fetchPage<AdminHost>(ADMIN_HOSTS_ENDPOINT)
+    try {
+        const token = await getToken()
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOSTS_ENDPOINT}?page=1`
+        const res = await fetch(url, {
+            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            next: { tags: [CACHE_TAGS.ADMIN_HOSTS], revalidate: 120 },
+        })
+        if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
+        const json = await res.json()
+        const d = json?.data ?? json
+        return { results: d?.results ?? [], count: d?.count ?? 0, next: d?.next ?? null, previous: d?.previous ?? null, total_pages: d?.total_pages ?? 1 }
+    } catch { return { results: [], count: 0, next: null, previous: null, total_pages: 1 } }
 }
 
 export async function getAdminHostCards(params?: Record<string, any>): Promise<{ cards: AdminHostCards | null }> {
-    const cards = await fetchCards<AdminHostCards>(ADMIN_HOSTS_CARDS_ENDPOINT, params)
-    return { cards }
+    try {
+        const token = await getToken()
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOSTS_CARDS_ENDPOINT}`)
+        if (params) Object.entries(params).forEach(([k, v]) => { if (v != null) url.searchParams.set(k, String(v)) })
+        const res = await fetch(url.toString(), {
+            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            next: { tags: [CACHE_TAGS.ADMIN_HOST_CARDS], revalidate: 120 },
+        })
+        if (!res.ok) return { cards: null }
+        const json = await res.json()
+        return { cards: (json?.data ?? null) as AdminHostCards | null }
+    } catch { return { cards: null } }
 }
 
 export async function getAdminPendingHosts(): Promise<TabSlice<AdminPendingHost>> {
-    return fetchPage<AdminPendingHost>(ADMIN_HOST_VERIFICATIONS_ENDPOINT)
+    try {
+        const token = await getToken()
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOST_VERIFICATIONS_ENDPOINT}?page=1`
+        const res = await fetch(url, {
+            headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            next: { tags: [CACHE_TAGS.ADMIN_PENDING_HOSTS], revalidate: 60 },
+        })
+        if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
+        const json = await res.json()
+        const d = json?.data ?? json
+        return { results: d?.results ?? [], count: d?.count ?? 0, next: d?.next ?? null, previous: d?.previous ?? null, total_pages: d?.total_pages ?? 1 }
+    } catch { return { results: [], count: 0, next: null, previous: null, total_pages: 1 } }
 }
 
 export async function toggleHostSuspension(hostId: string | number): Promise<{ success: boolean; message?: string }> {
-    return postAction(ADMIN_HOST_SUSPEND_ENDPOINT(hostId))
+    const result = await postAction(ADMIN_HOST_SUSPEND_ENDPOINT(hostId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_HOSTS, 'max')
+    return result
 }
 
 export async function giftHostBadge(hostId: string | number): Promise<{ success: boolean; message?: string }> {
@@ -125,7 +167,9 @@ export async function giftHostBadge(hostId: string | number): Promise<{ success:
 }
 
 export async function forceHostPayout(hostId: string | number): Promise<{ success: boolean; message?: string }> {
-    return postAction(ADMIN_HOST_PAYOUT_ENDPOINT(hostId))
+    const result = await postAction(ADMIN_HOST_PAYOUT_ENDPOINT(), { host_id: hostId })
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_HOST_CARDS, 'max')
+    return result
 }
 
 export async function toggleHostAutoPayout(hostId: string | number, is_enabled: boolean): Promise<{ success: boolean; message?: string }> {
@@ -133,11 +177,15 @@ export async function toggleHostAutoPayout(hostId: string | number, is_enabled: 
 }
 
 export async function approveHostVerification(hostId: string | number): Promise<{ success: boolean; message?: string }> {
-    return postAction(ADMIN_HOST_APPROVE_ENDPOINT(hostId))
+    const result = await postAction(ADMIN_HOST_APPROVE_ENDPOINT(hostId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_PENDING_HOSTS, 'max')
+    return result
 }
 
 export async function declineHostVerification(hostId: string | number): Promise<{ success: boolean; message?: string }> {
-    return postAction(ADMIN_HOST_DECLINE_ENDPOINT(hostId))
+    const result = await postAction(ADMIN_HOST_DECLINE_ENDPOINT(hostId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_PENDING_HOSTS, 'max')
+    return result
 }
 
 

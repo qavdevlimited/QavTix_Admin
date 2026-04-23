@@ -34,7 +34,6 @@ type DashboardLinkKey =
     | 'HOST_MANAGEMENT'
     | 'EVENTS_LISTING'
     | 'FINANCIALS'
-    | 'CONTENT_MODERATION'
     | 'SYSTEM_CONFIGURATION'
     | 'AUDIT_LOGS'
     ;
@@ -69,11 +68,6 @@ export const DASHBOARD_NAVIGATION_LINKS: Record<DashboardLinkKey, ILink> = {
         href: "/dashboard/audit",
         icon: "hugeicons:add-to-list",
         label: "Audit Logs & Activity",
-    },
-    CONTENT_MODERATION: {
-        href: "/dashboard/moderation",
-        icon: "hugeicons:security-validation",
-        label: "Content Moderation",
     },
     SYSTEM_CONFIGURATION: {
         href: "/dashboard/settings",
@@ -110,3 +104,4 @@ export const EVENT_PROFILE: ILink = {
 }
 
 export const EVENT_DETAILS_LINK = `${process.env.NEXT_PUBLIC_APP_DOMAIN}/events/details/[event_id]/` as const;
+export const FAQ_PAGE = `${process.env.NEXT_PUBLIC_APP_DOMAIN}/faq/` as const;

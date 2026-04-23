@@ -8,10 +8,7 @@ import ActionButton1 from "@/components/custom-utils/buttons/ActionBtn1"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-    Tooltip,
-    TooltipContent,
     TooltipProvider,
-    TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Switch } from "@/components/ui/switch"
 import { useEffect, useState } from "react"
@@ -76,9 +73,14 @@ export function HostProfileCard({
         )
     }
 
+    const [isAutoPayoutLoading, setIsAutoPayoutLoading] = useState(false)
+
     const handleToggleAutoPayout = async (enabled: boolean) => {
         setAutoPayout(enabled)
+        setIsAutoPayoutLoading(true)
         const result = await toggleHostAutoPayout(profile.host_id, enabled)
+        setIsAutoPayoutLoading(false)
+
         if (result.success) {
             dispatch(showAlert({
                 title: "Setting Updated",
@@ -91,8 +93,7 @@ export function HostProfileCard({
                 description: result.message || "Failed to update auto-payout setting.",
                 variant: "destructive",
             }))
-
-            setAutoPayout(enabled)
+            setAutoPayout(!enabled)
         }
     }
 
@@ -314,29 +315,20 @@ export function HostProfileCard({
                     </div>
 
                     {/* Auto Payout */}
-                    <div>
-                        <div className="flex items-center gap-1 mb-2">
-                            <p className="text-[12px] font-bold text-gray-900">Auto Payout</p>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button className="text-amber-400 hover:text-amber-500 transition-colors">
-                                        <Icon icon="mdi:information-outline" className="size-3.5" />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent
-                                    side="top"
-                                    className="max-w-[200px] text-xs text-center"
-                                >
-                                    Automatically process a seller&apos;s payout as soon as they request it, without manual approval.
-                                </TooltipContent>
-                            </Tooltip>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-gray-500">Allow auto payout</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-gray-500">Allow auto payout</span>
+
+                        <div className="relative w-10 h-6 flex justify-center items-center">
+                            {isAutoPayoutLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center z-10">
+                                    <Icon icon="eos-icons:three-dots-loading" className="size-10 text-brand-primary-6" />
+                                </div>
+                            )}
                             <Switch
                                 checked={autoPayout}
+                                disabled={isAutoPayoutLoading}
                                 onCheckedChange={handleToggleAutoPayout}
-                                className="data-[state=checked]:bg-blue-600"
+                                className={`data-[state=checked]:bg-blue-600 transition-opacity ${isAutoPayoutLoading ? "opacity-0" : "opacity-100"}`}
                             />
                         </div>
                     </div>

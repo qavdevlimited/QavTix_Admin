@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import SettingsFormActions from '@/components/custom-utils/buttons/SettingsFormActionBtn'
 import { openConfirmation, resetConfirmationStatus } from '@/lib/redux/slices/confirmationSlice'
 import { openSuccessModal } from '@/lib/redux/slices/successModalSlice'
@@ -15,15 +15,8 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import CustomPercentageInput from '@/components/custom-utils/inputs/CustomPercentageInput'
 import { FeesCommissionsForm, feesCommissionsSchema } from '@/schemas/settings.schema'
-import { getFeesSettings, updateFeesSettings } from '@/actions/settings'
-
-const FACTORY_DEFAULTS: FeesCommissionsForm = {
-    ticketResellCommission: 20,
-    sellerServiceFee: 5,
-    buyerServiceFee: 5,
-    vatEnabled: false,
-    pricesIncludeVat: false,
-}
+import { getFeesSettings, updateFeesSettings, ResetAllSettings } from '@/actions/settings'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function FeesCommissionsPage() {
     const dispatch = useAppDispatch()
@@ -32,10 +25,19 @@ export default function FeesCommissionsPage() {
 
     const form = useForm<FeesCommissionsForm>({
         resolver: zodResolver(feesCommissionsSchema),
-        defaultValues: FACTORY_DEFAULTS,
+        defaultValues: {
+            ticketResellCommission: 20,
+            sellerServiceFee: 5,
+            buyerServiceFee: 5,
+            vatPercentage: 0,
+            vatEnabled: false,
+            pricesIncludeVat: false
+        },
     })
 
     const { formState: { isDirty, isSubmitting }, reset, handleSubmit, watch } = form
+
+    const vatEnabled = watch('vatEnabled')
 
     // Fetch initial data
     useEffect(() => {
@@ -45,6 +47,7 @@ export default function FeesCommissionsPage() {
                     ticketResellCommission: res.data.ticket_resell_commission,
                     sellerServiceFee: res.data.seller_service_fee,
                     buyerServiceFee: res.data.buyer_service_fee,
+                    vatPercentage: res.data.vat_percentage ?? 0,
                     vatEnabled: res.data.vat_enabled,
                     pricesIncludeVat: res.data.prices_include_vat,
                 })
@@ -55,11 +58,25 @@ export default function FeesCommissionsPage() {
         })
     }, [reset, dispatch])
 
-    // RESET_SETTINGS confirmation
     useEffect(() => {
         if (!isConfirmed || lastConfirmedAction !== 'RESET_SETTINGS') return
         dispatch(resetConfirmationStatus())
-        reset(FACTORY_DEFAULTS, { keepDirty: true })
+        ResetAllSettings().then(res => {
+            if (res.success) {
+                const f = res.data.fees
+                reset({
+                    ticketResellCommission: f.ticket_resell_commission,
+                    sellerServiceFee: f.seller_service_fee,
+                    buyerServiceFee: f.buyer_service_fee,
+                    vatPercentage: f.vat_percentage ?? 0,
+                    vatEnabled: f.vat_enabled,
+                    pricesIncludeVat: f.prices_include_vat,
+                })
+                dispatch(openSuccessModal({ title: 'Settings Reset', description: 'All settings restored to factory defaults.', variant: 'success' }))
+            } else {
+                dispatch(showAlert({ title: 'Reset Failed', description: res.message, variant: 'destructive' }))
+            }
+        })
     }, [isConfirmed, lastConfirmedAction, dispatch, reset])
 
     const onSubmit = async (data: FeesCommissionsForm) => {
@@ -67,6 +84,7 @@ export default function FeesCommissionsPage() {
             ticket_resell_commission: data.ticketResellCommission,
             seller_service_fee: data.sellerServiceFee,
             buyer_service_fee: data.buyerServiceFee,
+            vat_percentage: data.vatPercentage as number,
             vat_enabled: data.vatEnabled,
             prices_include_vat: data.pricesIncludeVat,
         })
@@ -78,24 +96,16 @@ export default function FeesCommissionsPage() {
         }
     }
 
-    const handleReset = () => reset()
-
-    const handleResetSystem = () => {
-        dispatch(openConfirmation({
-            actionType: 'RESET_SETTINGS',
-            title: 'Reset Fee Settings',
-            description: 'This will restore all fee & commission settings to factory defaults. Continue?',
-            confirmText: 'Yes, Reset',
-        }))
-    }
-
-    const vatEnabled = watch('vatEnabled')
-
     return (
         <div className="max-w-5xl pb-20">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mt-4 mb-8">
                 <h2 className={cn(space_grotesk.className, 'text-brand-secondary-8 font-bold text-lg')}>Fees & Commissions</h2>
-                <button type="button" onClick={handleResetSystem}
+                <button type="button" onClick={() => dispatch(openConfirmation({
+                    actionType: 'RESET_SETTINGS',
+                    title: 'Reset Fee Settings',
+                    description: 'This will restore all fee & commission settings to factory defaults. Continue?',
+                    confirmText: 'Yes, Reset',
+                }))}
                     className="text-sm font-semibold bg-brand-primary-1 p-3 rounded-md text-brand-primary-6 hover:text-brand-primary-7 transition-colors">
                     Reset System
                 </button>
@@ -103,7 +113,6 @@ export default function FeesCommissionsPage() {
 
             <Form {...form}>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    {/* Fee inputs */}
                     <div className="space-y-6 mb-10 max-w-52">
                         <FormField control={form.control} name="ticketResellCommission"
                             render={({ field }) => (
@@ -147,9 +156,42 @@ export default function FeesCommissionsPage() {
                                 </FormItem>
                             )}
                         />
+
+                        {/* Conditionally Rendered VAT Percentage Input */}
+                        <AnimatePresence>
+                            {vatEnabled && (
+                                <motion.div
+                                    key='vat-percentage'
+                                    initial={{ opacity: 0, height: 0, y: 20 }}
+                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                    exit={{ opacity: 0, height: 0, scale: 0.95, transition: { duration: 0.3 } }}
+                                    layout
+                                    className="overflow-hidden"
+                                >
+                                    <FormField
+                                        control={form.control}
+                                        name="vatPercentage"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <CustomPercentageInput
+                                                    id="vat-percentage"
+                                                    label="VAT Percentage"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.1"
+                                                    disabled={isLoading}
+                                                    value={field.value}
+                                                    onChange={(v) => field.onChange(parseFloat(v) || 0)}
+                                                />
+                                                <FormMessage className="text-xs" />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    {/* Tax/VAT section */}
                     <div className="space-y-6 mb-28">
                         <div>
                             <h2 className="text-base font-bold text-brand-secondary-9 mb-1">Tax / VAT</h2>
@@ -158,7 +200,6 @@ export default function FeesCommissionsPage() {
 
                         <hr className="block border border-dashed border-brand-secondary-2" />
 
-                        {/* VAT enabled toggle */}
                         <FormField control={form.control} name="vatEnabled"
                             render={({ field }) => (
                                 <FormItem>
@@ -174,7 +215,6 @@ export default function FeesCommissionsPage() {
                             )}
                         />
 
-                        {/* Prices include VAT — only relevant when VAT is on */}
                         <FormField control={form.control} name="pricesIncludeVat"
                             render={({ field }) => (
                                 <FormItem>
@@ -195,7 +235,7 @@ export default function FeesCommissionsPage() {
 
                     <SettingsFormActions
                         onSave={() => handleSubmit(onSubmit)()}
-                        onReset={handleReset}
+                        onReset={() => reset()}
                         isSaving={isSubmitting}
                         isDisabled={!isDirty || isLoading}
                     />

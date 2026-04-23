@@ -8,6 +8,7 @@ import { AnimatedDialog } from '../custom-utils/dialogs/AnimatedDialog';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@iconify/react';
 import { successModalVariantConfig } from './resources/success-modal-variant';
+import Image from 'next/image';
 
 
 export default function SuccessModal() {
@@ -43,14 +44,28 @@ export default function SuccessModal() {
     }, [pathName])
 
     return (
-        <AnimatedDialog 
-            open={isOpen} 
+        <AnimatedDialog
+            open={isOpen}
             showCloseButton={false}
             className='md:max-w-sm py-2'
         >
-            <div className="flex flex-col items-center text-center">
-                <div className='text-[85px] mb-1'>
-                    {config.icon}
+            <div className="flex h-[12em] justify-center flex-col items-center text-center">
+                <div className='mb-1'>
+                    {config.type === "image" ? (
+                        <div className="relative size-17">
+                            <Image
+                                src={config.icon}
+                                alt="Status Illustration"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+                    ) : (
+                        <div className='text-[85px] leading-none'>
+                            {config.icon}
+                        </div>
+                    )}
                 </div>
 
                 {/* Content */}

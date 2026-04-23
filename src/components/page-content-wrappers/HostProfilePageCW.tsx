@@ -103,7 +103,6 @@ export default function HostProfilePageCW({
             actionType: "FORCE_PAYOUT",
             title: "Force Payout",
             description: `Are you sure you want to force a payout for ${initialProfile?.business_name}?`,
-            confirmText: "Yes, Force Payout",
         }))
     }
 

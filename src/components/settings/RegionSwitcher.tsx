@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useUserSettings } from "@/custom-hooks/useUserSettings";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { CircleFlag } from 'react-circle-flags'
 
@@ -17,16 +18,18 @@ import { CircleFlag } from 'react-circle-flags'
 export default function RegionSwitcher({ className }: { className?: string }) {
 
     const { region, isPending, updateRegion } = useUserSettings()
-    
+
+    const { user } = useAppSelector(store => store.authUser)
+
     const handleRegionChange = (v: string) => {
         const regionObj = regions.find(r => r.code === v)
         regionObj && updateRegion(regionObj)
     }
 
     return (
-        <Select value={region.code} onValueChange={handleRegionChange}>
+        <Select value={user?.currency} onValueChange={handleRegionChange}>
             <SelectTrigger
-                disabled={isPending}
+                disabled={true}
                 className={cn(
                     className,
                     "disabled:opacity-65 text-xs disabled:cursor-not-allowed w-27 px-2 bg-brand-primary-1 rounded-lg border-brand-primary-6 hover:border-[1.4px] focus:border-brand-primary-6"

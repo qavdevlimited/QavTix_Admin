@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { SecuritySettingsFormData, securitySettingsSchema } from '@/schemas/settings.schema'
 import { FRAUD_SENSITIVITY_OPTIONS } from '@/components-data/settings-data-options'
-import { getFraudSettings, updateFraudSettings } from '@/actions/settings'
+import { getFraudSettings, updateFraudSettings, ResetAllSettings } from '@/actions/settings'
 
 export default function SecurityAbusePage() {
     const dispatch = useAppDispatch()
@@ -44,11 +44,18 @@ export default function SecurityAbusePage() {
         })
     }, [reset, dispatch])
 
-    // RESET_SETTINGS confirmation
+    // RESET_SETTINGS confirmation — call API and use returned factory defaults
     useEffect(() => {
         if (!isConfirmed || lastConfirmedAction !== 'RESET_SETTINGS') return
         dispatch(resetConfirmationStatus())
-        reset({ fraudDetectionSensitivity: 'medium' }, { keepDirty: true })
+        ResetAllSettings().then(res => {
+            if (res.success) {
+                reset({ fraudDetectionSensitivity: res.data.fraud.fraud_sensitivity })
+                dispatch(openSuccessModal({ title: 'Settings Reset', description: 'All settings restored to factory defaults.', variant: 'success' }))
+            } else {
+                dispatch(showAlert({ title: 'Reset Failed', description: res.message, variant: 'destructive' }))
+            }
+        })
     }, [isConfirmed, lastConfirmedAction, dispatch, reset])
 
     const onSubmit = async (data: SecuritySettingsFormData) => {
@@ -75,18 +82,18 @@ export default function SecurityAbusePage() {
     const fraudSensitivity = watch('fraudDetectionSensitivity')
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl mt-4 pb-20">
-            <div className="flex items-center justify-between mb-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-5xl mt-4 pb-16">
+            <div className="flex gap-4 items-center justify-between mb-10">
                 <h2 className={cn(space_grotesk.className, 'text-brand-secondary-8 font-bold text-lg')}>
                     Security & Abuse Prevention
                 </h2>
                 <button type="button" onClick={handleResetSystem}
-                    className="text-sm font-semibold bg-brand-primary-1 p-3 rounded-md text-brand-primary-6 hover:text-brand-primary-7 transition-colors">
+                    className="text-sm whitespace-nowrap font-semibold bg-brand-primary-1 p-3 rounded-md text-brand-primary-6 hover:text-brand-primary-7 transition-colors">
                     Reset System
                 </button>
             </div>
 
-            <div className="space-y-6 mb-28">
+            <div className="space-y-6 mb-20">
                 <div>
                     <h3 className="text-base font-bold text-brand-secondary-8 mb-1">Fraud Detection Sensitivity</h3>
                     <p className="text-sm text-brand-secondary-9">Adjust how sensitive the system is to potential fraud.</p>

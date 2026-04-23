@@ -1,3 +1,5 @@
+import { formatPrice } from './formatPrice'
+
 export function buildMetricsFromConfig(
     config: Record<string, any>,
     apiData: Record<string, any>,
@@ -15,9 +17,9 @@ export function buildMetricsFromConfig(
     })
 }
 
-export function formatStatValue(value: number, type: "currency" | "number" | "percent"): string {
+export function formatStatValue(value: number, type: "currency" | "number" | "percent", currency?: string): string {
     if (value == null) return "0";
-    if (type === "currency") return `₦${value.toLocaleString()}`;
+    if (type === "currency") return formatPrice(value, currency, true, true);
     if (type === "percent") return `${value}%`;
     return value.toLocaleString();
 }

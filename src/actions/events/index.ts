@@ -8,7 +8,18 @@ import {
 } from "@/endpoints"
 import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
+import { CACHE_TAGS } from "@/cache-tags"
+import { cookies } from "next/headers"
 
+
+// ─── Auth helper ──────────────────────────────────────────────────────────────
+
+async function getToken(): Promise<string | undefined> {
+    const cookieStore = await cookies()
+    return cookieStore.get("admin_access_token")?.value
+}
+
+// ─── Internal axios helpers (for non-cached / param-driven calls) ─────────────
 
 async function fetchPage<T>(
     endpoint: string,
@@ -32,35 +43,62 @@ async function fetchPage<T>(
     }
 }
 
-async function fetchCards<T>(
-    endpoint: string,
-    params?: Record<string, any>,
-): Promise<T | null> {
+// ─── Cached event list (page 1, no filters) ───────────────────────────────────
+
+export async function getAdminEvents(status?: string): Promise<TabSlice<AdminEvent>> {
     try {
-        const axios = await getServerAxios()
-        const { data } = await axios.get(`/${endpoint}`, { params })
-        return (data?.data ?? null) as T | null
+        const token = await getToken()
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENTS_ENDPOINT}`)
+        url.searchParams.set("page", "1")
+        if (status) url.searchParams.set("event_state", status)
+
+        const res = await fetch(url.toString(), {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 120 },
+        })
+        if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
+        const json = await res.json()
+        const d = json?.data ?? json
+        return {
+            results: d?.results ?? [],
+            count: d?.count ?? 0,
+            next: d?.next ?? null,
+            previous: d?.previous ?? null,
+            total_pages: d?.total_pages ?? 1,
+        }
     } catch {
-        return null
+        return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
     }
 }
 
-
-export async function getAdminEvents(
-    status?: string,
-): Promise<TabSlice<AdminEvent>> {
-    return fetchPage<AdminEvent>(
-        ADMIN_EVENTS_ENDPOINT,
-        status ? { event_state: status } : undefined,
-    )
+export async function getAdminEventCards(params?: Record<string, any>): Promise<{ cards: AdminEventCards | null }> {
+    try {
+        const token = await getToken()
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENTS_CARDS_ENDPOINT}`)
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                if (v != null) url.searchParams.set(k, String(v))
+            })
+        }
+        const res = await fetch(url.toString(), {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENT_CARDS], revalidate: 120 },
+        })
+        if (!res.ok) return { cards: null }
+        const json = await res.json()
+        return { cards: (json?.data ?? null) as AdminEventCards | null }
+    } catch {
+        return { cards: null }
+    }
 }
 
-export async function getAdminEventCards(
-    params?: Record<string, any>,
-): Promise<{ cards: AdminEventCards | null }> {
-    const cards = await fetchCards<AdminEventCards>(ADMIN_EVENTS_CARDS_ENDPOINT, params)
-    return { cards }
-}
+// ─── Non-cached (per-entity or filter-driven) ────────────────────────────────
 
 export async function getAdminEventDetail(
     eventId: string,

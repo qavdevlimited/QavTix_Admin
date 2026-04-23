@@ -284,14 +284,14 @@ export function mapAdminEventCardsToMetrics(cards: AdminEventCards | null): Metr
     ]
 }
 
-export function mapAdminFinancialCardsToMetrics(cards: AdminFinancialCards | null): MetricCardData1[] {
+export function mapAdminFinancialCardsToMetrics(cards: AdminFinancialCards | null, currency?: string): MetricCardData1[] {
     if (!cards) return []
 
     const fmt = (v: string) => {
         const n = Number(v)
-        if (n >= 1_000_000) return `₦${(n / 1_000_000).toFixed(1)}M`
-        if (n >= 1_000) return `₦${(n / 1_000).toFixed(1)}K`
-        return `₦${n.toLocaleString()}`
+        if (n >= 1_000_000) return formatPrice(n / 1_000_000, currency) + 'M'
+        if (n >= 1_000) return formatPrice(n / 1_000, currency) + 'K'
+        return formatPrice(n, currency)
     }
 
     return [
@@ -330,14 +330,14 @@ export function mapAdminFinancialCardsToMetrics(cards: AdminFinancialCards | nul
     ]
 }
 
-export function mapAdminResaleCardsToMetrics(cards: AdminResaleCards | null): MetricCardData1[] {
+export function mapAdminResaleCardsToMetrics(cards: AdminResaleCards | null, currency?: string): MetricCardData1[] {
     if (!cards) return []
 
     const fmt = (v: string) => {
         const n = Number(v)
-        if (n >= 1_000_000) return `₦${(n / 1_000_000).toFixed(1)}M`
-        if (n >= 1_000) return `₦${(n / 1_000).toFixed(1)}K`
-        return `₦${n.toLocaleString()}`
+        if (n >= 1_000_000) return formatPrice(n / 1_000_000, currency) + 'M'
+        if (n >= 1_000) return formatPrice(n / 1_000, currency) + 'K'
+        return formatPrice(n, currency)
     }
 
     return [

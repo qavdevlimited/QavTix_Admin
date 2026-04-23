@@ -1,97 +1,75 @@
 import { LocationData } from "@/lib/redux/slices/settingsSlice";
 
 export const CURRENCIES = [
-    { value: 'USD', label: 'US Dollar', symbol: '$', flag: '🇺🇸', code: 'USD' },
-    { value: 'NGN', label: 'Nigerian Naira', symbol: '₦', flag: '🇳🇬', code: 'NGN' },
-    { value: 'EUR', label: 'Euro', symbol: '€', flag: '🇪🇺', code: 'EUR' },
-    { value: 'GBP', label: 'British Pound', symbol: '£', flag: '🇬🇧', code: 'GBP' },
-    { value: 'CAD', label: 'Canadian Dollar', symbol: 'C$', flag: '🇨🇦', code: 'CAD' },
-    { value: 'AUD', label: 'Australian Dollar', symbol: 'A$', flag: '🇦🇺', code: 'AUD' },
-    { value: 'JPY', label: 'Japanese Yen', symbol: '¥', flag: '🇯🇵', code: 'JPY' },
-    { value: 'CNY', label: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳', code: 'CNY' },
-    { value: 'INR', label: 'Indian Rupee', symbol: '₹', flag: '🇮🇳', code: 'INR' },
-    { value: 'ZAR', label: 'South African Rand', symbol: 'R', flag: '🇿🇦', code: 'ZAR' },
-    { value: 'KES', label: 'Kenyan Shilling', symbol: 'KSh', flag: '🇰🇪', code: 'KES' },
-    { value: 'GHS', label: 'Ghanaian Cedi', symbol: 'GH₵', flag: '🇬🇭', code: 'GHS' }
+  { value: 'USD', label: 'US Dollar', symbol: '$', flag: '🇺🇸', code: 'USD' },
+  { value: 'NGN', label: 'Nigerian Naira', symbol: '₦', flag: '🇳🇬', code: 'NGN' },
+  { value: 'EUR', label: 'Euro', symbol: '€', flag: '🇪🇺', code: 'EUR' },
+  { value: 'GBP', label: 'British Pound', symbol: '£', flag: '🇬🇧', code: 'GBP' },
+  { value: 'CAD', label: 'Canadian Dollar', symbol: 'C$', flag: '🇨🇦', code: 'CAD' },
+  { value: 'AUD', label: 'Australian Dollar', symbol: 'A$', flag: '🇦🇺', code: 'AUD' },
+  { value: 'JPY', label: 'Japanese Yen', symbol: '¥', flag: '🇯🇵', code: 'JPY' },
+  { value: 'CNY', label: 'Chinese Yuan', symbol: '¥', flag: '🇨🇳', code: 'CNY' },
+  { value: 'INR', label: 'Indian Rupee', symbol: '₹', flag: '🇮🇳', code: 'INR' },
+  { value: 'ZAR', label: 'South African Rand', symbol: 'R', flag: '🇿🇦', code: 'ZAR' },
+  { value: 'KES', label: 'Kenyan Shilling', symbol: 'KSh', flag: '🇰🇪', code: 'KES' },
+  { value: 'GHS', label: 'Ghanaian Cedi', symbol: 'GH₵', flag: '🇬🇭', code: 'GHS' }
 ] as const;
 
 export const TIMEZONES = [
-    { value: 'GMT-12', label: 'GMT -12:00' },
-    { value: 'GMT-11', label: 'GMT -11:00' },
-    { value: 'GMT-10', label: 'GMT -10:00' },
-    { value: 'GMT-9', label: 'GMT -9:00' },
-    { value: 'GMT-8', label: 'GMT -8:00 (PST)' },
-    { value: 'GMT-7', label: 'GMT -7:00 (MST)' },
-    { value: 'GMT-6', label: 'GMT -6:00 (CST)' },
-    { value: 'GMT-5', label: 'GMT -5:00 (EST)' },
-    { value: 'GMT-4', label: 'GMT -4:00' },
-    { value: 'GMT-3', label: 'GMT -3:00' },
-    { value: 'GMT-2', label: 'GMT -2:00' },
-    { value: 'GMT-1', label: 'GMT -1:00' },
-    { value: 'GMT+0', label: 'GMT +0:00 (UTC)' },
-    { value: 'GMT+1', label: 'GMT +1:00 (WAT)' },
-    { value: 'GMT+2', label: 'GMT +2:00' },
-    { value: 'GMT+3', label: 'GMT +3:00' },
-    { value: 'GMT+4', label: 'GMT +4:00' },
-    { value: 'GMT+5', label: 'GMT +5:00' },
-    { value: 'GMT+5:30', label: 'GMT +5:30 (IST)' },
-    { value: 'GMT+6', label: 'GMT +6:00' },
-    { value: 'GMT+7', label: 'GMT +7:00' },
-    { value: 'GMT+8', label: 'GMT +8:00' },
-    { value: 'GMT+9', label: 'GMT +9:00' },
-    { value: 'GMT+10', label: 'GMT +10:00' },
-    { value: 'GMT+11', label: 'GMT +11:00' },
-    { value: 'GMT+12', label: 'GMT +12:00' }
+  { value: "Africa/Lagos", label: "Lagos, Nigeria (GMT+1)" },
+  { value: "Africa/Johannesburg", label: "Johannesburg, South Africa (GMT+2)" },
+  { value: "Africa/Accra", label: "Accra, Ghana (GMT+0)" },
+  { value: "Africa/Nairobi", label: "Nairobi, Kenya (GMT+3)" },
 ] as const;
 
 export const FRAUD_SENSITIVITY_OPTIONS = [
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' }
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' }
 ] as const
 
 
 export const NOTIFICATION_TYPES = [
-    { value: 'adminAlerts', label: 'Admin Alerts' },
-    { value: 'fraudAlerts', label: 'Fraud Alerts' },
-    { value: 'highVolumeSales', label: 'High-volume Sales' },
-    { value: 'failedPayouts', label: 'Failed Payouts' }
+  { value: 'adminAlerts', label: 'Admin Alerts' },
+  { value: 'fraudAlerts', label: 'Fraud Alerts' },
+  { value: 'highVolumeSales', label: 'High-volume Sales' },
+  { value: 'failedPayouts', label: 'Failed Payouts' }
 ] as const
 
 
 
 // Countries with emoji flags
 export const COUNTRIES = [
-    { value: 'GH', label: 'Ghana', flag: '🇬🇭' },
-    { value: 'IN', label: 'India', flag: '🇮🇳' },
-    { value: 'NG', label: 'Nigeria', flag: '🇳🇬' },
-    { value: 'ZA', label: 'South Africa', flag: '🇿🇦' },
-    { value: 'GB', label: 'UK', flag: '🇬🇧' },
-    { value: 'US', label: 'USA', flag: '🇺🇸' },
-    { value: 'CA', label: 'Canada', flag: '🇨🇦' },
-    { value: 'AU', label: 'Australia', flag: '🇦🇺' },
-    { value: 'KE', label: 'Kenya', flag: '🇰🇪' },
-    { value: 'EG', label: 'Egypt', flag: '🇪🇬' }
+  { value: 'GH', label: 'Ghana', flag: '🇬🇭' },
+  { value: 'IN', label: 'India', flag: '🇮🇳' },
+  { value: 'NG', label: 'Nigeria', flag: '🇳🇬' },
+  { value: 'ZA', label: 'South Africa', flag: '🇿🇦' },
+  { value: 'GB', label: 'UK', flag: '🇬🇧' },
+  { value: 'US', label: 'USA', flag: '🇺🇸' },
+  { value: 'CA', label: 'Canada', flag: '🇨🇦' },
+  { value: 'AU', label: 'Australia', flag: '🇦🇺' },
+  { value: 'KE', label: 'Kenya', flag: '🇰🇪' },
+  { value: 'EG', label: 'Egypt', flag: '🇪🇬' }
 ]
 
 
 // Languages
 export const LANGUAGES = [
-    { value: 'en', label: 'English' },
-    { value: 'fr', label: 'French' },
-    { value: 'es', label: 'Spanish' },
-    { value: 'pt', label: 'Portuguese' },
-    { value: 'ar', label: 'Arabic' },
-    { value: 'sw', label: 'Swahili' },
-    { value: 'yo', label: 'Yoruba' },
-    { value: 'ig', label: 'Igbo' },
-    { value: 'ha', label: 'Hausa' }
+  { value: 'en', label: 'English' },
+  { value: 'fr', label: 'French' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'sw', label: 'Swahili' },
+  { value: 'yo', label: 'Yoruba' },
+  { value: 'ig', label: 'Igbo' },
+  { value: 'ha', label: 'Hausa' }
 ]
 
 // Date/Time formats
 export const DATE_TIME_FORMATS = [
-    { value: '12h', label: '12-Hour Clock' },
-    { value: '24h', label: '24-Hour Clock' }
+  { value: '12h', label: '12-Hour Clock' },
+  { value: '24h', label: '24-Hour Clock' }
 ]
 
 
@@ -122,8 +100,8 @@ export const regions = Object.values(REGION_CURRENCY_MAP)
   .map(({ region }) => region)
   .filter(
     (region, index, self) =>
-    index === self.findIndex(r => r.code === region.code)
-)
+      index === self.findIndex(r => r.code === region.code)
+  )
 
 
 export const currencies = Object.values(REGION_CURRENCY_MAP)

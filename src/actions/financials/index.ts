@@ -14,8 +14,18 @@ import {
 } from "@/endpoints"
 import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
+import { CACHE_TAGS } from "@/cache-tags"
+import { revalidateTag } from "next/cache"
+import { cookies } from "next/headers"
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Auth helper ──────────────────────────────────────────────────────────────
+
+async function getToken(): Promise<string | undefined> {
+    const cookieStore = await cookies()
+    return cookieStore.get("admin_access_token")?.value
+}
+
+// ─── Internal axios helpers ───────────────────────────────────────────────────
 
 async function fetchPage<T>(
     endpoint: string,
@@ -38,20 +48,6 @@ async function fetchPage<T>(
     }
 }
 
-async function fetchCards<T>(
-    endpoint: string,
-    params?: Record<string, any>,
-): Promise<T | null> {
-    try {
-        const axios = await getServerAxios()
-        const { data } = await axios.get(endpoint, { params })
-        return (data?.data ?? null) as T | null
-    } catch (err) {
-        console.error(`[financials] fetchCards(${endpoint})`, err)
-        return null
-    }
-}
-
 async function postMutation(
     endpoint: string,
     body?: Record<string, any>,
@@ -61,7 +57,6 @@ async function postMutation(
         await axios.post(endpoint, body)
         return { success: true }
     } catch (err: any) {
-        console.error(`[financials] postMutation(${endpoint})`, err)
         return {
             success: false,
             message: err?.response?.data?.message ?? err?.message ?? "Action failed",
@@ -69,21 +64,54 @@ async function postMutation(
     }
 }
 
-// ─── KPI Cards ───────────────────────────────────────────────────────────────
+// ─── Cached KPI Cards (native fetch + next: { tags }) ─────────────────────────
 
 export async function getAdminFinancialCards(
     params?: Record<string, string>,
 ): Promise<{ cards: AdminFinancialCards | null }> {
-    const cards = await fetchCards<AdminFinancialCards>(ADMIN_FINANCIALS_CARDS_ENDPOINT, params)
-    return { cards }
+    try {
+        const token = await getToken()
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_FINANCIALS_CARDS_ENDPOINT}`)
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                if (v != null) url.searchParams.set(k, v)
+            })
+        }
+        const res = await fetch(url.toString(), {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_FINANCIAL_CARDS], revalidate: 300 },
+        })
+        if (!res.ok) return { cards: null }
+        const json = await res.json()
+        return { cards: (json?.data ?? null) as AdminFinancialCards | null }
+    } catch {
+        return { cards: null }
+    }
 }
 
 export async function getAdminResaleCards(): Promise<{ cards: AdminResaleCards | null }> {
-    const cards = await fetchCards<AdminResaleCards>(ADMIN_FINANCIALS_RESALE_CARDS_ENDPOINT)
-    return { cards }
+    try {
+        const token = await getToken()
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_FINANCIALS_RESALE_CARDS_ENDPOINT}`
+        const res = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_RESALE_CARDS], revalidate: 300 },
+        })
+        if (!res.ok) return { cards: null }
+        const json = await res.json()
+        return { cards: (json?.data ?? null) as AdminResaleCards | null }
+    } catch {
+        return { cards: null }
+    }
 }
 
-// ─── Tab Data ────────────────────────────────────────────────────────────────
+// ─── Tab Data (axios — filter-driven, not pre-cached) ────────────────────────
 
 export async function getAdminPendingPayouts(
     params?: Record<string, any>,
@@ -115,18 +143,30 @@ export async function getAdminSubscriptions(
     return fetchPage<AdminSubscription>(ADMIN_FINANCIALS_SUBSCRIPTIONS_ENDPOINT, params)
 }
 
-// ─── Payout Mutations ────────────────────────────────────────────────────────
+// ─── Payout Mutations (bust card caches on success) ───────────────────────────
 
 export async function approvePayout(payoutId: string) {
-    return postMutation(ADMIN_PAYOUT_APPROVE_ENDPOINT(payoutId))
+    const result = await postMutation(ADMIN_PAYOUT_APPROVE_ENDPOINT(payoutId))
+    if (result.success) {
+        revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    }
+    return result
 }
 
 export async function declinePayout(payoutId: string) {
-    return postMutation(ADMIN_PAYOUT_DECLINE_ENDPOINT(payoutId))
+    const result = await postMutation(ADMIN_PAYOUT_DECLINE_ENDPOINT(payoutId))
+    if (result.success) {
+        revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    }
+    return result
 }
 
 export async function forcePayout(payoutId: string) {
-    return postMutation(ADMIN_PAYOUT_FORCE_ENDPOINT(payoutId))
+    const result = await postMutation(ADMIN_PAYOUT_FORCE_ENDPOINT(payoutId))
+    if (result.success) {
+        revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    }
+    return result
 }
 
 
@@ -147,4 +187,3 @@ export async function getFinancials(params?: { date_range?: string | null; page?
         return { success: false, data: null }
     }
 }
-

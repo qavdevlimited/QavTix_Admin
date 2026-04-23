@@ -469,6 +469,7 @@ export const FinancialsTabNFilterOptions = {
 
 export const AuditTabNFilterOptions = {
   filterOptions: [
+    ALL_FILTERS.dateRange,
     ALL_FILTERS.timestamp,
     ALL_FILTERS.auditAction,
     ALL_FILTERS.dateRangePreset,

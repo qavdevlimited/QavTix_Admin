@@ -14,15 +14,16 @@ interface OverviewSectionProps {
 }
 
 export default function OverviewSection({ sectionTwo }: OverviewSectionProps) {
+
+    const { user } = useAppSelector(store => store.authUser)
     const statusMetricsData = dashboardStatusMetricsCardsConfig.map(config => {
         let value = "0";
         if (config.id === 'active-users') value = sectionTwo?.active_users.toString() ?? "0";
         if (config.id === 'active-sellers') value = sectionTwo?.active_sellers.toString() ?? "0";
-        if (config.id === 'monthly-gmv') value = formatPrice(sectionTwo?.sales_this_month ?? 0);
+        if (config.id === 'monthly-gmv') value = formatPrice(sectionTwo?.sales_this_month ?? 0, user?.currency, true, true);
         return { ...config, value }
     })
 
-    const { user } = useAppSelector(store => store.authUser)
     const isMounted = useIsMounted()
 
     return (

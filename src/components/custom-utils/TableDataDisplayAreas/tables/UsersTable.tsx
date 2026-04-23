@@ -11,8 +11,9 @@ import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "../empty-state"
 import AdminUserActionDropdown from "../../dropdown/AdminUserActionDropdown"
 import { buildCustomerActions } from "../../dropdown/resources/customer-actions"
-import { v4 as randomUUID } from "uuid"
 import { formatDateTime } from "@/helper-fns/date-utils"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 interface UsersTableProps {
     items: AdminCustomer[]
@@ -45,6 +46,7 @@ export default function UsersTable({
 
     const isMounted = useIsMounted()
     const router = useRouter()
+    const currency = useAppSelector(s => s.authUser.user?.currency)
 
     if (isLoading) return <TableLoader />
 
@@ -140,7 +142,7 @@ export default function UsersTable({
                                         </td>
                                         <td className="py-4 px-5">
                                             <p className="text-xs font-semibold text-brand-secondary-9 whitespace-nowrap">
-                                                ₦{Number(user.total_spend).toLocaleString()}
+                                                {isMounted && formatPrice(Number(user.total_spend), currency)}
                                             </p>
                                         </td>
                                         <td className="py-4 px-5">
@@ -190,7 +192,7 @@ export default function UsersTable({
                                         </span>
                                         <span className="flex items-center gap-1">
                                             <span className="font-bold">Spent:</span>
-                                            ₦{Number(user.total_spend).toLocaleString()}
+                                            {isMounted && formatPrice(Number(user.total_spend), currency)}
                                         </span>
                                     </div>
                                 </div>

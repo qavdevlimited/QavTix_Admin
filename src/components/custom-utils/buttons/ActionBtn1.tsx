@@ -3,23 +3,23 @@ import Image from "next/image"
 import { ButtonHTMLAttributes } from "react"
 
 interface IActionButton1Props extends ButtonHTMLAttributes<HTMLButtonElement> {
-    className?:   string
-    buttonText:   string
-    isLoading?:   boolean
-    isDisabled?:  boolean
-    action?:      () => void
-    buttonType?:  "button" | "submit"
-    icon?:        string
+    className?: string
+    buttonText: string
+    isLoading?: boolean
+    isDisabled?: boolean
+    action?: () => void
+    buttonType?: "button" | "submit"
+    icon?: string
     iconPosition?: "left" | "right"
 }
 
 export default function ActionButton1({
-    className    = "",
+    className = "",
     buttonText,
     isLoading,
     isDisabled,
     action,
-    buttonType   = "button",
+    buttonType = "button",
     icon,
     iconPosition = "left",
     ...rest
@@ -29,7 +29,7 @@ export default function ActionButton1({
 
     return (
         <button
-            {...rest} 
+            {...rest}
             type={buttonType}
             disabled={isButtonDisabled}
             onClick={action}
@@ -46,7 +46,8 @@ export default function ActionButton1({
                 py-3.5
                 px-6
                 rounded-[3em]
-                h-14
+                h-12
+                md:h-14
                 font-medium
                 transition-colors
                 inline-flex
