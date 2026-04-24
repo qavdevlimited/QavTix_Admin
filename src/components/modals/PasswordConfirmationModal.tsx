@@ -17,7 +17,7 @@ export default function PasswordModal() {
     const [password, setPassword] = useState("")
     const pathName = usePathname()
     const [showPassword, setShowPassword] = useState(false)
-    
+
     const { isOpen, status } = useAppSelector((state) => state.passwordModal);
 
     useEffect(() => {
@@ -32,10 +32,8 @@ export default function PasswordModal() {
         if (!password) return;
 
         dispatch(setPasswordStatus('submitting'))
-        
+
         try {
-            console.log("Password Verified");
-            
             // This records the success and the actionType into lastVerifiedAction
             dispatch(verifyPasswordSuccess())
             setPassword("")
@@ -45,10 +43,10 @@ export default function PasswordModal() {
     }
 
     return (
-        <AnimatedDialog 
-            open={isOpen} 
+        <AnimatedDialog
+            open={isOpen}
             onOpenChange={() => dispatch(closePasswordModal())}
-            showCloseButton={false} 
+            showCloseButton={false}
             className='md:max-w-sm py-4'
         >
             <DialogHeader className="flex flex-col items-center justify-center text-center mb-6">
@@ -88,7 +86,7 @@ export default function PasswordModal() {
                     {status === 'error' && (
                         <p className="text-xs text-red-500 mt-2 text-center">Incorrect password. Please try again.</p>
                     )}
-                </div>           
+                </div>
 
                 <DialogFooter className="mt-8 flex flex-row gap-3">
                     <button
@@ -100,7 +98,7 @@ export default function PasswordModal() {
                     >
                         Cancel
                     </button>
-                    <ActionButton1 
+                    <ActionButton1
                         buttonText='Yes, I am'
                         buttonType='submit'
                         isDisabled={!password}

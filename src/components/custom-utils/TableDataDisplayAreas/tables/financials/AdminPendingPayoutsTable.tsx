@@ -53,8 +53,6 @@ export default function AdminPendingPayoutsTable({
     const isMounted = useIsMounted()
 
 
-    console.log(isEmpty, items)
-
     if (isLoading) return <TableLoader />
 
     if (isError) return (

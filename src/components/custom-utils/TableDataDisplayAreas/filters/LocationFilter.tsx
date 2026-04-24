@@ -116,8 +116,6 @@ export default function LocationFilter({ value, onChange, icon = "hugeicons:loca
             state: result.state,
             label: result.label,
         }
-        console.log("LocationFilter selected:", value)
-        console.log("country type:", typeof value.country, "| value:", value.country)
         onChange(value)
         setIsOpen(false)
     }
