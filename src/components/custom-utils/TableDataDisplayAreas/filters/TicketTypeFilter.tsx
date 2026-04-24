@@ -14,6 +14,8 @@ import { useMediaQuery } from "@/custom-hooks/UseMediaQuery"
 import { MobileBottomSheet } from "../../dropdown/EventFilterDropdownMobileBottomSheet"
 import { useParams } from "next/navigation"
 import { fetchTicketTypes } from "@/actions/filters"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import { useAppSelector } from "@/lib/redux/hooks"
 
 
 export interface TicketType {
@@ -48,6 +50,8 @@ export function TicketTypeFilter({
     const hasFetched = useRef(false)
     const { event_id: paramsEventId } = useParams()
     const eventId = paramsEventId as string
+
+    const currency = useAppSelector(store => store.authUser.user?.currency)
 
     const loadTicketTypes = useCallback(async () => {
         if (cache.current.has(eventId)) {
@@ -96,8 +100,6 @@ export function TicketTypeFilter({
         onChange([])
     }
 
-    const formatPrice = (price: string) => `₦${Number(price).toLocaleString()}`
-
 
     const filterContent = (
         <div className="space-y-2">
@@ -145,7 +147,7 @@ export function TicketTypeFilter({
                                 "text-xs font-semibold shrink-0",
                                 isSelected ? "text-brand-primary-6" : "text-brand-neutral-7"
                             )}>
-                                {formatPrice(type.price)}
+                                {formatPrice(Number(type.price), currency)}
                             </span>
                         </button>
                     )

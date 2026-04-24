@@ -83,16 +83,16 @@ export default function UsersTable({
             <div className="hidden md:block border border-brand-neutral-2 rounded-xl overflow-hidden!">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-brand-neutral-3 border-b border-brand-neutral-3">
-                            <tr>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Profile Info</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Location</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Phone</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Tickets Bought</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Total Spend</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Date Joined</th>
-                                <th className="w-12 py-4 px-4" />
+                        <thead className="bg-brand-neutral-3">
+                            <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Profile Info</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Location</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Phone</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Tickets Bought</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Total Spend</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Date Joined</th>
+                                <th className="w-12 py-4 px-4 font-bold" />
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -178,23 +178,21 @@ export default function UsersTable({
                             className="border border-brand-neutral-3 rounded-lg p-3"
                         >
                             <div className="flex items-center justify-between gap-2 mb-3">
-                                <div className="flex flex-wrap items-center gap-2 flex-1">
+                                <div className="flex justify-between text-brand-secondary-9 text-[10px] flex-wrap items-center gap-2 flex-1">
                                     <div className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full", statusCfg.color)}>
                                         <span className={cn("size-1.5 rounded-full shrink-0", statusCfg.dot)} />
-                                        <span className={cn("text-xs font-medium capitalize", statusCfg.color)}>
+                                        <span className={cn("text-[10px] font-medium capitalize", statusCfg.color)}>
                                             {statusCfg.label}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-[11px] text-brand-secondary-9">
-                                        <span className="flex items-center gap-1">
-                                            <span className="font-bold">Tickets:</span>
-                                            {user.tickets_bought}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <span className="font-bold">Spent:</span>
-                                            {isMounted && formatPrice(Number(user.total_spend), currency)}
-                                        </span>
-                                    </div>
+                                    <span className="flex items-center gap-1">
+                                        <span className="font-bold">Tickets:</span>
+                                        {user.tickets_bought}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <span className="font-bold">Spent:</span>
+                                        {isMounted && formatPrice(Number(user.total_spend), currency)}
+                                    </span>
                                 </div>
                                 <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                                     <AdminUserActionDropdown
@@ -206,7 +204,7 @@ export default function UsersTable({
                                 </div>
                             </div>
 
-                            <div className="flex items-start flex-wrap justify-between gap-3 mb-2">
+                            <div className="flex items-start justify-between gap-3 mb-2">
                                 {isMounted && (
                                     <UserInfo
                                         user={{ id: user.user_id, name: user.full_name, email: user.email }}
@@ -214,12 +212,15 @@ export default function UsersTable({
                                         className="shrink-0"
                                     />
                                 )}
-                                <div className="flex flex-col gap-0.5 text-[11px] text-brand-secondary-9">
-                                    <span className="font-bold">Joined:</span>
-                                    <span>{formatDateTime(user.date_joined)}</span>
+
+                                <div className="flex flex-col gap-0.5 text-[11px] text-brand-secondary-9 min-w-0">
+                                    <span>{user.phone_number}</span>
+                                    <span className="text-brand-secondary-6">
+                                        <span className="font-bold">Joined: </span>
+                                        {formatDateTime(user.date_joined)}
+                                    </span>
                                 </div>
                             </div>
-                            <p className="text-[11px] text-brand-secondary-6">{location}</p>
                         </div>
                     )
                 })}

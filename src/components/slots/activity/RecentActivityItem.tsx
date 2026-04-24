@@ -6,6 +6,9 @@ import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
 import Timer02 from '../../Svg-Icons/Timer02'
 import { EVENT_PROFILE } from '@/enums/navigation'
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 const ACTIVITY_ICON_MAP: Record<string, { icon: string; bgColor: string; iconColor: string }> = {
     sale: {
@@ -54,6 +57,9 @@ interface RecentActivityItemProps {
 }
 
 export default function RecentActivityItem({ activity }: RecentActivityItemProps) {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
     const iconConfig = ACTIVITY_ICON_MAP[activity.activity_type] ?? DEFAULT_ICON
     const typeLabel = ACTIVITY_TYPE_LABEL[activity.activity_type] ?? activity.activity_type
     const timeAgo = formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })
@@ -86,7 +92,7 @@ export default function RecentActivityItem({ activity }: RecentActivityItemProps
                         <p className="text-[11px] text-brand-neutral-6">
                             {activity.metadata.buyer_name}
                             {activity.metadata.quantity && ` · ${activity.metadata.quantity} ticket${activity.metadata.quantity > 1 ? 's' : ''}`}
-                            {activity.metadata.amount && ` · ₦${Number(activity.metadata.amount).toLocaleString()}`}
+                            {activity.metadata.amount && ` · ${isMounted ? formatPrice(Number(activity.metadata.amount), user?.currency) : ""}`}
                         </p>
                     )}
 

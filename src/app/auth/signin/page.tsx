@@ -119,6 +119,7 @@ export default function AdminSignInPage() {
                                 placeholder="Input"
                                 error={errors.email?.message}
                                 {...register("email")}
+                                onInput={() => setSubmitError(null)}
                             />
                         </div>
 
@@ -129,6 +130,7 @@ export default function AdminSignInPage() {
                                 placeholder="Enter Password"
                                 error={errors.password?.message}
                                 {...register("password")}
+                                onInput={() => setSubmitError(null)}
                             />
                         </div>
 
@@ -182,7 +184,7 @@ export default function AdminSignInPage() {
                     </form>
                 ) : (
                     <div className="space-y-6">
-                        <OTPInput otp={otp} setOtp={setOtp} />
+                        <OTPInput otp={otp} setOtp={(v) => { setOtp(v); setSubmitError(null); }} />
 
                         {submitError && (
                             <p className="flex items-center justify-center gap-1.5 mt-2 text-sm text-red-500">

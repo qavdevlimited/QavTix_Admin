@@ -10,12 +10,14 @@ import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
 import { toggleHostSuspension, giftHostBadge, approveHostVerification, declineHostVerification, forceHostPayout } from "@/actions/host-management"
 import { exportData } from "@/helper-fns/exportData"
+import ReviewRequestModal from "@/components/modals/ReviewRequestModal"
 
 interface HostActionDropdownProps {
     actions: UserAction[]
     hostId: number
     hostName?: string
     hostData?: AdminHost
+    pendingHost?: AdminPendingHost
     disabled?: boolean
     onRefresh?: () => void
 }
@@ -25,6 +27,7 @@ export default function HostActionDropdown({
     hostId,
     hostName,
     hostData,
+    pendingHost,
     disabled = false,
     onRefresh,
 }: HostActionDropdownProps) {
@@ -32,6 +35,7 @@ export default function HostActionDropdown({
     const dispatch = useAppDispatch()
     const { isConfirmed, lastConfirmedAction } = useAppSelector(s => s.confirmation)
 
+    const [openReviewRequestModal, setOpenReviewRequestModal] = useState(false)
     const [loadingAction, setLoadingAction] = useState<string | null>(null)
     const [isOpen, setIsOpen] = useState(false)
 
@@ -61,6 +65,9 @@ export default function HostActionDropdown({
                 break
             case "decline":
                 confirm("decline", "Decline Request", `Are you sure you want to decline this verification request?`, "DECLINE_HOST")
+                break
+            case "review-documents":
+                pendingHost && setOpenReviewRequestModal(true)
                 break
             case "force-payout":
                 confirm("force-payout", "Force Payout", `Are you sure you want to force a payout for ${hostName || "this host"}? This action cannot be undone.`, "FORCE_PAYOUT")
@@ -100,8 +107,6 @@ export default function HostActionDropdown({
                             ? `${hostName || "Host"} has been suspended successfully.`
                             : `${hostName || "Host"} access has been restored.`,
                         variant: "success",
-                        autoClose: true,
-                        autoCloseDelay: 3000,
                     }))
                     onRefresh?.()
                 }
@@ -114,8 +119,6 @@ export default function HostActionDropdown({
                         title: "Blue Tick Gifted!",
                         description: `${hostName || "Host"} has been awarded a Blue Tick.`,
                         variant: "success",
-                        autoClose: true,
-                        autoCloseDelay: 3000,
                     }))
                     onRefresh?.()
                 }
@@ -128,8 +131,6 @@ export default function HostActionDropdown({
                         title: "Verification Approved",
                         description: `${hostName || "Host"}'s verification request has been approved.`,
                         variant: "success",
-                        autoClose: true,
-                        autoCloseDelay: 3000,
                     }))
                     onRefresh?.()
                 }
@@ -142,9 +143,8 @@ export default function HostActionDropdown({
                         title: "Request Declined",
                         description: `${hostName || "Host"}'s verification request has been declined.`,
                         variant: "success",
-                        autoClose: true,
-                        autoCloseDelay: 3000,
                     }))
+                    setOpenReviewRequestModal(false)
                     onRefresh?.()
                 }
             }
@@ -156,8 +156,6 @@ export default function HostActionDropdown({
                         title: "Payout Initiated",
                         description: `Payout for ${hostName || "host"} has been successfully initiated.`,
                         variant: "success",
-                        autoClose: true,
-                        autoCloseDelay: 3000,
                     }))
                     onRefresh?.()
                 }
@@ -180,61 +178,65 @@ export default function HostActionDropdown({
     }, [isConfirmed, lastConfirmedAction])
 
     return (
-        <DropdownMenu modal={false} open={isOpen} onOpenChange={(v) => {
-            !loadingAction && setIsOpen(v)
-        }}>
-            <DropdownMenuTrigger asChild disabled={disabled} className="p-0">
-                <button
-                    className={cn(
-                        "px-1 h-fit border border-brand-neutral-5 rounded-md transition-colors",
-                        disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-brand-neutral-2"
-                    )}
-                    disabled={disabled}
+        <>
+            <DropdownMenu modal={false} open={isOpen} onOpenChange={(v) => {
+                !loadingAction && setIsOpen(v)
+            }}>
+                <DropdownMenuTrigger asChild disabled={disabled} className="p-0">
+                    <button
+                        className={cn(
+                            "px-1 h-fit border border-brand-neutral-5 rounded-md transition-colors",
+                            disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-brand-neutral-2"
+                        )}
+                        disabled={disabled}
+                    >
+                        <Icon icon="tabler:dots" className="size-5 text-brand-secondary-9 hidden md:inline-block" />
+                        <Icon icon="ix:context-menu" className="size-5 text-brand-secondary-9 md:hidden" />
+                    </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                    align="end"
+                    side="bottom"
+                    avoidCollisions
+                    collisionPadding={16}
+                    sideOffset={4}
+                    className="w-44 flex justify-center items-center flex-col text-brand-secondary-9 space-y-1.5"
                 >
-                    <Icon icon="tabler:dots" className="size-5 text-brand-secondary-9 hidden md:inline-block" />
-                    <Icon icon="ix:context-menu" className="size-5 text-brand-secondary-9 md:hidden" />
-                </button>
-            </DropdownMenuTrigger>
+                    {actions.map((action) => {
+                        const isActionLoading = loadingAction === action.id
+                        const isActionDisabled = (loadingAction !== null && !isActionLoading) || action.disabled
 
-            <DropdownMenuContent
-                align="end"
-                side="bottom"
-                avoidCollisions
-                collisionPadding={16}
-                sideOffset={4}
-                className="w-44 flex justify-center items-center flex-col text-brand-secondary-9 space-y-1.5"
-            >
-                {actions.map((action) => {
-                    const isActionLoading = loadingAction === action.id
-                    const isActionDisabled = (loadingAction !== null && !isActionLoading) || action.disabled
-
-                    return (
-                        <DropdownMenuItem
-                            key={action.id}
-                            asChild
-                            onSelect={(e) => e.preventDefault()}
-                        >
-                            <button
-                                type="button"
-                                disabled={!!isActionDisabled}
-                                onClick={() => { if (!isActionDisabled) handleAction(action) }}
-                                className={cn(
-                                    "w-full text-left flex items-center text-xs gap-2 font-normal cursor-pointer transition-colors px-2 py-1.5 rounded-sm",
-                                    "hover:bg-brand-neutral-4 focus:bg-brand-neutral-4 focus:outline-none",
-                                    action.variant === "danger" && "text-red-600 hover:bg-red-50 focus:bg-red-50",
-                                    isActionDisabled && "opacity-40 cursor-not-allowed",
-                                )}
+                        return (
+                            <DropdownMenuItem
+                                key={action.id}
+                                asChild
+                                onSelect={(e) => e.preventDefault()}
                             >
-                                {isActionLoading
-                                    ? <Icon icon="eos-icons:three-dots-loading" className="size-4" />
-                                    : <Icon icon={action.icon} className="size-4.5" />
-                                }
-                                {action.label}
-                            </button>
-                        </DropdownMenuItem>
-                    )
-                })}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                                <button
+                                    type="button"
+                                    disabled={!!isActionDisabled}
+                                    onClick={() => { if (!isActionDisabled) handleAction(action) }}
+                                    className={cn(
+                                        "w-full text-left flex items-center text-xs gap-2 font-normal cursor-pointer transition-colors px-2 py-1.5 rounded-sm",
+                                        "hover:bg-brand-neutral-4 focus:bg-brand-neutral-4 focus:outline-none",
+                                        action.variant === "danger" && "text-red-600 hover:bg-red-50 focus:bg-red-50",
+                                        isActionDisabled && "opacity-40 cursor-not-allowed",
+                                    )}
+                                >
+                                    {isActionLoading
+                                        ? <Icon icon="eos-icons:three-dots-loading" className="size-4" />
+                                        : <Icon icon={action.icon} className="size-4.5" />
+                                    }
+                                    {action.label}
+                                </button>
+                            </DropdownMenuItem>
+                        )
+                    })}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <ReviewRequestModal host={pendingHost!} open={openReviewRequestModal} onOpenChange={(v) => setOpenReviewRequestModal(v)} />
+        </>
     )
 }

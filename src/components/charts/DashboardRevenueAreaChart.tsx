@@ -8,6 +8,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getAdminRevenueAnalytics } from '@/actions/dashboard';
 import { formatPrice } from '@/helper-fns/formatPrice';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { useIsMounted } from '@/custom-hooks/UseIsMounted';
 
 interface ChartDataPoint {
     label: string;
@@ -62,6 +64,9 @@ export default function DashboardRevenueAreaChart({ initialData }: DashboardReve
     const [chartData, setChartData] = useState<ChartDataPoint[]>(initialData?.data || [])
     const [activeLabel, setActiveLabel] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
+
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
 
     useEffect(() => {
         // Always fetch when filter changes — don't try to match against initialData.period
@@ -126,7 +131,7 @@ export default function DashboardRevenueAreaChart({ initialData }: DashboardReve
                             axisLine={false}
                             tickLine={false}
                             tick={{ fill: '#64748B', fontSize: 12, fontWeight: 500 }}
-                            tickFormatter={(v) => v === 0 ? '₦0' : `₦${(v / 1000).toFixed(0)}k`}
+                            tickFormatter={(v) => isMounted ? formatPrice(v, user?.currency, true, true) : ""}
                             ticks={yTicks}
                             domain={[0, niceMax]}
                             width={60}

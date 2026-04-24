@@ -12,6 +12,10 @@ export const ADMIN_LOGIN_ENDPOINT = 'administrator/admin/login/';
 export const ADMIN_VERIFY_OTP_ENDPOINT = 'administrator/admin/login/verify/';
 export const ADMIN_PROFILE_ENDPOINT = 'administrator/admin/profile/';
 
+export const ADMIN_FORGOT_PASSWORD_ENDPOINT = 'auth/password-reset/request/';
+export const ADMIN_VERIFY_RESET_OTP_ENDPOINT = 'auth/password-reset/verify-otp/';
+export const ADMIN_RESET_PASSWORD_ENDPOINT = 'auth/password-reset/confirm/';
+
 export const ADMIN_USERS_ENDPOINT = 'administrator/admin/customers/';
 export const ADMIN_USERS_CARDS_ENDPOINT = 'administrator/admin/customers/cards/';
 export const ADMIN_AFFILIATES_ENDPOINT = 'administrator/admin/affiliates/';

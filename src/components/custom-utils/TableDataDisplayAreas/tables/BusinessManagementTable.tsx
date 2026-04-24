@@ -11,6 +11,9 @@ import { buildHostActions } from '../../dropdown/resources/host-actions'
 import TableLoader from '@/components/loaders/TableLoader'
 import EmptyTicketsState from '../empty-state'
 import { formatDateTime } from '@/helper-fns/date-utils'
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 interface BusinessManagementTableProps {
     items: AdminHost[]
@@ -48,6 +51,9 @@ export default function BusinessManagementTable({
     fetchPage,
     onRefresh,
 }: BusinessManagementTableProps) {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
 
     const router = useRouter()
 
@@ -67,15 +73,15 @@ export default function BusinessManagementTable({
             <div className="hidden md:block border border-brand-neutral-3 rounded-xl overflow-hidden!">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-brand-neutral-3 border-b border-brand-neutral-3">
-                            <tr>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Business Name</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Owner</th>
-                                <th className="text-center py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Events</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Revenue</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Joined</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize">Status</th>
-                                <th className="text-right py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize"></th>
+                        <thead className="bg-brand-neutral-3">
+                            <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Business Name</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Owner</th>
+                                <th className="text-center py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Events</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Revenue</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Joined</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Status</th>
+                                <th className="text-right py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-5 bg-white">
@@ -112,7 +118,7 @@ export default function BusinessManagementTable({
 
                                         <td className="py-4 px-5">
                                             <p className="text-xs font-bold text-brand-secondary-9">
-                                                ₦{Number(host.total_revenue).toLocaleString()}
+                                                {isMounted && formatPrice(Number(host.total_revenue), user?.currency)}
                                             </p>
                                         </td>
 
@@ -179,7 +185,7 @@ export default function BusinessManagementTable({
                             </div>
                             <div className="flex gap-4 text-xs text-brand-secondary-8">
                                 <span><span className="font-bold">{host.event_count}</span> events</span>
-                                <span>₦{Number(host.total_revenue).toLocaleString()} revenue</span>
+                                <span>{isMounted && formatPrice(Number(host.total_revenue), user?.currency)} revenue</span>
                             </div>
                         </div>
                     )

@@ -2,17 +2,33 @@ import { inter } from "@/lib/fonts";
 import "./globals.css";
 import { siteMetadata, siteViewport } from "@/metadata";
 import type { Metadata, Viewport } from "next";
+import ReduxStoreProvider from "@/lib/redux/ReduxStoreProvider"
+import PopUpsRenderer from "@/components/modals/"
+import { getServerAxios } from "@/lib/axios"
+import { ADMIN_PROFILE_ENDPOINT } from "@/endpoints"
+import AuthPersistor from "@/persistors/AuthPersistor"
 
 export const metadata: Metadata = siteMetadata
 export const viewport: Viewport = siteViewport
 
-
+async function getLayoutData(): Promise<AuthUser | null> {
+	try {
+		const axiosInstance = await getServerAxios()
+		const { data } = await axiosInstance.get(ADMIN_PROFILE_ENDPOINT)
+		const userData = data.data as AuthUser
+		return userData;
+	} catch (err) {
+		return null
+	}
+}
 
 export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+
+	const user = await getLayoutData()
 
 	return (
 		<html lang="en">
@@ -25,7 +41,11 @@ export default async function RootLayout({
 			<body
 				className={`${inter.className}`}
 			>
-				{children}
+				<ReduxStoreProvider>
+					{children}
+					<PopUpsRenderer />
+					<AuthPersistor userData={user || null} />
+				</ReduxStoreProvider>
 			</body>
 		</html>
 	)

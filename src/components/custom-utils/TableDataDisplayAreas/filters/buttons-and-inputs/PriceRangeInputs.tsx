@@ -1,21 +1,22 @@
 'use client'
 
+import { CURRENCIES } from '@/components-data/settings-data-options'
 import { Input } from '@/components/ui/input'
 
 interface PriceRangeInputsProps {
-  min: number
-  max: number
-  currency: string
-  onMinChange: (value: number) => void
-  onMaxChange: (value: number) => void
+    min: number
+    max: number
+    currency: string
+    onMinChange: (value: number) => void
+    onMaxChange: (value: number) => void
 }
 
 export function PriceRangeInputs({
-  min,
-  max,
-  currency,
-  onMinChange,
-  onMaxChange,
+    min,
+    max,
+    currency,
+    onMinChange,
+    onMaxChange,
 }: PriceRangeInputsProps) {
     return (
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
@@ -35,7 +36,7 @@ export function PriceRangeInputs({
                         Minimum amount
                     </label>
                     <span className="absolute left-4 bottom-3 text-brand-neutral-7 text-base font-medium">
-                        {currency}
+                        {CURRENCIES.find(v => v.value === currency)?.symbol}
                     </span>
                 </div>
             </div>
@@ -56,7 +57,7 @@ export function PriceRangeInputs({
                         Maximum amount
                     </label>
                     <span className="absolute left-4 bottom-3 text-brand-neutral-7 text-base font-medium">
-                        {currency}
+                        {CURRENCIES.find(v => v.value === currency)?.symbol}
                     </span>
                 </div>
             </div>

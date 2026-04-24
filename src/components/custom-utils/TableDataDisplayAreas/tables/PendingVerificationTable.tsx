@@ -55,14 +55,14 @@ export default function HostSignupRequestsTable({
             <div className="hidden md:block border border-brand-neutral-3 rounded-xl overflow-hidden!">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-brand-neutral-3 border-b border-brand-neutral-3">
-                            <tr>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Business Name</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Owner</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Signup Date</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Account Type</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
-                                <th className="text-right py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap"></th>
+                        <thead className="bg-brand-neutral-3">
+                            <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Business Name</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Owner</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Signup Date</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Account Type</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
+                                <th className="text-right py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-5 bg-white">
@@ -103,6 +103,7 @@ export default function HostSignupRequestsTable({
                                             hostId={request.host_id}
                                             hostName={request.business_name || request.owner_name}
                                             onRefresh={onRefresh}
+                                            pendingHost={request}
                                         />
                                     </td>
                                 </tr>
@@ -131,6 +132,7 @@ export default function HostSignupRequestsTable({
                                     hostId={request.host_id}
                                     hostName={request.business_name || request.owner_name}
                                     onRefresh={onRefresh}
+                                    pendingHost={request}
                                 />
                             </div>
                         </div>

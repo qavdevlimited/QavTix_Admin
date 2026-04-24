@@ -77,15 +77,15 @@ export default function AffiliatesTable({
             <div className="hidden md:block border border-brand-neutral-2 rounded-xl overflow-hidden!">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-brand-neutral-3 border-b border-brand-neutral-3">
-                            <tr>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Affiliate</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Event</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Clicks</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Signups</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Conversion</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Commission Earned</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Last Activity</th>
+                        <thead className="bg-brand-neutral-3">
+                            <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Affiliate</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Referral ID</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Clicks</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Signups</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Conversion</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Commission Earned</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Last Activity</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -108,7 +108,7 @@ export default function AffiliatesTable({
                                     </td>
                                     <td className="py-4 px-5">
                                         <p className="text-xs text-brand-secondary-8 max-w-48 whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {affiliate.event_name}
+                                            {affiliate.referral_id}
                                         </p>
                                     </td>
                                     <td className="py-4 px-5 text-center">
@@ -157,6 +157,10 @@ export default function AffiliatesTable({
                         key={`mob-${randomUUID()}-${affiliate.referral_id}`}
                         className="border border-brand-neutral-3 rounded-lg p-3"
                     >
+                        <div className="flex justify-between text-[10px] text-brand-secondary-9 items-center mb-3">
+                            <p>Referral ID: <span className="font-bold">{affiliate.referral_id}</span></p>
+                            <p>Commission Earned: <span className="font-bold">{isMounted && formatPrice(Number(affiliate.commission_earned), currency)}</span></p>
+                        </div>
                         <div className="flex items-start justify-between gap-2 mb-3">
                             {isMounted && (
                                 <UserInfo
@@ -169,25 +173,16 @@ export default function AffiliatesTable({
                                     className="flex-1"
                                 />
                             )}
-                            <span className={cn(
-                                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0",
-                                affiliate.conversion >= 10
-                                    ? "bg-green-50 text-green-700"
-                                    : affiliate.conversion >= 5
-                                        ? "bg-amber-50 text-amber-700"
-                                        : "bg-red-50 text-red-700"
-                            )}>
-                                {affiliate.conversion}%
-                            </span>
+                            <p className="font-bold text-brand-secondary-9 text-[10px]">
+                                Last Active: <span className="block">{formatDateTime(affiliate.last_activity)}</span>
+                            </p>
                         </div>
 
-                        <p className="text-[11px] text-brand-secondary-6 mb-2 truncate">{affiliate.event_name}</p>
 
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-brand-secondary-9">
+                        <div className="flex justify-between flex-wrap gap-x-4 gap-y-1 text-[11px] text-brand-secondary-9">
                             <span><span className="font-bold">Clicks:</span> {affiliate.clicks.toLocaleString()}</span>
                             <span><span className="font-bold">Signups:</span> {affiliate.signups.toLocaleString()}</span>
                             <span><span className="font-bold">Commission:</span> {isMounted && formatPrice(Number(affiliate.commission_earned), currency)}</span>
-                            <span><span className="font-bold">Last Active:</span> {formatDateTime(affiliate.last_activity)}</span>
                         </div>
                     </div>
                 ))}

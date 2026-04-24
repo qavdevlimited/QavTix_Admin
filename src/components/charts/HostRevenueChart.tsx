@@ -11,6 +11,9 @@ import ChartLoader from "@/components/loaders/ChartLoader"
 import { getHostChart } from "@/actions/host-management"
 import { space_grotesk } from "@/lib/fonts"
 import TimelineSelector from "@/components/custom-utils/TableDataDisplayAreas/filters/TimelineFilter"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 
 type ChartType = "revenue" | "tickets"
 
@@ -21,11 +24,15 @@ interface HostRevenueChartProps {
 }
 
 const CustomTooltip = ({ active, payload, chartType }: any) => {
+
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
     if (!active || !payload?.length) return null
     const value = payload[0].value ?? 0
     return (
         <div className="bg-brand-accent-6 text-white px-3 py-2 rounded-lg shadow-lg text-sm font-semibold">
-            {chartType === "revenue" ? `₦${value.toLocaleString()}` : `${value.toLocaleString()} tickets`}
+            {chartType === "revenue" && isMounted ? formatPrice(value, user?.currency, true, true) : `${value.toLocaleString()} tickets`}
         </div>
     )
 }

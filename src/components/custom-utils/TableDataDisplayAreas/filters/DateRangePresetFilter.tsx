@@ -9,17 +9,17 @@ import { useMediaQuery } from '@/custom-hooks/UseMediaQuery'
 import { MobileBottomSheet } from '../../dropdown/EventFilterDropdownMobileBottomSheet'
 
 const PRESETS: { label: string; value: DatePreset }[] = [
-    { label: 'Today',      value: 'day'   },
-    { label: 'This Week',  value: 'week'  },
+    { label: 'Today', value: 'day' },
+    { label: 'This Week', value: 'week' },
     { label: 'This Month', value: 'month' },
-    { label: 'This Year',  value: 'year'  },
+    { label: 'This Year', value: 'year' },
 ]
 
 interface DateRangePresetFilterProps {
-    value?:    DatePreset | null
-    onChange:  (value: DatePreset | null) => void
-    icon?:     string
-    label?:    string
+    value?: DatePreset | null
+    onChange: (value: DatePreset | null) => void
+    icon?: string
+    label?: string
 }
 
 export default function DateRangePresetFilter({
@@ -29,12 +29,12 @@ export default function DateRangePresetFilter({
     label = 'Date Preset',
 }: DateRangePresetFilterProps) {
 
-    const [isOpen,    setIsOpen]    = useState(false)
-    const [selected,  setSelected]  = useState<DatePreset | null>(value ?? null)
+    const [isOpen, setIsOpen] = useState(false)
+    const [selected, setSelected] = useState<DatePreset | null>(value ?? null)
     const isTablet = useMediaQuery('(min-width: 768px)')
 
     const hasActiveFilter = !!value
-    const displayText     = value
+    const displayText = value
         ? PRESETS.find(p => p.value === value)?.label ?? label
         : label
 
@@ -49,7 +49,7 @@ export default function DateRangePresetFilter({
     }
 
     const filterContent = (
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 md:flex flex-col gap-2">
             {PRESETS.map((preset) => (
                 <button
                     key={preset.value}

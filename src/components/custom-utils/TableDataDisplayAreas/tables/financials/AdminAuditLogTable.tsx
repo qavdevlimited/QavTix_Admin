@@ -8,8 +8,8 @@ import CustomAvatar from "@/components/custom-utils/avatars/CustomAvatar"
 import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "@/components/custom-utils/TableDataDisplayAreas/empty-state"
 import PaginationControls from "@/components/custom-utils/TableDataDisplayAreas/tools/PaginationControl"
+import UserInfo from "@/components/custom-utils/users/UserInfo"
 
-// ─── Action colour mapping ─────────────────────────────────────────────────
 
 const ACTION_CONFIG: Record<string, { text: string; bg: string; border: string; icon: string }> = {
     event_suspend: { text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", icon: "hugeicons:pause-circle" },
@@ -65,13 +65,13 @@ export default function AdminAuditLogTable({
             {/* ── Desktop table ──────────────────────────────────── */}
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Timestamp</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Admin</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Action</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Details</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">IP Address</th>
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Timestamp</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Admin</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">IP Address</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Action</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Details</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -82,22 +82,26 @@ export default function AdminAuditLogTable({
                                 <tr key={log.id} className="hover:bg-brand-neutral-3/60 transition-colors">
                                     <td className="py-4 px-5 whitespace-nowrap">
                                         {ts ? (
-                                            <div>
-                                                <p className="text-xs font-medium text-brand-secondary-9">{format(ts, "MMM d, yyyy")}</p>
-                                                <p className="text-[11px] text-brand-secondary-6">{format(ts, "h:mm:ss a")}</p>
+                                            <div className="text-xs text-brand-secondary-9">
+                                                <p >{format(ts, "MMM d, yyyy")} | {format(ts, "h:mm:ss a")}</p>
                                             </div>
                                         ) : (
                                             <p className="text-xs text-brand-secondary-6">—</p>
                                         )}
                                     </td>
                                     <td className="py-4 px-5">
-                                        <div className="flex items-center gap-2.5">
-                                            <CustomAvatar name={log.admin_name} id={log.id} size="size-8 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-semibold text-brand-secondary-9 truncate">{log.admin_name}</p>
-                                                <p className="text-[11px] text-brand-secondary-6 truncate">{log.admin_email}</p>
-                                            </div>
-                                        </div>
+                                        <UserInfo
+                                            user={{
+                                                id: log.id,
+                                                name: log.admin_name,
+                                                email: log.admin_email,
+                                                profileImg: ""
+                                            }}
+                                            variant="desktop"
+                                        />
+                                    </td>
+                                    <td className="py-4 px-5">
+                                        <p className="text-xs  text-brand-secondary-7 whitespace-nowrap">{log.ip_address}</p>
                                     </td>
                                     <td className="py-4 px-5">
                                         <Badge className={cn("px-2 py-1 rounded-md border-[0.8px] text-[11px] font-medium flex items-center gap-1 w-fit whitespace-nowrap", cfg.text, cfg.bg, cfg.border)}>
@@ -110,9 +114,6 @@ export default function AdminAuditLogTable({
                                             {log.details || <span className="text-brand-neutral-5 italic">—</span>}
                                         </p>
                                     </td>
-                                    <td className="py-4 px-5">
-                                        <p className="text-xs  text-brand-secondary-7 whitespace-nowrap">{log.ip_address}</p>
-                                    </td>
                                 </tr>
                             )
                         })}
@@ -120,37 +121,44 @@ export default function AdminAuditLogTable({
                 </table>
             </div>
 
-            {/* ── Mobile cards ───────────────────────────────────── */}
             <div className="md:hidden space-y-3">
                 {items.map(log => {
                     const cfg = ACTION_CONFIG[log.action] ?? DEFAULT_ACTION_CFG
                     const ts = (() => { try { return parseISO(log.timestamp) } catch { return null } })()
                     return (
                         <div key={log.id} className="border border-brand-neutral-3 rounded-2xl p-4 bg-white space-y-3">
-                            <div className="flex items-start justify-between gap-3">
+
+                            <p className="text-[11px] text-brand-secondary-9">
+                                <span className="font-bold">Timestamp: </span>
+                                {ts && (
+                                    <>
+                                        {format(ts, "MMM d, yyyy")}
+                                        <span className="text-brand-neutral-5 mx-2">|</span>
+                                        {format(ts, "h:mm a")}
+                                    </>
+                                )}
+                            </p>
+
+                            <div className="flex items-center justify-between gap-3 flex-wrap">
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <CustomAvatar name={log.admin_name} id={log.id} size="size-9 shrink-0" />
                                     <div className="min-w-0">
-                                        <p className="text-xs font-bold text-brand-secondary-9 truncate">{log.admin_name}</p>
-                                        <p className="text-[11px] text-brand-secondary-6 truncate">{log.admin_email}</p>
+                                        <p className="text-xs font-medium text-brand-secondary-9 truncate">{log.admin_name}</p>
+                                        <p className="text-[11px] font-bold text-brand-secondary-7 truncate">{log.admin_email}</p>
                                     </div>
                                 </div>
-                                <Badge className={cn("px-2 py-0.5 rounded-md border-[0.8px] text-[10px] font-medium flex items-center gap-1 shrink-0 whitespace-nowrap", cfg.text, cfg.bg, cfg.border)}>
-                                    <Icon icon={cfg.icon} className="size-3 shrink-0" />
-                                    {log.action_label || log.action}
-                                </Badge>
+                                <div className="shrink-0 text-right">
+                                    <p className="text-[11px] font-bold text-brand-secondary-9">IP Address:</p>
+                                    <p className="text-[11px] text-brand-secondary-7">{log.ip_address}</p>
+                                </div>
                             </div>
 
-                            {log.details && (
-                                <p className="text-[11px] text-brand-secondary-7 bg-brand-neutral-1 rounded-lg px-3 py-2">
-                                    {log.details}
+                            {(log.details || log.action) && (
+                                <p className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">{log.action_label || log.action}</span>:
+                                    <span> {log.details}</span>
                                 </p>
                             )}
-
-                            <div className="flex items-center justify-between text-[11px] text-brand-secondary-6 border-t border-brand-neutral-2 pt-2">
-                                <span className="">{log.ip_address}</span>
-                                {ts && <span>{format(ts, "MMM d · h:mm a")}</span>}
-                            </div>
                         </div>
                     )
                 })}

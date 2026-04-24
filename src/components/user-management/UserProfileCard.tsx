@@ -13,6 +13,8 @@ import { AccountActionType } from "../modals/resources/user-account-action-statu
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import UserAccountActionStatusModal from "../modals/UserAccountActionStatusModal"
 import { toggleUserSuspension } from "@/actions/user-management"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 interface UserProfileDetailsCardProps {
     profile: UserProfileDetails
@@ -25,7 +27,9 @@ export function UserProfileDetailsCard({ profile, className }: UserProfileDetail
     const [isActionLoading, setIsActionLoading] = useState(false)
     const [showAccountActionStatusModal, setShowAccountActionStatusModal] = useState<{ actionType: AccountActionType, show: boolean } | null>(null)
     const dispatch = useAppDispatch()
+    const { user } = useAppSelector(store => store.authUser)
     const { isConfirmed, lastConfirmedAction } = useAppSelector(store => store.confirmation)
+    const isMounted = useIsMounted()
 
     const isSuspended = accountStatus === "suspended"
 
@@ -116,7 +120,7 @@ export function UserProfileDetailsCard({ profile, className }: UserProfileDetail
                     <div>
                         <p className="text-[10px] text-brand-neutral-7 leading-none mb-2">Wallet Balance</p>
                         <p className="text-sm font-bold text-brand-secondary-7 leading-none">
-                            ₦{Number(profile.wallet_balance).toLocaleString()}
+                            {isMounted && formatPrice(Number(profile.wallet_balance), user?.currency)}
                         </p>
                     </div>
                 </div>

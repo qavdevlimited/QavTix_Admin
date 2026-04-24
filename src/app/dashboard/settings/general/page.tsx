@@ -25,6 +25,7 @@ import {
     ResetAllSettings,
 } from '@/actions/settings'
 import { Icon } from '@iconify/react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export default function GeneralSettingsPage() {
     const dispatch = useAppDispatch()
@@ -50,15 +51,15 @@ export default function GeneralSettingsPage() {
 
             if (genRes.success) {
                 patch.platformSupportEmail = genRes.data.platform_support_email
-                patch.defaultCurrencyCode  = genRes.data.default_currency.code
-                patch.defaultTimezone      = genRes.data.default_timezone
+                patch.defaultCurrencyCode = genRes.data.default_currency.code
+                patch.defaultTimezone = genRes.data.default_timezone
             } else {
                 dispatch(showAlert({ title: 'Failed to load settings', description: genRes.message, variant: 'destructive' }))
             }
 
             if (polRes.success) {
                 patch.sellerVerificationRequired = polRes.data.seller_verification_required
-                patch.autoApproveListing         = polRes.data.auto_approve_listing
+                patch.autoApproveListing = polRes.data.auto_approve_listing
             } else {
                 dispatch(showAlert({ title: 'Failed to load policies', description: polRes.message, variant: 'destructive' }))
             }
@@ -76,11 +77,11 @@ export default function GeneralSettingsPage() {
                 const g = res.data.general
                 const p = res.data.policies
                 reset({
-                    platformSupportEmail:      g.platform_support_email,
-                    defaultCurrencyCode:       g.default_currency.code,
-                    defaultTimezone:           g.default_timezone,
+                    platformSupportEmail: g.platform_support_email,
+                    defaultCurrencyCode: g.default_currency.code,
+                    defaultTimezone: g.default_timezone,
                     sellerVerificationRequired: p?.seller_verification_required ?? true,
-                    autoApproveListing:        p?.auto_approve_listing ?? false,
+                    autoApproveListing: p?.auto_approve_listing ?? false,
                 })
                 dispatch(openSuccessModal({ title: 'Settings Reset', description: 'All settings restored to factory defaults.', variant: 'success' }))
             } else {
@@ -95,14 +96,14 @@ export default function GeneralSettingsPage() {
             updateGeneralSettings({
                 platform_support_email: data.platformSupportEmail,
                 default_currency: {
-                    code:  data.defaultCurrencyCode,
+                    code: data.defaultCurrencyCode,
                     label: CURRENCIES.find(c => c.value === data.defaultCurrencyCode)?.label ?? data.defaultCurrencyCode,
                 },
                 default_timezone: data.defaultTimezone,
             }),
             updatePoliciesSettings({
                 seller_verification_required: data.sellerVerificationRequired,
-                auto_approve_listing:         data.autoApproveListing,
+                auto_approve_listing: data.autoApproveListing,
             }),
         ])
 
@@ -235,11 +236,21 @@ export default function GeneralSettingsPage() {
                                         >
                                             Seller verification required
                                         </Label>
-                                        <Icon
-                                            icon="hugeicons:information-circle"
-                                            className="size-4 text-amber-500 shrink-0"
-                                            title="When enabled, sellers must be verified before listing events."
-                                        />
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <button
+                                                    type="button"
+                                                    id="seller-verification-info"
+                                                    aria-label="Seller verification required: what this means"
+                                                    className="text-neutral-6 hover:text-neutral-8 transition-colors"
+                                                >
+                                                    <Icon icon="carbon:information" className="size-4 text-accent-6" />
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>When enabled, sellers must be verified before listing events.</p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </div>
                                     <FormControl>
                                         <Switch

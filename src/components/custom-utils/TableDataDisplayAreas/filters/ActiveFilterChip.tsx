@@ -4,6 +4,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { Icon } from '@iconify/react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import { useAppSelector } from '@/lib/redux/hooks'
 
 interface ActiveFilterChipsProps {
     filters: Partial<FilterValues>
@@ -101,9 +102,10 @@ export default function ActiveFilterChips({
     }
 
     // price / amount ranges
-    const priceRangeLabel = formatPriceRange(filters.priceRange, '₦')
-    const spendRangeLabel = formatPriceRange(filters.spendRange, '₦')
-    const amountRangeLabel = formatPriceRange(filters.amountRange, '₦')
+    const currency = useAppSelector(store => store.authUser.user?.currency)
+    const priceRangeLabel = formatPriceRange(filters.priceRange, currency)
+    const spendRangeLabel = formatPriceRange(filters.spendRange, currency)
+    const amountRangeLabel = formatPriceRange(filters.amountRange, currency)
     const quantityRangeLabel = formatPriceRange(filters.quantityRange)
 
     if (priceRangeLabel) chips.push({ key: 'priceRange', value: priceRangeLabel, label: `Price: ${priceRangeLabel}` })

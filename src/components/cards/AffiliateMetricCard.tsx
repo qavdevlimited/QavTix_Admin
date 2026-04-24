@@ -48,7 +48,7 @@ export default function AffiliateMetricCard({ data, className }: AffiliateMetric
                         data={data.trendData}
                         isPositive={isUp}
                         width={90}
-                        height={40}
+                        height={36}
                         theme={{
                             trendPositive: trendPositive,
                             trendNegative: trendNegative,

@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 interface RevenueDataPoint {
     day: string
@@ -32,13 +35,16 @@ interface RevenueChartProps {
 export function UserRevenueChart({ className }: RevenueChartProps) {
     const [timeFilter, setTimeFilter] = useState('this-week')
 
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
     const customTooltip = (props: any) => {
         const { active, payload } = props
         if (active && payload && payload.length > 0) {
             const value = payload[0].value
             return (
                 <div className="bg-brand-accent-6 text-white px-3 py-2 rounded-lg shadow-lg text-sm font-semibold">
-                    ₦{(value / 1000).toFixed(1)}k
+                    {isMounted ? formatPrice(value, user?.currency, true, true) : ""}
                 </div>
             )
         }

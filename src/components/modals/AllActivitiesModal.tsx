@@ -130,7 +130,7 @@ export default function AllActivitiesModal({ initialData }: { initialData?: Admi
             {isPending && (
                 <div className="space-y-2 px-6 pb-2">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="h-16 w-full rounded-lg bg-brand-neutral-2 animate-pulse" />
+                        <div key={i} className="h-16 w-full rounded-lg bg-brand-neutral-5 animate-pulse" />
                     ))}
                 </div>
             )}
@@ -149,7 +149,7 @@ export default function AllActivitiesModal({ initialData }: { initialData?: Admi
                         )}
                     >
                         {isPending ? (
-                            <Icon icon="hugeicons:loading-03" className="w-4 h-4 animate-spin" />
+                            <Icon icon="hugeicons:loading-03" className="size-6 text-brand-primary-6 animate-spin" />
                         ) : (
                             <>
                                 <span>Load More</span>

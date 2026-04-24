@@ -13,7 +13,7 @@ interface EventFilterTypeBtnProps extends React.ButtonHTMLAttributes<HTMLButtonE
 
 const EventFilterTypeBtn = forwardRef<HTMLButtonElement, EventFilterTypeBtnProps>(
     ({ onClick, displayText, hasActiveFilter, icon, className, ...props }, ref) => {
-        const baseStyles = 'flex items-center gap-3 transition-colors outline-none'
+        const baseStyles = 'flex items-center gap-2 transition-colors outline-none'
 
         const variants = {
             compact: cn(
@@ -49,7 +49,7 @@ const EventFilterTypeBtn = forwardRef<HTMLButtonElement, EventFilterTypeBtnProps
                 <Icon
                     icon="fluent:chevron-down-20-filled"
                     className={cn(
-                        'size-5 shrink-0 text-brand-neutral-8',
+                        'size-4 shrink-0 text-brand-neutral-8',
                         'group-hover:text-brand-primary-6'
                     )}
                 />

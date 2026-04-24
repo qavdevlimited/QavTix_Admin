@@ -44,7 +44,7 @@ function buildActions(status: EventStatus): AdminEventAction[] {
     }
 
     actions.push({ id: "download", label: "Download Attendee List", icon: "hugeicons:download-01" })
-    actions.push({ id: "send-update", label: "Send Update to Buyers", icon: "lucide:mail" })
+    // actions.push({ id: "send-update", label: "Send Update to Buyers", icon: "lucide:mail" })
 
     if (isActive) {
         actions.push({ id: "feature", label: "Add to Featured", icon: "flowbite:rectangle-list-outline" })

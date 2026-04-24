@@ -8,6 +8,9 @@ import EmptyTicketsState from "../../empty-state"
 import PaginationControls from "../../tools/PaginationControl"
 import CustomAvatar from "@/components/custom-utils/avatars/CustomAvatar"
 import Image from "next/image"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
     pending:   { text: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200" },
@@ -42,6 +45,9 @@ export default function AdminFeaturedPaymentsTable({
     items, isLoading, isLoadingMore, isEmpty, isError,
     search, currentPage, totalPages, count, fetchPage,
 }: AdminFeaturedPaymentsTableProps) {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
 
     if (isLoading) return <TableLoader />
     if (isError) return <EmptyTicketsState title="Something went wrong" text="Failed to load featured payments." />
@@ -56,15 +62,15 @@ export default function AdminFeaturedPaymentsTable({
         <div className="w-full space-y-4">
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm text-brand-secondary-9">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Event</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Host</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Package</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Amount</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Payment Date</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Method</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Status</th>
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Event</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Host</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Package</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Payment Date</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Method</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -102,7 +108,7 @@ export default function AdminFeaturedPaymentsTable({
                                         <p className="text-[11px] text-brand-secondary-6">{payment.package.duration_days}d</p>
                                     </td>
                                     <td className="py-4 px-5">
-                                        <p className="text-xs font-bold whitespace-nowrap">₦{Number(payment.amount).toLocaleString()}</p>
+                                        <p className="text-xs font-bold whitespace-nowrap">{isMounted && formatPrice(Number(payment.amount), user?.currency)}</p>
                                     </td>
                                     <td className="py-4 px-5">
                                         <p className="text-xs text-brand-secondary-8 whitespace-nowrap">{formatDateTime(payment.payment_date)}</p>
@@ -146,7 +152,7 @@ export default function AdminFeaturedPaymentsTable({
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-[11px] text-brand-secondary-7 border-t border-brand-neutral-2 pt-3">
                                 <div><span className="font-bold">Host:</span> {payment.host.business_name}</div>
-                                <div><span className="font-bold">Amount:</span> ₦{Number(payment.amount).toLocaleString()}</div>
+                                <div><span className="font-bold">Amount:</span> {isMounted && formatPrice(Number(payment.amount), user?.currency)}</div>
                                 <div><span className="font-bold">Method:</span> {payment.payment_method?.replace("_", " ") ?? "—"}</div>
                                 <div><span className="font-bold">Date:</span> {formatDateTime(payment.payment_date)}</div>
                             </div>

@@ -38,7 +38,7 @@ export default function ReviewRequestModal({
         dispatch(openConfirmation({
             actionType: "APPROVE_HOST",
             title: "Approve Request",
-            description: `Are you sure you want to approve ${host.owner_name || "this host"}'s verification request?`,
+            description: `Are you sure you want to approve ${host?.owner_name || "this host"}'s verification request?`,
             confirmText: "Yes, Approve",
         }))
     }
@@ -48,7 +48,7 @@ export default function ReviewRequestModal({
         dispatch(openConfirmation({
             actionType: "DECLINE_HOST",
             title: "Decline Request",
-            description: `Are you sure you want to decline ${host.owner_name || "this host"}'s verification request?`,
+            description: `Are you sure you want to decline ${host?.owner_name || "this host"}'s verification request?`,
             confirmText: "Yes, Decline",
         }))
     }
@@ -65,11 +65,11 @@ export default function ReviewRequestModal({
             let result: { success: boolean; message?: string } = { success: false }
 
             if (actionId === "approve") {
-                result = await approveHostVerification(host.host_id)
+                result = await approveHostVerification(host?.host_id)
                 if (result.success) {
                     dispatch(openSuccessModal({
                         title: "Verification Approved",
-                        description: `${host.owner_name || "Host"}'s verification request has been approved.`,
+                        description: `${host?.owner_name || "Host"}'s verification request has been approved.`,
                         variant: "success",
                         autoClose: true,
                         autoCloseDelay: 3000,
@@ -78,11 +78,11 @@ export default function ReviewRequestModal({
             }
 
             if (actionId === "decline") {
-                result = await declineHostVerification(host.host_id)
+                result = await declineHostVerification(host?.host_id)
                 if (result.success) {
                     dispatch(openSuccessModal({
                         title: "Request Declined",
-                        description: `${host.owner_name || "Host"}'s verification request has been declined.`,
+                        description: `${host?.owner_name || "Host"}'s verification request has been declined.`,
                         variant: "success",
                         autoClose: true,
                         autoCloseDelay: 3000,
@@ -107,12 +107,22 @@ export default function ReviewRequestModal({
         run()
     }, [isConfirmed, lastConfirmedAction])
 
+
+    useEffect(() => {
+        if (!host && open) {
+            onOpenChange(false)
+        }
+    }, [host, open])
+
+
+    if (!host) return null;
+
     return (
         <AnimatedDialog
             open={open}
             onOpenChange={onOpenChange}
             showCloseButton={false}
-            className="max-w-[320px] w-full py-5 px-5"
+            className="max-w-[320px]! w-full p-0!"
         >
             <button
                 onClick={() => onOpenChange(false)}
@@ -123,7 +133,7 @@ export default function ReviewRequestModal({
             </button>
 
             <DialogHeader className="mb-4">
-                <DialogTitle className={cn(space_grotesk.className, "text-base font-bold text-brand-secondary-9")}>
+                <DialogTitle className={cn("text-base font-bold text-brand-secondary-9")}>
                     Review Request
                 </DialogTitle>
                 <DialogDescription className="sr-only">
@@ -133,19 +143,12 @@ export default function ReviewRequestModal({
 
             {/* Profile row */}
             <div className="flex items-start gap-3 mb-4">
-                <div className="relative size-20 rounded-full overflow-hidden shrink-0 bg-brand-neutral-3">
-                    <CustomAvatar
-                        name={host.owner_name}
-                        profileImg={host.profile_picture}
-                        id={String(host.host_id)}
-                        size="size-[100px] text-3xl"
-                    />
-                    {host.host_id && (
-                        <p className="absolute bottom-0 left-0 right-0 text-center text-[9px] font-medium text-brand-secondary-7 bg-white/80 py-0.5">
-                            RC: {host.host_id}
-                        </p>
-                    )}
-                </div>
+                <CustomAvatar
+                    name={host?.owner_name}
+                    profileImg={host?.profile_picture}
+                    id={String(host?.host_id)}
+                    size="size-[100px] text-3xl"
+                />
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 mb-0.5">
@@ -181,10 +184,10 @@ export default function ReviewRequestModal({
 
             {host.nin && (
                 <div className="mb-5">
-                    <p className={cn(space_grotesk.className, "text-sm font-bold text-brand-secondary-9 mb-0.5")}>
+                    <p className={cn(space_grotesk.className, "font-bold text-brand-secondary-9 mb-0.5")}>
                         National Identification Number:
                     </p>
-                    <p className="text-sm text-brand-secondary-7">{host.nin}</p>
+                    <p className={cn(space_grotesk.className, "text-brand-neutral-9 font-medium")}>{host.nin}</p>
                 </div>
             )}
 
@@ -192,12 +195,12 @@ export default function ReviewRequestModal({
                 <ActionButton1
                     buttonText="Approve"
                     action={handleApprove}
-                    className="flex-1"
+                    className="flex-1 text-sm! h-12!"
                 />
                 <ActionButton2
                     buttonText="Decline"
                     action={handleDecline}
-                    className="flex-1"
+                    className="flex-1 h-12!"
                 />
             </div>
         </AnimatedDialog>

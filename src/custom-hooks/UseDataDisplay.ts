@@ -308,7 +308,7 @@ const useTabState = <T>(
             setCount(cachedItemsRef.current.length)
             setHasNext(false)
             setTotalPages(1)
-            setStatus("idle")
+            setStatus(cachedItemsRef.current.length === 0 ? "empty" : "idle")
             return
         }
 

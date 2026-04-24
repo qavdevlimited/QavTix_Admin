@@ -29,7 +29,7 @@ export default function OverviewSection({ sectionTwo }: OverviewSectionProps) {
     return (
         <>
             <section className="w-full">
-                <div className="relative space-y-6 px-6 py-6 md:px-10 min-h-40 bg-linear-to-br from-brand-primary-5.2 to-brand-primary w-full rounded-xl">
+                <div className="relative space-y-6 px-6 py-6 md:px-10 min-h-80 sm:min-h-40 bg-linear-to-br from-brand-primary-5.2 to-brand-primary w-full rounded-xl">
 
                     <div className="text-white relative z-20">
                         <SystemStatus status="OPERATIONAL" />
@@ -45,7 +45,7 @@ export default function OverviewSection({ sectionTwo }: OverviewSectionProps) {
                         </p>
                     </div>
 
-                    <div className="hidden md:grid relative z-20 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 lg:max-w-3xl">
+                    <div className="relative z-20 flex flex-wrap gap-4 mt-4 lg:max-w-3xl">
                         {statusMetricsData.map(config => (
                             <DashboardStatusMetricsCard key={config.id} config={config} />
                         ))}
@@ -69,13 +69,6 @@ export default function OverviewSection({ sectionTwo }: OverviewSectionProps) {
                             }}
                         />
                     </div>
-                </div>
-
-                {/* Status Metric Cards */}
-                <div className="md:hidden grid relative z-20 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10 lg:max-w-3xl">
-                    {statusMetricsData.map(config => (
-                        <DashboardStatusMetricsCard key={config.id} config={config} />
-                    ))}
                 </div>
             </section>
         </>

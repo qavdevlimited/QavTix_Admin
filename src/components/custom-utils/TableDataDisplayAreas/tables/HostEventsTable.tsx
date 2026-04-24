@@ -9,6 +9,9 @@ import EmptyTicketsState from "../empty-state"
 import PaginationControls from "../tools/PaginationControl"
 import HostEventActionDropdown from "@/components/custom-utils/dropdown/HostEventActionDropdown"
 import { Icon } from "@iconify/react"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 const EVENT_STATUS_CONFIG: Record<string, { text: string; bg: string }> = {
     active: { text: "text-emerald-700", bg: "bg-emerald-50" },
@@ -48,6 +51,9 @@ export default function HostEventsTable({
     fetchPage,
     onRefresh,
 }: HostEventsTableProps) {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
 
 
     if (isLoading) return <TableLoader />
@@ -71,16 +77,16 @@ export default function HostEventsTable({
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm text-brand-secondary-9">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Event</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Status</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Date</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Location</th>
-                            <th className="py-4 px-5 text-center font-medium whitespace-nowrap">Tickets Sold</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Revenue</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Views</th>
-                            <th className="py-4 px-4 text-right font-medium">Actions</th>
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Event</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Date</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Location</th>
+                            <th className="py-4 px-5 text-center font-bold whitespace-nowrap">Tickets Sold</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Revenue</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Views</th>
+                            <th className="py-4 px-4 text-right font-bold">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -137,7 +143,7 @@ export default function HostEventsTable({
                                     {/* Revenue */}
                                     <td className="py-4 px-5">
                                         <p className="text-xs font-semibold whitespace-nowrap">
-                                            ₦{Number(event.revenue).toLocaleString()}
+                                            {isMounted && formatPrice(Number(event.revenue), user?.currency)}
                                         </p>
                                     </td>
 
@@ -202,7 +208,7 @@ export default function HostEventsTable({
                                     <span className="font-bold">Tickets:</span> {event.tickets_sold}/{event.total_listed}
                                 </div>
                                 <div>
-                                    <span className="font-bold">Revenue:</span> ₦{Number(event.revenue).toLocaleString()}
+                                    <span className="font-bold">Revenue:</span> {isMounted && formatPrice(Number(event.revenue), user?.currency)}
                                 </div>
                                 <div>
                                     <span className="font-bold">Views:</span> {event.views_count}

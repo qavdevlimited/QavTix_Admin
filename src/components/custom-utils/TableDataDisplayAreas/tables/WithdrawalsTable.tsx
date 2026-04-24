@@ -8,20 +8,26 @@ import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "../empty-state"
 import { v4 as randomUUID } from "uuid"
 import { formatDateTime } from "@/helper-fns/date-utils"
+import CustomAvatar from "../../avatars/CustomAvatar"
+import BankLogo from "@/components/financials/BankLogo"
+import { Badge } from "@/components/ui/badge"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 
 interface WithdrawalsTableProps {
-    items:         AdminWithdrawal[]
-    isLoading:     boolean
+    items: AdminWithdrawal[]
+    isLoading: boolean
     isLoadingMore: boolean
-    hasNext:       boolean
-    count:         number
-    onLoadMore:    () => void
-    isEmpty:       boolean
-    isError:       boolean
-    search:        string
-    currentPage:   number
-    totalPages:    number
-    fetchPage:     (page: number) => void
+    hasNext: boolean
+    count: number
+    onLoadMore: () => void
+    isEmpty: boolean
+    isError: boolean
+    search: string
+    currentPage: number
+    totalPages: number
+    fetchPage: (page: number) => void
 }
 
 export default function WithdrawalsTable({
@@ -36,7 +42,10 @@ export default function WithdrawalsTable({
     count,
 }: WithdrawalsTableProps) {
 
-    if (isLoading) return <TableLoader className="my-0" />
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
+    if (isLoading) return <TableLoader />
 
     if (isError) {
         return (
@@ -71,14 +80,14 @@ export default function WithdrawalsTable({
             <div className="hidden md:block border border-brand-neutral-2 rounded-xl overflow-hidden!">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-brand-neutral-3 border-b border-brand-neutral-3">
-                            <tr>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Recipient</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Bank Account</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Amount</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Date</th>
-                                <th className="text-left py-4 px-5 text-sm font-semibold text-brand-secondary-8 capitalize whitespace-nowrap">Payment ID</th>
+                        <thead className="bg-brand-neutral-3">
+                            <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Payment ID</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Profile Info</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Bank Account</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Withdrawal Date</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Amount</th>
+                                <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -91,38 +100,32 @@ export default function WithdrawalsTable({
                                         className="hover:bg-brand-neutral-3/70 transition-colors"
                                     >
                                         <td className="py-4 px-5">
-                                            <span className={cn(
-                                                "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                                                statusCfg.color,
-                                                statusCfg.bg,
-                                            )}>
-                                                {statusCfg.label}
-                                            </span>
+                                            <p className="text-[10px] text-brand-secondary-5">
+                                                {withdrawal.payment_id.slice(0, 8)}…
+                                            </p>
                                         </td>
                                         <td className="py-4 px-5">
                                             <div className="flex flex-col gap-0.5">
                                                 <p className="text-xs font-medium text-brand-secondary-9 whitespace-nowrap">
                                                     {withdrawal.profile.full_name}
                                                 </p>
-                                                <p className="text-[11px] text-brand-secondary-5">
+                                                <p className="text-[10px] text-brand-secondary-5">
                                                     {withdrawal.profile.email}
                                                 </p>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-5">
+                                        <td className="py-4 px-5 flex gap-2">
+                                            <div className="size-9 rounded-md bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden border border-gray-200">
+                                                <BankLogo bankName={withdrawal.bank_account.bank_name} />
+                                            </div>
                                             <div className="flex flex-col gap-0.5">
-                                                <p className="text-xs font-medium text-brand-secondary-9 whitespace-nowrap">
+                                                <p className="text-xs font-medium text-brand-secondary-7 whitespace-nowrap">
                                                     {withdrawal.bank_account.bank_name}
                                                 </p>
-                                                <p className="text-[11px] text-brand-secondary-5">
-                                                    {withdrawal.bank_account.account_number} · {withdrawal.bank_account.account_name}
+                                                <p className="text-[10px] text-brand-neutral-7">
+                                                    {withdrawal.bank_account.account_name}
                                                 </p>
                                             </div>
-                                        </td>
-                                        <td className="py-4 px-5">
-                                            <p className="text-xs font-semibold text-brand-secondary-9 whitespace-nowrap">
-                                                ₦{Number(withdrawal.amount).toLocaleString()}
-                                            </p>
                                         </td>
                                         <td className="py-4 px-5">
                                             <p className="text-xs text-brand-secondary-6 whitespace-nowrap">
@@ -130,9 +133,18 @@ export default function WithdrawalsTable({
                                             </p>
                                         </td>
                                         <td className="py-4 px-5">
-                                            <p className="text-[11px] text-brand-secondary-5 font-mono">
-                                                {withdrawal.payment_id.slice(0, 8)}…
+                                            <p className="text-xs font-semibold text-brand-secondary-9 whitespace-nowrap">
+                                                {formatPrice(Number(withdrawal.amount), user?.currency)}
                                             </p>
+                                        </td>
+                                        <td className="py-4 px-5">
+                                            <Badge className={cn(
+                                                "inline-flex  items-center border border-current/40 px-2 rounded-sm text-xs font-medium",
+                                                statusCfg.color,
+                                                statusCfg.bg,
+                                            )}>
+                                                {statusCfg.label}
+                                            </Badge>
                                         </td>
                                     </tr>
                                 )
@@ -150,34 +162,63 @@ export default function WithdrawalsTable({
                     return (
                         <div
                             key={`mob-${randomUUID()}-${withdrawal.payment_id}`}
-                            className="border border-brand-neutral-3 rounded-lg p-3"
+                            className="border border-brand-neutral-3 rounded-lg p-3 space-y-3"
                         >
-                            <div className="flex items-center justify-between gap-2 mb-3">
-                                <div className="flex flex-col gap-0.5">
-                                    <p className="text-xs font-medium text-brand-secondary-9">
-                                        {withdrawal.profile.full_name}
-                                    </p>
-                                    <p className="text-[11px] text-brand-secondary-5">{withdrawal.profile.email}</p>
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">Payment ID:</span> {withdrawal.payment_id}
+                                </p>
+                                <p className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">Amount:</span> {isMounted && formatPrice(Number(withdrawal.amount), user?.currency)}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <CustomAvatar
+                                        name={withdrawal.profile.full_name}
+                                        profileImg={withdrawal.profile.profile_picture}
+                                        id={String(withdrawal.profile.full_name)}
+                                        size="size-9 text-sm"
+                                    />
+                                    <div className="flex flex-col gap-0.5">
+                                        <p className="text-xs font-medium text-brand-secondary-9">
+                                            {withdrawal.profile.full_name}
+                                        </p>
+                                        <p className="text-[10px] text-brand-secondary-5">
+                                            {withdrawal.profile.email}
+                                        </p>
+                                    </div>
                                 </div>
-                                <span className={cn(
-                                    "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0",
+                                <Badge className={cn(
+                                    "inline-flex  items-center border border-current/40 px-2 rounded-sm text-xs font-medium",
                                     statusCfg.color,
                                     statusCfg.bg,
                                 )}>
                                     {statusCfg.label}
-                                </span>
+                                </Badge>
                             </div>
 
-                            <div className="flex flex-col gap-0.5 mb-2">
-                                <p className="text-xs font-medium text-brand-secondary-8">{withdrawal.bank_account.bank_name}</p>
-                                <p className="text-[11px] text-brand-secondary-5">
-                                    {withdrawal.bank_account.account_number} · {withdrawal.bank_account.account_name}
-                                </p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-brand-secondary-9">
-                                <span><span className="font-bold">Amount:</span> ₦{Number(withdrawal.amount).toLocaleString()}</span>
-                                <span><span className="font-bold">Date:</span> {formatDateTime(withdrawal.withdrawal_date)}</span>
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="size-9 rounded-md bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden border border-gray-200">
+                                        <BankLogo bankName={withdrawal.bank_account.bank_name} />
+                                    </div>
+                                    <div className="flex flex-col gap-0.5">
+                                        <p className="text-xs font-medium text-brand-secondary-7">
+                                            {withdrawal.bank_account.account_name}
+                                        </p>
+                                        <p className="text-[10px] text-brand-neutral-7">
+                                            {withdrawal.bank_account.bank_name}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-0.5 text-right">
+                                    <p className="text-[10px] font-bold text-brand-secondary-9">Withdrawal Date:</p>
+                                    <p className="text-[10px] text-brand-secondary-5">
+                                        {formatDateTime(withdrawal.withdrawal_date)}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     )

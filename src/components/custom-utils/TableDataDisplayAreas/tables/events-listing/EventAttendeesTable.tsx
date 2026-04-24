@@ -7,6 +7,9 @@ import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "../../empty-state"
 import PaginationControls from "../../tools/PaginationControl"
 import CustomAvatar from "@/components/custom-utils/avatars/CustomAvatar"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 const TICKET_STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
     active: { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
@@ -42,6 +45,9 @@ export default function EventAttendeesTable({
     count,
     fetchPage,
 }: EventAttendeesTableProps) {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
 
     if (isLoading) return <TableLoader />
 
@@ -65,15 +71,15 @@ export default function EventAttendeesTable({
             {/* ── Desktop Table ──────────────────────────────────── */}
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm text-brand-secondary-9">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Ticket ID</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Attendee</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Ticket Type</th>
-                            <th className="py-4 px-5 text-center font-medium whitespace-nowrap">Qty</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Amount</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Purchase Date</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Status</th>
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Ticket ID</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Attendee</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Ticket Type</th>
+                            <th className="py-4 px-5 text-center font-bold whitespace-nowrap">Qty</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Purchase Date</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -115,7 +121,7 @@ export default function EventAttendeesTable({
 
                                     {/* Amount */}
                                     <td className="py-4 px-5">
-                                        <p className="text-xs font-semibold whitespace-nowrap">₦{Number(ticket.amount).toLocaleString()}</p>
+                                        <p className="text-xs font-semibold whitespace-nowrap">{isMounted && formatPrice(Number(ticket.amount), user?.currency)}</p>
                                     </td>
 
                                     {/* Purchase Date */}
@@ -160,7 +166,7 @@ export default function EventAttendeesTable({
                             <div className="grid grid-cols-2 gap-2 text-[11px] text-brand-secondary-7 border-t border-brand-neutral-2 pt-3">
                                 <div><span className="font-bold">Type:</span> {ticket.ticket_type || "—"}</div>
                                 <div><span className="font-bold">Qty:</span> {ticket.quantity}</div>
-                                <div><span className="font-bold">Amount:</span> ₦{Number(ticket.amount).toLocaleString()}</div>
+                                <div><span className="font-bold">Amount:</span> {isMounted && formatPrice(Number(ticket.amount), user?.currency)}</div>
                                 <div><span className="font-bold">Date:</span> {formatDateTime(ticket.purchase_date)}</div>
                                 <div className="col-span-2">
                                     <span className="font-bold">ID:</span>{" "}

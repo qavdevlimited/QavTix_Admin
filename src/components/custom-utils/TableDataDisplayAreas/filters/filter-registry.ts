@@ -9,7 +9,6 @@ import DateRangePresetFilter from "./DateRangePresetFilter"
 import { PurchaseDateFilter } from "./PurchaseDateFilter"
 import { EventFilter } from "./EventFilter"
 import { SortByFilter } from "./SortByFilter"
-import { UserFilter } from "./UsersFilter"
 import { ListingTypeFilter } from "./ListingTypeFilter"
 import { UserStatusFilter } from "./UserStatusFilter"
 import { ActionsFilter } from "./ActionFilter"
@@ -127,10 +126,6 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
   purchaseDateRange: {
     component: DateFilter,
     stateKey: 'purchaseDateRange'
-  },
-  user: {
-    component: UserFilter,
-    stateKey: 'user'
   },
   userStatus: {
     component: UserStatusFilter,

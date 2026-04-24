@@ -7,13 +7,17 @@ import TableLoader from "@/components/loaders/TableLoader"
 import EmptyTicketsState from "../../empty-state"
 import PaginationControls from "../../tools/PaginationControl"
 import CustomAvatar from "@/components/custom-utils/avatars/CustomAvatar"
-import Image from "next/image"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
+import UserInfo from "@/components/custom-utils/users/UserInfo"
+import { format, parseISO } from "date-fns"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
-    pending:    { text: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200" },
-    approved:   { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
-    declined:   { text: "text-red-600",     bg: "bg-red-50",     border: "border-red-200" },
-    processing: { text: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200" },
+    pending: { text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
+    approved: { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+    declined: { text: "text-red-600", bg: "bg-red-50", border: "border-red-200" },
+    processing: { text: "text-blue-700", bg: "bg-blue-50", border: "border-blue-200" },
 }
 
 interface AdminPayoutHistoryTableProps {
@@ -36,6 +40,9 @@ export default function AdminPayoutHistoryTable({
     search, currentPage, totalPages, count, fetchPage,
 }: AdminPayoutHistoryTableProps) {
 
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
     if (isLoading) return <TableLoader />
     if (isError) return <EmptyTicketsState title="Something went wrong" text="Failed to load payout history." />
     if (isEmpty) return (
@@ -49,13 +56,13 @@ export default function AdminPayoutHistoryTable({
         <div className="w-full space-y-4">
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm text-brand-secondary-9">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Recipient</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Bank Details</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Amount</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Date</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Status</th>
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Recipient</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Bank Details</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Date</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -65,20 +72,22 @@ export default function AdminPayoutHistoryTable({
                             return (
                                 <tr key={payout.payout_id} className="hover:bg-brand-neutral-3/70 transition-colors">
                                     <td className="py-4 px-5">
-                                        <div className="flex items-center gap-3">
-                                            <CustomAvatar name={payout.seller.name} id={payout.payout_id} profileImg={payout.seller.profile_picture ?? undefined} size="size-8 shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-semibold text-brand-secondary-9 truncate">{sellerName}</p>
-                                                <p className="text-[11px] text-brand-secondary-6 truncate">{payout.seller.email}</p>
-                                            </div>
-                                        </div>
+                                        <UserInfo
+                                            user={{
+                                                id: payout.payout_id,
+                                                name: sellerName,
+                                                email: payout.seller.email,
+                                                profileImg: payout.seller.profile_picture ?? "",
+                                            }}
+                                            variant="desktop"
+                                        />
                                     </td>
                                     <td className="py-4 px-5">
                                         <p className="text-xs font-medium text-brand-secondary-8">{payout.bank_account.bank_name}</p>
                                         <p className="text-[11px] text-brand-secondary-6">{payout.bank_account.account_number}</p>
                                     </td>
                                     <td className="py-4 px-5">
-                                        <p className="text-xs font-bold whitespace-nowrap">₦{Number(payout.amount).toLocaleString()}</p>
+                                        <p className="text-xs font-bold whitespace-nowrap">{isMounted && formatPrice(Number(payout.amount), user?.currency)}</p>
                                     </td>
                                     <td className="py-4 px-5">
                                         <p className="text-xs text-brand-secondary-8 whitespace-nowrap">{formatDateTime(payout.request_date)}</p>
@@ -100,22 +109,46 @@ export default function AdminPayoutHistoryTable({
                     const cfg = STATUS_CONFIG[payout.status] ?? STATUS_CONFIG.approved
                     const sellerName = payout.seller.business_name ?? payout.seller.name
                     return (
-                        <div key={payout.payout_id} className="border border-brand-neutral-3 rounded-2xl p-4 bg-white">
-                            <div className="flex items-center gap-3 mb-3">
-                                <CustomAvatar name={payout.seller.name} id={payout.payout_id} profileImg={payout.seller.profile_picture ?? undefined} size="size-10 shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-brand-secondary-9 truncate">{sellerName}</p>
-                                    <p className="text-[11px] text-brand-secondary-6 truncate">{payout.seller.email}</p>
+                        <div key={payout.payout_id} className="border border-brand-neutral-3 rounded-2xl p-4 bg-white space-y-3">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <span className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">Payout ID: </span>{payout.payout_id}
+                                </span>
+                                <span className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">Amount: </span>
+                                    {isMounted && formatPrice(parseFloat(payout.amount), user?.currency)}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-4 flex-wrap">
+                                <div className="flex flex-col gap-0.5">
+                                    <p className="text-[10px] font-bold text-brand-secondary-9">Business Name:</p>
+                                    <p className="text-[10px] text-brand-secondary-7">{payout.seller.business_name ?? payout.seller.name}</p>
                                 </div>
-                                <Badge className={cn("px-2 py-0.5 rounded-md border-[0.8px] capitalize font-medium text-[10px]", cfg.text, cfg.bg, cfg.border)}>
+                                <UserInfo
+                                    user={{
+                                        id: payout.payout_id,
+                                        name: sellerName,
+                                        email: payout.seller.email,
+                                        profileImg: payout.seller.profile_picture ?? "",
+                                    }}
+                                    variant="mobile"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <p className="text-[10px] text-brand-secondary-9">
+                                    <span className="font-bold">Payment Date: </span>
+                                    {format(parseISO(payout.request_date), "MMM d, yyyy")}
+                                    <span className="text-brand-neutral-5 mx-2">|</span>
+                                    {format(parseISO(payout.request_date), "h:mm a")}
+                                </p>
+                                <Badge className={cn(
+                                    "px-3 py-1 rounded text-[10px] border-[0.8px] capitalize",
+                                    cfg.bg, cfg.text, cfg.border
+                                )}>
                                     {payout.status}
                                 </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-[11px] text-brand-secondary-7 border-t border-brand-neutral-2 pt-3">
-                                <div><span className="font-bold">Amount:</span> ₦{Number(payout.amount).toLocaleString()}</div>
-                                <div><span className="font-bold">Bank:</span> {payout.bank_account.bank_name}</div>
-                                <div><span className="font-bold">Account:</span> {payout.bank_account.account_number}</div>
-                                <div><span className="font-bold">Date:</span> {formatDateTime(payout.request_date)}</div>
                             </div>
                         </div>
                     )

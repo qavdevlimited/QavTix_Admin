@@ -17,7 +17,7 @@ interface NotificationItemProps {
 }
 
 export default function NotificationItem({ notification }: NotificationItemProps) {
-    const dotColor = NOTIFICATION_DOT_COLOR[notification.notification_type] ?? 'bg-blue-500'
+    const dotColor = NOTIFICATION_DOT_COLOR[notification.notification_type ?? ''] ?? 'bg-blue-500'
     const isUnread = !notification.is_read
     const timeAgo  = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })
 

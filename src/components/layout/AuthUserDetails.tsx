@@ -29,7 +29,7 @@ export default function AuthUserDetails() {
                 </Avatar>
                 <div className={`shrink w-3/5`}>
                     <p className="truncate capitalize text-[.83rem] font-medium">{user?.full_name}</p>
-                    <p className="truncate capitalize text-[.83rem] font-normal">{user?.email}</p>
+                    <p className="truncate text-[.83rem] font-normal">{user?.email}</p>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger className="focus:outline-none focus:ring-2 focus:ring-darkbg-brand-primary-darkRed-400">

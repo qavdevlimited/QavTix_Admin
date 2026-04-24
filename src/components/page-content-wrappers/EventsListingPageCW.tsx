@@ -38,6 +38,7 @@ export default function EventsListingPageCW({
     const { filterOptions, tabList } = AdminEventsTabNFilterOptions
 
     const [activeTab, setActiveTab] = useState<typeof AdminEventsTabNFilterOptions.tabList[number]["value"]>("all")
+    const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
     const [filters, setFilters] = useState<Partial<FilterValues>>({})
     const [cards, setCards] = useState<AdminEventCards | null>(initialCards)
     const [isCardsLoading, startCardsTransition] = useTransition()
@@ -65,7 +66,9 @@ export default function EventsListingPageCW({
         [categories?.length, activeTabState?.cachedItems],
     )
 
+
     const handleDatePresetChange = (preset: DatePreset | null) => {
+        setDatePreset(preset)
         startCardsTransition(async () => {
             const { cards: newCards } = await getAdminEventCards(
                 preset ? { date_range: preset } : undefined,
@@ -73,14 +76,13 @@ export default function EventsListingPageCW({
             setCards(newCards)
         })
     }
-
     const metrics = mapAdminEventCardsToMetrics(cards)
 
     return (
         <main className="pb-10">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-5">
                 <DateRangePresetFilter
-                    value={null}
+                    value={datePreset}
                     onChange={handleDatePresetChange}
                     label="KPI Range"
                     icon="solar:calendar-linear"

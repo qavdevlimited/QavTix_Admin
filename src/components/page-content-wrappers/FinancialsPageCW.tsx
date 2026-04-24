@@ -123,7 +123,7 @@ export default function FinancialsPageCW({
     }
 
     const handleDatePresetChange = (preset: DatePreset | null) => {
-        setFilters(prev => ({ ...prev, dateRangePreset: preset ?? null }))
+        setFilters(prev => ({ ...prev, dateRangePreset: preset }))
         startCardsTransition(async () => {
             const { cards: freshCards } = await getAdminFinancialCards(
                 preset ? { date_range: preset } : undefined,

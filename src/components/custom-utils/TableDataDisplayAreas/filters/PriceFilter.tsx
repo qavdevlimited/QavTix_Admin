@@ -10,6 +10,8 @@ import { PriceRangeInputs } from './buttons-and-inputs/PriceRangeInputs'
 import FilterButtonsActions1 from './buttons-and-inputs/FilterActionButtons1'
 import { useMediaQuery } from '@/custom-hooks/UseMediaQuery'
 import { MobileBottomSheet } from '../../dropdown/EventFilterDropdownMobileBottomSheet'
+import { useAppSelector } from '@/lib/redux/hooks'
+import { useIsMounted } from '@/custom-hooks/UseIsMounted'
 
 
 interface PriceRange {
@@ -20,7 +22,6 @@ interface PriceRange {
 interface PriceFilterProps {
     value?: PriceRange | null
     onChange: (value: PriceRange | null) => void
-    currency?: string
     icon?: string
     label?: string
 }
@@ -30,12 +31,13 @@ export default function PriceFilter({
     onChange,
     icon,
     label = 'Price',
-    currency = '₦',
 }: PriceFilterProps) {
-    
+
+    const currency = useAppSelector(store => store.authUser.user?.currency)
     const [isOpen, setIsOpen] = useState(false)
     const isTablet = useMediaQuery('(min-width: 768px)')
-    
+    const isMounted = useIsMounted()
+
     const defaultMax = 500000
     const [priceRange, setPriceRange] = useState<PriceRange>(
         value || { min: 0, max: 10000 }
@@ -68,7 +70,7 @@ export default function PriceFilter({
     const filterContent = (
         <>
             <QuickPriceButtons
-                currency={currency}
+                currency={currency || ""}
                 selectedMax={priceRange.max}
                 onSelect={handleQuickPrice}
             />
@@ -86,7 +88,7 @@ export default function PriceFilter({
             <PriceRangeInputs
                 min={priceRange.min}
                 max={priceRange.max}
-                currency={currency}
+                currency={currency || ""}
                 onMinChange={(v) => setPriceRange(prev => ({ ...prev, min: v }))}
                 onMaxChange={(v) => setPriceRange(prev => ({ ...prev, max: v }))}
             />
@@ -95,14 +97,16 @@ export default function PriceFilter({
         </>
     )
 
+    if (!isMounted) return null;
+
     return (
         <>
             {/* Mobile - Bottom Sheet */}
             {!isTablet && (
                 <>
-                    <EventFilterTypeBtn 
+                    <EventFilterTypeBtn
                         onClick={() => setIsOpen(true)}
-                        displayText={displayText} 
+                        displayText={displayText}
                         icon={icon}
                         hasActiveFilter={!!hasActiveFilter}
                     />
@@ -122,14 +126,14 @@ export default function PriceFilter({
                 <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
                         <div>
-                            <EventFilterTypeBtn 
-                                displayText={displayText} 
+                            <EventFilterTypeBtn
+                                displayText={displayText}
                                 icon={icon}
                                 hasActiveFilter={!!hasActiveFilter}
                             />
                         </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent 
+                    <DropdownMenuContent
                         className={cn(
                             "w-[25em] z-100 p-4 rounded-xl shadow-[0px_3.69px_14.76px_0px_rgba(51,38,174,0.08)]",
                             // Open animation

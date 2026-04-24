@@ -8,8 +8,10 @@ import {
 } from "recharts"
 import { cn } from "@/lib/utils"
 import { getNiceTicks, formatYTick } from "@/helper-fns/chartFormatters"
-import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import ChartLoader from "../loaders/ChartLoader"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 interface ChartPoint {
     label: string
@@ -24,11 +26,14 @@ const toPoints = (data: { label: string, amount: string | number }[]): ChartPoin
     }))
 }
 
-const CustomTooltip = ({ active, payload, currency }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
     if (!active || !payload?.length) return null
     return (
         <div className="bg-brand-accent-6 text-white px-3 py-2 rounded-lg shadow-lg text-sm font-semibold">
-            {`${currency}${(payload[0].value ?? 0).toLocaleString()}`}
+            {isMounted ? formatPrice(payload[0].value ?? 0, user?.currency, true, true) : ""}
         </div>
     )
 }
@@ -97,7 +102,7 @@ export default function UserNetSpendChart({ data, isLoading, className }: UserNe
                                     tickMargin={8}
                                 />
                                 <Tooltip
-                                    content={<CustomTooltip currency="₦" />}
+                                    content={<CustomTooltip />}
                                     cursor={{ fill: "transparent" }}
                                 />
                                 <Bar

@@ -30,7 +30,7 @@ export default function DashboardMetricSparkline({
         const min = Math.min(...clean);
         const max = Math.max(...clean);
         const range = max - min || 1;
-        const padding = 4;
+        const padding = 8;
         const innerHeight = height - padding * 2;
 
         const points = clean.map((val, i) => ({

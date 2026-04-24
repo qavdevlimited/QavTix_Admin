@@ -8,6 +8,9 @@ import EmptyTicketsState from "../../empty-state"
 import PaginationControls from "../../tools/PaginationControl"
 import CustomAvatar from "@/components/custom-utils/avatars/CustomAvatar"
 import PayoutActionDropdown from "@/components/custom-utils/dropdown/PayoutActionDropdown"
+import { useAppSelector } from "@/lib/redux/hooks"
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import { formatPrice } from "@/helper-fns/formatPrice"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
     pending: { text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
@@ -46,6 +49,12 @@ export default function AdminPendingPayoutsTable({
     onRefresh,
 }: AdminPendingPayoutsTableProps) {
 
+    const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
+
+
+    console.log(isEmpty, items)
+
     if (isLoading) return <TableLoader />
 
     if (isError) return (
@@ -65,15 +74,15 @@ export default function AdminPendingPayoutsTable({
             {/* ── Desktop ─────────────────────────────────────────── */}
             <div className="hidden md:block overflow-x-auto rounded-2xl border border-brand-neutral-3">
                 <table className="w-full text-sm text-brand-secondary-9">
-                    <thead>
-                        <tr className="bg-brand-neutral-2/60 text-brand-secondary-6 text-xs border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Payout ID</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Seller</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Bank Details</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Amount</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Request Date</th>
-                            <th className="py-4 px-5 text-left font-medium whitespace-nowrap">Status</th>
-                            <th className="py-4 px-5 w-12" />
+                    <thead className="bg-brand-neutral-3">
+                        <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Payout ID</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Seller</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Bank Details</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Request Date</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
+                            <th className="py-4 px-5 w-12 font-bold" />
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
@@ -111,7 +120,7 @@ export default function AdminPendingPayoutsTable({
 
                                     <td className="py-4 px-5">
                                         <p className="text-xs font-bold text-brand-secondary-9 whitespace-nowrap">
-                                            ₦{Number(payout.amount).toLocaleString()}
+                                            {isMounted && formatPrice(Number(payout.amount), user?.currency)}
                                         </p>
                                     </td>
 
@@ -179,7 +188,7 @@ export default function AdminPendingPayoutsTable({
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2 text-[11px] text-brand-secondary-7 border-t border-brand-neutral-2 pt-3">
-                                <div><span className="font-bold">Amount:</span> ₦{Number(payout.amount).toLocaleString()}</div>
+                                <div><span className="font-bold">Amount:</span> {isMounted && formatPrice(Number(payout.amount), user?.currency)}</div>
                                 <div><span className="font-bold">Bank:</span> {payout.bank_account.bank_name}</div>
                                 <div><span className="font-bold">Account:</span> {payout.bank_account.account_number}</div>
                                 <div><span className="font-bold">Date:</span> {formatDateTime(payout.request_date)}</div>
