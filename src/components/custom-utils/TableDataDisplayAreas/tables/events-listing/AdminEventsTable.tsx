@@ -14,6 +14,8 @@ import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import EventInfo from "@/components/custom-utils/event/EventInfo"
 
+
+
 const STATUS_CONFIG: Record<string, { text: string; bg: string }> = {
     active: { text: "text-emerald-700", bg: "bg-emerald-50" },
     live: { text: "text-emerald-700", bg: "bg-emerald-50" },
