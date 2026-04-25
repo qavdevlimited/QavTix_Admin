@@ -22,7 +22,7 @@ import { PackageFilter } from "./PackageFilter"
 import { BillingCycleFilter } from "./BillingCycleFilter"
 import { AdminAuditActionFilter } from "./AdminAuditActionFilter"
 import { PackageStatusFilter } from "./PackageStatusFilter"
-import AdminTimestampFilter from "./AdminTImestampFilter"
+import AdminTimestampFilter from "./AdminTimestampFilter"
 
 
 type FilterComponentProps<T> = {
