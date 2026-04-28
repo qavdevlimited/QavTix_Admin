@@ -23,6 +23,7 @@ import { showAlert } from "@/lib/redux/slices/alertSlice"
 import { forceHostPayout, toggleHostAutoPayout } from "@/actions/host-management"
 import { ApiCategory } from "@/actions/filters"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
+import { exportData } from "@/helper-fns/exportData"
 
 interface HostProfilePageCWProps {
     hostId: string
@@ -133,6 +134,16 @@ export default function HostProfilePageCW({
         run()
     }, [isConfirmed, lastConfirmedAction])
 
+    const handleExport = (format: any) => {
+        const data = activeTabState?.items ?? []
+        exportData({
+            data: data as unknown as Record<string, unknown>[],
+            format,
+            filename: `host_${hostId}_events_${activeTab}`,
+            title: `Host Events - ${activeTab} tab`,
+        })
+    }
+
     return (
         <main className="pb-12">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
@@ -142,7 +153,10 @@ export default function HostProfilePageCW({
                     label="KPI Range"
                     icon="solar:calendar-linear"
                 />
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 
+                    showFormatSelector 
+                    onExport={handleExport}
+                />
             </div>
 
             <div className="mb-8">

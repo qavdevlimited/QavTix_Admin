@@ -17,9 +17,7 @@ export default function AuthPersistor({ userData }: { userData: AuthUser | null 
             if (userData?.id) {
                 dispatch(setUser(userData))
             }
-            else {
-                dispatch(clearUser())
-            }
+
         }
 
         hydrateUser()
