@@ -7,17 +7,22 @@ import PopUpsRenderer from "@/components/modals/"
 import { getServerAxios } from "@/lib/axios"
 import { ADMIN_PROFILE_ENDPOINT } from "@/endpoints"
 import AuthPersistor from "@/persistors/AuthPersistor"
+import { Suspense } from "react";
+import { cookies } from "next/headers"
 
 export const metadata: Metadata = siteMetadata
 export const viewport: Viewport = siteViewport
 
+// ─── Auth data fetcher — always inside Suspense, so cookies() is safe ─────────
+
 async function getLayoutData(): Promise<AuthUser | null> {
 	try {
-		const axiosInstance = await getServerAxios()
+		const cookieStore = await cookies()
+		const token = cookieStore.get("admin_access_token")?.value
+		const axiosInstance = await getServerAxios(token)
 		const { data } = await axiosInstance.get(ADMIN_PROFILE_ENDPOINT)
-		const userData = data.data as AuthUser
-		return userData;
-	} catch (err) {
+		return data.data as AuthUser
+	} catch {
 		return null
 	}
 }
@@ -27,9 +32,6 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-
-	const user = await getLayoutData()
-
 	return (
 		<html lang="en">
 			<head>
@@ -38,15 +40,22 @@ export default async function RootLayout({
 				<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
 				<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 			</head>
-			<body
-				className={`${inter.className}`}
-			>
-				<ReduxStoreProvider>
-					{children}
-					<PopUpsRenderer />
-					<AuthPersistor userData={user || null} />
-				</ReduxStoreProvider>
+			<body className={`${inter.className}`}>
+				<Suspense fallback={null}>
+					<ReduxStoreProvider>
+						{children}
+						<PopUpsRenderer />
+						<Suspense fallback={null}>
+							<AuthPersistorLoader />
+						</Suspense>
+					</ReduxStoreProvider>
+				</Suspense>
 			</body>
 		</html>
 	)
+}
+
+async function AuthPersistorLoader() {
+	const profileData = await getLayoutData()
+	return <AuthPersistor userData={profileData} />
 }

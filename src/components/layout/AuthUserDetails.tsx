@@ -40,7 +40,7 @@ export default function AuthUserDetails() {
                         align="start"
                         forceMount
                         className="text-brand-primary-dark_slate z-99 py-3">
-                        <DropdownMenuItem className="text-xs border-b pb-2">
+                        <DropdownMenuItem className="text-xs capitalize border-b pb-2">
                             <span>{user?.full_name}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem className="cursor-pointer text-brand-secondary-9 text-xs font-medium bg-red-50/50">

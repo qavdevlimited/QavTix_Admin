@@ -162,15 +162,15 @@ export default function BusinessManagementTable({
 
                     return (
                         <div key={host.host_id} className="border border-brand-neutral-3 rounded-xl p-4 bg-white">
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
+                            <div className="flex gap-2 justify-between items-start mb-3">
+                                <div className="w-1/2">
                                     <div className="flex items-center gap-1.5">
                                         <p className="text-sm font-semibold text-brand-secondary-9">{host.business_name}</p>
                                         {host.verified && <Icon icon="hugeicons:checkmark-badge-01" className="size-4 text-blue-500" />}
                                     </div>
                                     <p className="text-xs text-brand-neutral-7">{host.owner_email}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <Badge className={cn("px-2 py-0.5 text-[10px] border-[0.8px] capitalize", statusCfg.className)}>
                                         {statusCfg.label}
                                     </Badge>

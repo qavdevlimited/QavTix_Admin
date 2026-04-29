@@ -6,7 +6,7 @@ import {
     ResponsiveContainer, Tooltip, ReferenceLine,
 } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getAdminRevenueAnalytics } from '@/actions/dashboard';
+import { getAdminRevenueAnalyticsClient as getAdminRevenueAnalytics } from '@/actions/dashboard/client';
 import { formatPrice } from '@/helper-fns/formatPrice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { useIsMounted } from '@/custom-hooks/UseIsMounted';

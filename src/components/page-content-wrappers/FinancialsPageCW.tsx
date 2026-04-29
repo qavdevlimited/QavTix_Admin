@@ -18,7 +18,7 @@ import {
     mapAdminFinancialCardsToMetrics,
     mapAdminResaleCardsToMetrics,
 } from "@/helper-fns/mapUserManagementCards"
-import { getAdminFinancialCards, getAdminResaleCards } from "@/actions/financials"
+import { getAdminFinancialCardsClient as getAdminFinancialCards, getAdminResaleCardsClient as getAdminResaleCards } from "@/actions/financials/client"
 import AdminPendingPayoutsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPendingPayoutsTable"
 import AdminPayoutHistoryTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPayoutHistoryTable"
 import AdminMarketplaceTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminMarketplaceTable"
@@ -40,6 +40,8 @@ interface FinancialsPageCWProps {
 }
 
 type FinancialsTab = typeof FinancialsTabNFilterOptions.tabList[number]["value"]
+
+import { exportData } from "@/helper-fns/exportData"
 
 export default function FinancialsPageCW({
     initialPendingPayouts,
@@ -146,6 +148,16 @@ export default function FinancialsPageCW({
         FinancialsTabNFilterOptions.tabFilterOptions[activeTab] ??
         FinancialsTabNFilterOptions.tabFilterOptions["pending-payout"]
 
+    const handleExport = (format: any) => {
+        const data = activeTabState?.items ?? []
+        exportData({
+            data: data as unknown as Record<string, unknown>[],
+            format,
+            filename: `financials_${activeTab}`,
+            title: `Financials - ${activeTab.replace("-", " ")}`,
+        })
+    }
+
     return (
         <main className="pb-12">
 
@@ -163,7 +175,7 @@ export default function FinancialsPageCW({
                         icon="solar:calendar-linear"
                     />
                 </div>
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 showFormatSelector onExport={handleExport} />
             </div>
 
             {/* ── KPI Cards ─────────────────────────────────────── */}

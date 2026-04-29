@@ -15,8 +15,7 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { NotificationsSettingsFormData, notificationsSettingsSchema } from '@/schemas/settings.schema'
 import { NOTIFICATION_TYPES } from '@/components-data/settings-data-options'
-import { getNotificationSettings, updateNotificationSettings, ResetAllSettings } from '@/actions/settings'
-
+import { getNotificationSettingsClient as getNotificationSettings, updateNotificationSettingsClient as updateNotificationSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
 export default function NotificationsPage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)

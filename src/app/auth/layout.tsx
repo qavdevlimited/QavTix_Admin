@@ -2,7 +2,6 @@ import AuthBackgroundDecorations from "@/components/auth-pages/AuthDecorations";
 import SecurityBadges from "@/components/auth-pages/SecurityBadges";
 import AuthPagesFooter from "@/components/layout/AuthPagesFooter";
 import AuthPagesHeader from "@/components/layout/AuthPagesHeader";
-import Image from "next/image";
 import { Suspense } from "react";
 
 export default function AuthPagesLayout({
@@ -22,7 +21,7 @@ export default function AuthPagesLayout({
           <SecurityBadges />
         </Suspense>
 
-        <div style={{ width: "480px" }}>
+        <div className="max-w-full w-[480px]">
           {children}
         </div>
       </main>

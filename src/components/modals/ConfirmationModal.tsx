@@ -46,7 +46,7 @@ export default function ConfirmationModal() {
                 </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="mt-6 justify-center flex-row gap-3 sm:gap-3">
+            <DialogFooter className="mt-6 p-1 justify-center flex-row gap-3 sm:gap-3">
                 <ActionButton2
                     buttonText={cancelText || "Cancel"}
                     action={() => dispatch(closeConfirmation())}

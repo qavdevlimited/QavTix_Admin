@@ -7,6 +7,7 @@ import { space_grotesk } from "@/lib/fonts"
 import { useAppSelector } from "@/lib/redux/hooks"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
+import { FEATURED_PLANS } from "@/components-data/pricing-plans"
 
 interface FeaturedPlan {
     id: string
@@ -16,43 +17,6 @@ interface FeaturedPlan {
     features: string[]
 }
 
-const FEATURED_PLANS: FeaturedPlan[] = [
-    {
-        id: "basic",
-        name: "Basic",
-        duration: "1-Day Feature",
-        price: 45000,
-        features: [
-            'Featured in Top Events for 24 hours',
-            'Priority placement in event feed',
-            '"Featured" badge on your post',
-        ],
-    },
-    {
-        id: "standard",
-        name: "Standard",
-        duration: "3-Day Feature",
-        price: 85000,
-        features: [
-            "Featured for 72 hours",
-            "Higher visibility across homepage & search",
-            "Featured badge + boosted impressions",
-            "Social media story promotion",
-        ],
-    },
-    {
-        id: "advanced",
-        name: "Advanced",
-        duration: "7-Day Feature",
-        price: 165000,
-        features: [
-            "Featured for 7 days",
-            "Maximum visibility & sustained reach",
-            "Featured badge + boosted impressions",
-            "Weekly main social media post + story promotion",
-        ],
-    },
-]
 
 interface FeaturedPlanModalProps {
     open: boolean
@@ -76,7 +40,7 @@ export default function FeaturedPlanModal({ open, onClose, onConfirm, isLoading 
             onClick={(e) => { if (e.target === e.currentTarget && !isLoading) onClose() }}
         >
             <div className={cn(
-                "relative bg-white w-full max-w-[22em]",
+                "relative bg-white w-full max-w-[27em]",
                 "rounded-t-3xl sm:rounded-3xl",
                 "flex flex-col",
                 "max-h-[97dvh] sm:max-h-[88dvh]",

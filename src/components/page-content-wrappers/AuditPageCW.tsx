@@ -13,6 +13,8 @@ interface AuditPageCWProps {
     initialData: TabSlice<AdminAuditLog>
 }
 
+import { exportData } from "@/helper-fns/exportData"
+
 export default function AuditPageCW({ initialData }: AuditPageCWProps) {
     const [filters, setFilters] = useState<Partial<FilterValues>>({})
 
@@ -40,6 +42,15 @@ export default function AuditPageCW({ initialData }: AuditPageCWProps) {
         setFilters(prev => ({ ...prev, dateRangePreset: preset ?? undefined }))
     }
 
+    const handleExport = (format: any) => {
+        exportData({
+            data: (state?.items ?? []) as unknown as Record<string, unknown>[],
+            format,
+            filename: "audit_logs",
+            title: "Audit Logs",
+        })
+    }
+
     return (
         <main className="pb-12">
 
@@ -51,7 +62,7 @@ export default function AuditPageCW({ initialData }: AuditPageCWProps) {
                     icon="solar:calendar-linear"
                     label="Date Range"
                 />
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 showFormatSelector onExport={handleExport} />
             </div>
 
             {/* ── Table ─────────────────────────────────────────── */}

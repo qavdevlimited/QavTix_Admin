@@ -11,7 +11,7 @@ import HostSignupRequestsTable from "@/components/custom-utils/TableDataDisplayA
 import { TableDataDisplayFilter, HostManagementTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_HOSTS_ENDPOINT, ADMIN_HOST_VERIFICATIONS_ENDPOINT } from "@/endpoints"
-import { getAdminHostCards } from "@/actions/host-management"
+import { getAdminHostCardsClient as getAdminHostCards } from "@/actions/host-management/client"
 import { mapHostCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { Icon } from "@iconify/react"
 import { space_grotesk } from "@/lib/fonts"
@@ -31,6 +31,8 @@ interface Props {
     initialHostCards: AdminHostCards | null
     initialPendingHosts: TabSlice<AdminPendingHost>
 }
+
+import { exportData } from "@/helper-fns/exportData"
 
 export default function HostmanagementPageCW({
     initialHosts,
@@ -112,6 +114,20 @@ export default function HostmanagementPageCW({
     const activeState = activeTab === "all-hosts" ? hostsState : pendingState
     const hostMetrics = mapHostCardsToMetrics(hostCards, user?.currency!)
 
+    const handleExport = (format: any) => {
+        const data = activeState?.items ?? []
+        const labels: Record<ActiveTab, { filename: string; title: string }> = {
+            "all-hosts": { filename: "hosts", title: "Host List" },
+            "pending-verification": { filename: "pending_hosts", title: "Pending Verifications" },
+        }
+        exportData({
+            data: data as unknown as Record<string, unknown>[],
+            format,
+            filename: labels[activeTab].filename,
+            title: labels[activeTab].title,
+        })
+    }
+
     return (
         <main className="pb-12">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
@@ -120,7 +136,7 @@ export default function HostmanagementPageCW({
                     onChange={setDatePreset}
                     label="KPI Range"
                 />
-                <ExportButton1 showFormatSelector label={`Export ${TAB_LABELS[activeTab]}`} />
+                <ExportButton1 showFormatSelector label={`Export ${TAB_LABELS[activeTab]}`} onExport={handleExport} />
             </div>
 
             {/* KPI Cards */}

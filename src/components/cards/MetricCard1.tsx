@@ -1,3 +1,4 @@
+import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { Icon } from "@iconify/react"
@@ -8,6 +9,9 @@ interface MetricCardProps {
 }
 
 export default function MetricCard1({ data, className }: MetricCardProps) {
+
+    const isMounted = useIsMounted()
+
     return (
         <div className={cn(
             'shadow-[0px_5.8px_23.17px_0px_#3326AE14] flex flex-col justify-center max-h-32 xl:h-28 bg-white rounded-lg border border-brand-neutral-2 px-4 py-5 hover:scale-103 transition-transform duration-300 ease-in-out',
@@ -15,12 +19,12 @@ export default function MetricCard1({ data, className }: MetricCardProps) {
         )}>
             <div className="">
                 <h3 className={cn(space_grotesk.className, "sm:text-lg md:text-xl font-bold text-brand-secondary-9 mb-2")}>
-                    {data.value}
+                    {isMounted && data.value}
                 </h3>
                 <div className="flex items-center gap-2 md:gap-3">
-                    <Icon 
-                        icon={data.icon} 
-                        className={cn('size-6 md:size-7 shrink-0', data.iconColor)} 
+                    <Icon
+                        icon={data.icon}
+                        className={cn('size-6 md:size-7 shrink-0', data.iconColor)}
                     />
                     <div>
                         <p className="text-xs font-medium md:text-sm text-brand-secondary-8 mb-0.5">

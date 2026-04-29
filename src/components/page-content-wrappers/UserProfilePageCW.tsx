@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { space_grotesk } from "@/lib/fonts"
 import { TableDataDisplayFilter, UserProfileTabNFilterOptions } from "../custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import UserPurchaseHistoryTable from "../custom-utils/TableDataDisplayAreas/tables/UserPurchaseHistoryTable"
-import { getAdminUserCards, getAdminUserChart } from "@/actions/user-management"
+import { getAdminUserCardsClient as getAdminUserCards, getAdminUserChartClient as getAdminUserChart } from "@/actions/user-management/client"
 import { mapUserProfileCards } from "@/helper-fns/mapUserManagementCards"
 import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import DateRangePresetFilter from "../custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
@@ -25,6 +25,8 @@ interface UserProfilePageCWProps {
     initialChart: UserChartDataPoint[]
     initialOrders: TabSlice<UserPurchaseOrder>
 }
+
+import { exportData } from "@/helper-fns/exportData"
 
 export default function UserProfilePageCW({
     userId,
@@ -83,6 +85,15 @@ export default function UserProfilePageCW({
     const { user } = useAppSelector(store => store.authUser)
     const metrics = mapUserProfileCards(cards, user?.currency!)
 
+    const handleExport = (format: any) => {
+        exportData({
+            data: activeTabState.items as unknown as Record<string, unknown>[],
+            format,
+            filename: `user_${userId}_purchase_history`,
+            title: "Purchase History",
+        })
+    }
+
     return (
         <main className="pb-10">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
@@ -92,7 +103,7 @@ export default function UserProfilePageCW({
                     label="KPI Range"
                     icon="solar:calendar-linear"
                 />
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 showFormatSelector onExport={handleExport} />
             </div>
 
             <div>

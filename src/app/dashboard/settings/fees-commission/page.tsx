@@ -15,9 +15,8 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import CustomPercentageInput from '@/components/custom-utils/inputs/CustomPercentageInput'
 import { FeesCommissionsForm, feesCommissionsSchema } from '@/schemas/settings.schema'
-import { getFeesSettings, updateFeesSettings, ResetAllSettings } from '@/actions/settings'
+import { getFeesSettingsClient as getFeesSettings, updateFeesSettingsClient as updateFeesSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
 import { AnimatePresence, motion } from 'framer-motion'
-
 export default function FeesCommissionsPage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)

@@ -154,6 +154,7 @@ export default function AdminEventsTable({
                                             eventId={event.event_id}
                                             eventTitle={event.title}
                                             eventStatus={event.status}
+                                            isFeatured={event.is_featured}
                                         />
                                     </td>
                                 </tr>
@@ -186,6 +187,7 @@ export default function AdminEventsTable({
                                     eventId={event.event_id}
                                     eventTitle={event.title}
                                     eventStatus={event.status}
+                                    isFeatured={event.is_featured}
                                 />
                             </div>
 

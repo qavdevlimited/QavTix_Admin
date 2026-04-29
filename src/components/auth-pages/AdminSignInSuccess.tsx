@@ -1,19 +1,45 @@
 "use client"
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { space_grotesk } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
-import ActionButton1 from "../custom-utils/buttons/ActionBtn1";
 import { AnimatedDialog } from "../custom-utils/dialogs/AnimatedDialog";
 import { DialogDescription, DialogTitle } from "../ui/dialog";
+
+/** Milliseconds to show the success modal before auto-redirecting */
+const REDIRECT_DELAY = 3000
 
 interface AdminSignInSuccessProps {
     open: boolean;
 }
 
 export default function AdminSignInSuccess({ open }: AdminSignInSuccessProps) {
-    const router = useRouter()
+    const router  = useRouter()
+    const [countdown, setCountdown] = useState(Math.ceil(REDIRECT_DELAY / 1000))
+
+    useEffect(() => {
+        if (!open) return
+
+        // Reset countdown when modal opens
+        setCountdown(Math.ceil(REDIRECT_DELAY / 1000))
+
+        // Decrement every second for the visual countdown
+        const tick = setInterval(() => {
+            setCountdown(prev => Math.max(0, prev - 1))
+        }, 1000)
+
+        // Redirect after the full delay
+        const redirect = setTimeout(() => {
+            router.push("/dashboard")
+        }, REDIRECT_DELAY)
+
+        return () => {
+            clearInterval(tick)
+            clearTimeout(redirect)
+        }
+    }, [open, router])
 
     return (
         <AnimatedDialog open={open} showCloseButton={false} className="rounded-[40px]" childrenContainerStyles="px-8 pt-0! pb-10">
@@ -45,15 +71,14 @@ export default function AdminSignInSuccess({ open }: AdminSignInSuccessProps) {
                     )}>
                         Welcome to QavTix Admin
                     </DialogTitle>
-                    <DialogDescription className="text-brand-neutral-7 text-sm mb-8">
+                    <DialogDescription className="text-brand-neutral-7 text-sm mb-6">
                         Manage events, users, and operations from one central dashboard.
                     </DialogDescription>
 
-                    <ActionButton1
-                        buttonText="Go to Dashboard"
-                        action={() => router.push("/dashboard")}
-                        className="w-full"
-                    />
+                    {/* Auto-redirect indicator */}
+                    <p className="text-xs text-brand-neutral-6 animate-pulse">
+                        Redirecting to dashboard in {countdown}s…
+                    </p>
                 </div>
             </div>
         </AnimatedDialog>

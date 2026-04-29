@@ -6,8 +6,11 @@ import {
     getAdminAffiliatesCards,
     getAdminWithdrawals,
 } from "@/actions/user-management";
+import { cookies } from "next/headers";
 
 export default async function UserManagementPage() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_access_token")?.value;
     const [
         usersResult,
         usersCardsResult,
@@ -15,11 +18,11 @@ export default async function UserManagementPage() {
         affiliatesCardsResult,
         withdrawalsData,
     ] = await Promise.all([
-        getAdminUsers(),
-        getAdminUsersCards(),
-        getAdminAffiliates(),
-        getAdminAffiliatesCards(),
-        getAdminWithdrawals(),
+        getAdminUsers(token),
+        getAdminUsersCards(token),
+        getAdminAffiliates(token),
+        getAdminAffiliatesCards(token),
+        getAdminWithdrawals(token),
     ])
 
     return (

@@ -13,7 +13,7 @@ import FilterButtonsActions1 from "./buttons-and-inputs/FilterActionButtons1"
 import { useMediaQuery } from "@/custom-hooks/UseMediaQuery"
 import { MobileBottomSheet } from "../../dropdown/EventFilterDropdownMobileBottomSheet"
 import { useParams } from "next/navigation"
-import { fetchTicketTypes } from "@/actions/filters"
+import { fetchTicketTypesClient as fetchTicketTypes } from "@/actions/filters/client"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import { useAppSelector } from "@/lib/redux/hooks"
 

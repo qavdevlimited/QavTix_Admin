@@ -14,8 +14,7 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { SecuritySettingsFormData, securitySettingsSchema } from '@/schemas/settings.schema'
 import { FRAUD_SENSITIVITY_OPTIONS } from '@/components-data/settings-data-options'
-import { getFraudSettings, updateFraudSettings, ResetAllSettings } from '@/actions/settings'
-
+import { getFraudSettingsClient as getFraudSettings, updateFraudSettingsClient as updateFraudSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
 export default function SecurityAbusePage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)

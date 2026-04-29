@@ -22,8 +22,7 @@ import { space_grotesk } from '@/lib/fonts'
 import { LocalizationSettingsFormData, localizationSettingsSchema } from '@/schemas/settings.schema'
 import { COUNTRIES, CURRENCIES, DATE_TIME_FORMATS, LANGUAGES } from '@/components-data/settings-data-options'
 import SettingsLocalizationTag from '@/components/custom-utils/tags/SettingsLocalizationTag'
-import { getLocalizationSettings, updateLocalizationSettings, ResetAllSettings } from '@/actions/settings'
-
+import { getLocalizationSettingsClient as getLocalizationSettings, updateLocalizationSettingsClient as updateLocalizationSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
 // API sends country names like "Nigeria"; our COUNTRIES uses codes like "NG".
 // These helpers bridge the gap.
 const countryNameToCode = (name: string): string | undefined =>

@@ -1,36 +1,28 @@
 "use server"
 
-import { CACHE_TAGS } from "@/cache-tags";
+import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_DASHBOARD_CARDS_ENDPOINT,
     ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT,
     ADMIN_DASHBOARD_REVENUE_ENDPOINT,
     ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT,
-    DASHBOARD_OVERVIEW_ENDPOINT
+    DASHBOARD_OVERVIEW_ENDPOINT,
 } from "@/endpoints"
-import { handleApiError } from "@/helper-fns/handleApiErrors";
-import { cookies } from "next/headers";
-import { revalidateTag } from "next/cache";
+import { handleApiError } from "@/helper-fns/handleApiErrors"
+import { revalidateTag } from "next/cache"
+import { cacheTag } from "next/cache"
 
-// ─── Auth helper ──────────────────────────────────────────────────────────────
-
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies()
-    return cookieStore.get("admin_access_token")?.value
-}
-
-// ─── Generic cached fetch helper ─────────────────────────────────────────────
-// Uses native fetch + next: { tags, revalidate } for Next.js data cache.
-// Reading cookies() here is safe — fetch caches the *response*, not the request.
+// ─── Internal cached fetch — token passed as arg, 'use cache' scoped here ─────
 
 async function cachedFetch<T>(
+    token: string | undefined,
     path: string,
     tag: string,
-    revalidate: number,
     params?: Record<string, string | number | undefined>,
 ): Promise<{ success: boolean; data?: T; message?: string }> {
+    'use cache'
+    cacheTag(tag)
     try {
-        const token = await getToken()
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
         if (params) {
             Object.entries(params).forEach(([k, v]) => {
@@ -42,7 +34,6 @@ async function cachedFetch<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-            next: { tags: [tag], revalidate },
         })
         if (!res.ok) {
             const json = await res.json().catch(() => ({}))
@@ -55,41 +46,46 @@ async function cachedFetch<T>(
     }
 }
 
-// ─── Dashboard cached GETs ────────────────────────────────────────────────────
+// ─── Exported GETs (server pages read cookies, pass token here) ───────────────
 
-export async function getAdminDashboardCards(): Promise<{ success: boolean; data?: AdminDashboardCardsData; message?: string }> {
-    return cachedFetch<AdminDashboardCardsData>(ADMIN_DASHBOARD_CARDS_ENDPOINT, CACHE_TAGS.DASHBOARD_CARDS, 300)
+export async function getAdminDashboardCards(
+    token: string | undefined,
+): Promise<{ success: boolean; data?: AdminDashboardCardsData; message?: string }> {
+    return cachedFetch<AdminDashboardCardsData>(token, ADMIN_DASHBOARD_CARDS_ENDPOINT, CACHE_TAGS.DASHBOARD_CARDS)
 }
 
-export async function getAdminTicketAnalytics(): Promise<{ success: boolean; data?: AdminTicketAnalyticsData; message?: string }> {
-    return cachedFetch<AdminTicketAnalyticsData>(ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT, CACHE_TAGS.DASHBOARD_TICKET_ANALYTICS, 300)
+export async function getAdminTicketAnalytics(
+    token: string | undefined,
+): Promise<{ success: boolean; data?: AdminTicketAnalyticsData; message?: string }> {
+    return cachedFetch<AdminTicketAnalyticsData>(token, ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT, CACHE_TAGS.DASHBOARD_TICKET_ANALYTICS)
 }
 
-export async function getAdminRevenueAnalytics(period: string = "month"): Promise<{ success: boolean; data?: AdminRevenueData; message?: string }> {
-    return cachedFetch<AdminRevenueData>(ADMIN_DASHBOARD_REVENUE_ENDPOINT, CACHE_TAGS.DASHBOARD_REVENUE, 300, { period })
+export async function getAdminRevenueAnalytics(
+    token: string | undefined,
+    period: string = "month",
+): Promise<{ success: boolean; data?: AdminRevenueData; message?: string }> {
+    return cachedFetch<AdminRevenueData>(token, ADMIN_DASHBOARD_REVENUE_ENDPOINT, CACHE_TAGS.DASHBOARD_REVENUE, { period })
 }
 
-export async function getAdminActivities(page: number = 1): Promise<{ success: boolean; data?: AdminActivitiesData; message?: string }> {
+export async function getAdminActivities(
+    token: string | undefined,
+    page: number = 1,
+): Promise<{ success: boolean; data?: AdminActivitiesData; message?: string }> {
     return cachedFetch<AdminActivitiesData>(
+        token,
         `${ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT}?page=${page}`,
         `${CACHE_TAGS.DASHBOARD_ACTIVITIES}_page_${page}`,
-        60
     )
 }
 
-// ─── Upcoming events (filter-driven — not pre-cached) ────────────────────────
-// Uses native fetch with next: { tags } so the first call is still cached
-// but can be revalidated when events change.
-
 export async function getUpcomingEvents(
-    params: UpcomingEventsParams = {}
+    token: string | undefined,
+    params: UpcomingEventsParams = {},
 ): Promise<GetUpcomingEventsResult> {
+    'use cache'
+    cacheTag(CACHE_TAGS.UPCOMING_EVENTS)
     try {
-        const token = await getToken()
-
-        const url = new URL(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/${DASHBOARD_OVERVIEW_ENDPOINT}`
-        )
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${DASHBOARD_OVERVIEW_ENDPOINT}`)
 
         if (params.page != null) url.searchParams.set("page", String(params.page))
         if (params.search != null) url.searchParams.set("search", params.search)
@@ -105,7 +101,6 @@ export async function getUpcomingEvents(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-            next: { tags: [CACHE_TAGS.UPCOMING_EVENTS] },
         })
 
         if (!res.ok) {
@@ -116,14 +111,13 @@ export async function getUpcomingEvents(
 
         const json = await res.json()
         return { success: true, data: json.data }
-
     } catch (err) {
         console.error("[getUpcomingEvents] error:", err)
         return { success: false, message: "Failed to load upcoming events." }
     }
 }
 
-// ─── Revalidation helpers (call from server actions that mutate events) ───────
+// ─── Revalidation helpers ─────────────────────────────────────────────────────
 
 export async function revalidateDashboard() {
     revalidateTag(CACHE_TAGS.DASHBOARD_CARDS, 'max')

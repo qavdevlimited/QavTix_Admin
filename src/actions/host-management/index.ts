@@ -23,13 +23,10 @@ import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { handleApiError } from "@/helper-fns/handleApiErrors"
 import { CACHE_TAGS } from "@/cache-tags"
 import { revalidateTag } from "next/cache"
+import { cacheTag } from "next/cache"
 import { cookies } from "next/headers"
 
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies()
-    return cookieStore.get("admin_access_token")?.value
-}
-
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function logError(context: string, error: unknown) {
     const err = error as any
@@ -44,10 +41,20 @@ function logError(context: string, error: unknown) {
     })
 }
 
+async function getToken(): Promise<string | undefined> {
+    const cookieStore = await cookies()
+    return cookieStore.get("admin_access_token")?.value
+}
 
-async function fetchPage<T>(endpoint: string, extraParams?: Record<string, any>): Promise<TabSlice<T>> {
+// ─── Internal: paginated list (used by cached wrappers) ──────────────────────
+
+async function fetchPage<T>(
+    token: string | undefined,
+    endpoint: string,
+    extraParams?: Record<string, any>,
+): Promise<TabSlice<T>> {
     try {
-        const axios = await getServerAxios()
+        const axios = await getServerAxios(token)
         const { data } = await axios.get(`${endpoint}`, { params: { page: 1, ...extraParams } })
         const d = data?.data ?? data
         return {
@@ -63,33 +70,13 @@ async function fetchPage<T>(endpoint: string, extraParams?: Record<string, any>)
     }
 }
 
-async function fetchCards<T>(endpoint: string, params?: Record<string, any>): Promise<T | null> {
-    try {
-        const axios = await getServerAxios()
-        const { data } = await axios.get(`/${endpoint}`, { params })
-        return (data?.data ?? null) as T | null
-    } catch (error) {
-        logError(`fetchCards(${endpoint})`, error)
-        return null
-    }
-}
+// ─── Internal: mutation helpers (read own token) ──────────────────────────────
 
 async function postAction(endpoint: string, body?: Record<string, any>): Promise<{ success: boolean; message?: string }> {
     try {
-        const axios = await getServerAxios()
+        const token = await getToken()
+        const axios = await getServerAxios(token)
         await axios.post(endpoint, body)
-        return { success: true }
-    } catch (error) {
-        logError(`postAction(${endpoint},${JSON.stringify(body)})`, error)
-        const errorData = (error as any)?.response?.data
-        return { success: false, message: handleApiError(errorData) }
-    }
-}
-
-async function deleteAction(endpoint: string): Promise<{ success: boolean; message?: string }> {
-    try {
-        const axios = await getServerAxios()
-        await axios.delete(endpoint)
         return { success: true }
     } catch (error) {
         logError(`postAction(${endpoint})`, error)
@@ -98,9 +85,23 @@ async function deleteAction(endpoint: string): Promise<{ success: boolean; messa
     }
 }
 
+async function deleteAction(endpoint: string): Promise<{ success: boolean; message?: string }> {
+    try {
+        const token = await getToken()
+        const axios = await getServerAxios(token)
+        await axios.delete(endpoint)
+        return { success: true }
+    } catch (error) {
+        logError(`deleteAction(${endpoint})`, error)
+        const errorData = (error as any)?.response?.data
+        return { success: false, message: handleApiError(errorData) }
+    }
+}
+
 async function putAction(endpoint: string, body: Record<string, any>): Promise<{ success: boolean; message?: string }> {
     try {
-        const axios = await getServerAxios()
+        const token = await getToken()
+        const axios = await getServerAxios(token)
         await axios.put(`/${endpoint}`, body)
         return { success: true }
     } catch (error) {
@@ -110,14 +111,15 @@ async function putAction(endpoint: string, body: Record<string, any>): Promise<{
     }
 }
 
+// ─── Cached GETs — token passed as arg, 'use cache' scoped inside ─────────────
 
-export async function getAdminHosts(): Promise<TabSlice<AdminHost>> {
+async function _getAdminHosts(token: string | undefined): Promise<TabSlice<AdminHost>> {
+    'use cache'
+    cacheTag(CACHE_TAGS.ADMIN_HOSTS)
     try {
-        const token = await getToken()
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOSTS_ENDPOINT}?page=1`
         const res = await fetch(url, {
             headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            next: { tags: [CACHE_TAGS.ADMIN_HOSTS], revalidate: 120 },
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()
@@ -126,14 +128,14 @@ export async function getAdminHosts(): Promise<TabSlice<AdminHost>> {
     } catch { return { results: [], count: 0, next: null, previous: null, total_pages: 1 } }
 }
 
-export async function getAdminHostCards(params?: Record<string, any>): Promise<{ cards: AdminHostCards | null }> {
+async function _getAdminHostCards(token: string | undefined, params?: Record<string, any>): Promise<{ cards: AdminHostCards | null }> {
+    'use cache'
+    cacheTag(CACHE_TAGS.ADMIN_HOST_CARDS)
     try {
-        const token = await getToken()
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOSTS_CARDS_ENDPOINT}`)
         if (params) Object.entries(params).forEach(([k, v]) => { if (v != null) url.searchParams.set(k, String(v)) })
         const res = await fetch(url.toString(), {
             headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            next: { tags: [CACHE_TAGS.ADMIN_HOST_CARDS], revalidate: 120 },
         })
         if (!res.ok) return { cards: null }
         const json = await res.json()
@@ -141,13 +143,13 @@ export async function getAdminHostCards(params?: Record<string, any>): Promise<{
     } catch { return { cards: null } }
 }
 
-export async function getAdminPendingHosts(): Promise<TabSlice<AdminPendingHost>> {
+async function _getAdminPendingHosts(token: string | undefined): Promise<TabSlice<AdminPendingHost>> {
+    'use cache'
+    cacheTag(CACHE_TAGS.ADMIN_PENDING_HOSTS)
     try {
-        const token = await getToken()
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOST_VERIFICATIONS_ENDPOINT}?page=1`
         const res = await fetch(url, {
             headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            next: { tags: [CACHE_TAGS.ADMIN_PENDING_HOSTS], revalidate: 60 },
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()
@@ -155,6 +157,60 @@ export async function getAdminPendingHosts(): Promise<TabSlice<AdminPendingHost>
         return { results: d?.results ?? [], count: d?.count ?? 0, next: d?.next ?? null, previous: d?.previous ?? null, total_pages: d?.total_pages ?? 1 }
     } catch { return { results: [], count: 0, next: null, previous: null, total_pages: 1 } }
 }
+
+async function _getHostProfile(token: string | undefined, hostId: string | number): Promise<{ data: HostProfileDetails | null }> {
+    'use cache'
+    try {
+        const axios = await getServerAxios(token)
+        const { data } = await axios.get(`/${ADMIN_HOST_PROFILE_ENDPOINT(hostId)}`)
+        return { data: (data?.data ?? null) as HostProfileDetails | null }
+    } catch (error) {
+        logError(`getHostProfile(${hostId})`, error)
+        return { data: null }
+    }
+}
+
+async function _getHostEarningsCards(token: string | undefined, hostId: string | number, params?: Record<string, any>): Promise<{ cards: HostEarningsCards | null }> {
+    'use cache'
+    try {
+        const axios = await getServerAxios(token)
+        const { data } = await axios.get(`/${ADMIN_HOST_CARDS_ENDPOINT(hostId)}`, { params })
+        return { cards: (data?.data ?? null) as HostEarningsCards | null }
+    } catch (error) {
+        logError(`getHostEarningsCards(${hostId})`, error)
+        return { cards: null }
+    }
+}
+
+async function _getHostChart(token: string | undefined, hostId: string | number, params?: Record<string, any>): Promise<{ chart: HostChartPoint[] }> {
+    'use cache'
+    try {
+        const axios = await getServerAxios(token)
+        const { data } = await axios.get(`/${ADMIN_HOST_CHART_ENDPOINT(hostId)}`, { params })
+        const results: HostChartPoint[] = Array.isArray(data?.data) ? data.data : []
+        return { chart: results }
+    } catch (error) {
+        logError(`getHostChart(${hostId})`, error)
+        return { chart: [] }
+    }
+}
+
+async function _getHostEvents(token: string | undefined, hostId: string | number, status?: string): Promise<TabSlice<HostEvent>> {
+    'use cache'
+    return fetchPage<HostEvent>(token, ADMIN_HOST_EVENTS_ENDPOINT(hostId), status ? { status } : undefined)
+}
+
+// ─── Public exports (token passed from server page callers) ───────────────────
+
+export async function getAdminHosts(token: string | undefined) { return _getAdminHosts(token) }
+export async function getAdminHostCards(token: string | undefined, params?: Record<string, any>) { return _getAdminHostCards(token, params) }
+export async function getAdminPendingHosts(token: string | undefined) { return _getAdminPendingHosts(token) }
+export async function getHostProfile(token: string | undefined, hostId: string | number) { return _getHostProfile(token, hostId) }
+export async function getHostEarningsCards(token: string | undefined, hostId: string | number, params?: Record<string, any>) { return _getHostEarningsCards(token, hostId, params) }
+export async function getHostChart(token: string | undefined, hostId: string | number, params?: Record<string, any>) { return _getHostChart(token, hostId, params) }
+export async function getHostEvents(token: string | undefined, hostId: string | number, status?: string) { return _getHostEvents(token, hostId, status) }
+
+// ─── Mutations (read own token via cookies) ───────────────────────────────────
 
 export async function toggleHostSuspension(hostId: string | number): Promise<{ success: boolean; message?: string }> {
     const result = await postAction(ADMIN_HOST_SUSPEND_ENDPOINT(hostId))
@@ -188,52 +244,10 @@ export async function declineHostVerification(hostId: string | number): Promise<
     return result
 }
 
-
-export async function getHostProfile(hostId: string | number): Promise<{ data: HostProfileDetails | null }> {
+export async function featureHostEvent(eventId: string, planSlug: string): Promise<{ success: boolean; message?: string }> {
     try {
-        const axios = await getServerAxios()
-        const { data } = await axios.get(`/${ADMIN_HOST_PROFILE_ENDPOINT(hostId)}`)
-        return { data: (data?.data ?? null) as HostProfileDetails | null }
-    } catch (error) {
-        logError(`getHostProfile(${hostId})`, error)
-        return { data: null }
-    }
-}
-
-export async function getHostEarningsCards(
-    hostId: string | number,
-    params?: Record<string, any>,
-): Promise<{ cards: HostEarningsCards | null }> {
-    const cards = await fetchCards<HostEarningsCards>(ADMIN_HOST_CARDS_ENDPOINT(hostId), params)
-    return { cards }
-}
-
-export async function getHostChart(
-    hostId: string | number,
-    params?: Record<string, any>,
-): Promise<{ chart: HostChartPoint[] }> {
-    try {
-        const axios = await getServerAxios()
-        const { data } = await axios.get(`/${ADMIN_HOST_CHART_ENDPOINT(hostId)}`, { params })
-        const results: HostChartPoint[] = Array.isArray(data?.data) ? data.data : []
-        return { chart: results }
-    } catch (error) {
-        logError(`getHostChart(${hostId})`, error)
-        return { chart: [] }
-    }
-}
-
-export async function getHostEvents(hostId: string | number, status?: string): Promise<TabSlice<HostEvent>> {
-    return fetchPage<HostEvent>(ADMIN_HOST_EVENTS_ENDPOINT(hostId), status ? { status } : undefined)
-}
-
-
-export async function featureHostEvent(
-    eventId: string,
-    planSlug: string,
-): Promise<{ success: boolean; message?: string }> {
-    try {
-        const axios = await getServerAxios()
+        const token = await getToken()
+        const axios = await getServerAxios(token)
         await axios.post(`/${ADMIN_HOST_EVENT_FEATURE_ENDPOINT(eventId)}`, { plan_slug: planSlug })
         return { success: true }
     } catch (error) {
@@ -251,7 +265,6 @@ export async function deleteHostEvent(eventId: string): Promise<{ success: boole
     return deleteAction(ADMIN_HOST_EVENT_DELETE_ENDPOINT(eventId))
 }
 
-
 export interface HostSearchResult {
     id: string
     name: string
@@ -259,7 +272,8 @@ export interface HostSearchResult {
 
 export async function searchHosts(search?: string): Promise<HostSearchResult[]> {
     try {
-        const axios = await getServerAxios()
+        const token = await getToken()
+        const axios = await getServerAxios(token)
         const { data } = await axios.get(`/${ADMIN_HOSTS_ENDPOINT}`, {
             params: { page: 1, ...(search ? { search } : {}) },
         })

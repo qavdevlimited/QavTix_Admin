@@ -5,13 +5,16 @@ import {
     getAdminTicketAnalytics 
 } from "@/actions/dashboard";
 import DashboardPageCW from "@/components/page-content-wrappers/DashboardPageCW";
+import { cookies } from "next/headers";
 
 export default async function DashboardPage() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_access_token")?.value;
     const [cardsResult, ticketAnalyticsResult, revenueResult, activitiesResult] = await Promise.all([
-        getAdminDashboardCards(),
-        getAdminTicketAnalytics(),
-        getAdminRevenueAnalytics("month"),
-        getAdminActivities()
+        getAdminDashboardCards(token),
+        getAdminTicketAnalytics(token),
+        getAdminRevenueAnalytics(token, "month"),
+        getAdminActivities(token)
     ]);
 
     return (

@@ -3,6 +3,7 @@
 import { CATEGORIES_ENDPOINT, EVENT_TICKET_TYPES_ENDPOINT } from "@/endpoints"
 import { getServerAxios } from "@/lib/axios"
 import { CACHE_TAGS } from "@/cache-tags"
+import { cacheTag } from "next/cache"
 import { cookies } from "next/headers"
 
 export interface ApiCategory {
@@ -16,18 +17,26 @@ export interface GetCategoriesResult {
     message?: string
 }
 
-// Categories are near-static — 24 h cache is appropriate
-export async function getCategories(): Promise<GetCategoriesResult> {
+export interface TicketType {
+    id: number
+    ticket_type: string
+    price: string
+    quantity: number
+    sold_count: number
+}
+
+// ─── Cached GETs — token passed as arg ───────────────────────────────────────
+
+async function _getCategories(token: string | undefined): Promise<GetCategoriesResult> {
+    'use cache'
+    cacheTag(CACHE_TAGS.CATEGORIES)
     try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get("admin_access_token")?.value
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${CATEGORIES_ENDPOINT}`
         const res = await fetch(url, {
             headers: {
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-            next: { tags: [CACHE_TAGS.CATEGORIES], revalidate: 86400 },
         })
         if (!res.ok) return { success: false, data: [] }
         const json = await res.json()
@@ -37,10 +46,17 @@ export async function getCategories(): Promise<GetCategoriesResult> {
     }
 }
 
+// ─── fetchTicketTypes — reads own token (client component calls this directly) ─
+
+export async function getCategories(token: string | undefined): Promise<GetCategoriesResult> {
+    return _getCategories(token)
+}
 
 export async function fetchTicketTypes(eventId: string): Promise<TicketType[]> {
     try {
-        const axios = await getServerAxios()
+        const cookieStore = await cookies()
+        const token = cookieStore.get("admin_access_token")?.value
+        const axios = await getServerAxios(token)
         const { data } = await axios.get(EVENT_TICKET_TYPES_ENDPOINT(eventId))
         return data?.data ?? []
     } catch {

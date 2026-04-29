@@ -1,6 +1,5 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import {
     ADMIN_FORGOT_PASSWORD_ENDPOINT,
@@ -8,6 +7,7 @@ import {
     ADMIN_RESET_PASSWORD_ENDPOINT,
 } from "@/endpoints"
 import { handleApiError } from "@/helper-fns/handleApiErrors"
+import { cookies } from "next/headers"
 
 interface ActionResult {
     success:  boolean
@@ -21,9 +21,9 @@ interface VerifyOtpResult {
 }
 
 export const logOut = async () => {
-    const cookiesStore = await cookies()
-    cookiesStore.delete("admin_access_token")
-    cookiesStore.delete("admin_refresh_token")
+    const cookieStore = await cookies()
+    cookieStore.delete("admin_access_token")
+    cookieStore.delete("admin_refresh_token")
     redirect(process.env.NEXT_PUBLIC_APP_DOMAIN || "/")
 }
 

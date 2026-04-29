@@ -157,6 +157,7 @@ interface AdminEvent {
     revenue: string;
     views_count: number;
     saves_count: number;
+    is_featured: boolean
 }
 
 
@@ -201,13 +202,13 @@ interface AdminEventDetail {
 // ─── Public Event Detail (shared with website) ────────────────────────────────
 
 interface EventLocation {
-    id:          number
-    event:       string
-    venue_name:  string
-    address:     string
-    country:     string
-    state:       string
-    city:        string
+    id: number
+    event: string
+    venue_name: string
+    address: string
+    country: string
+    state: string
+    city: string
     postal_code: string
 }
 
@@ -216,16 +217,16 @@ interface EventSocialLink {
 }
 
 interface EventTicket {
-    id:             number
-    ticket_type:    string
-    description:    string
-    price:          string
-    quantity:       number
+    id: number
+    ticket_type: string
+    description: string
+    price: string
+    quantity: number
     per_person_max: number
-    currency:       string
-    sales_start:    string
-    sales_end:      string
-    promo_codes:    { code: string; discount_percentage: number; maximum_users: number; valid_till: string }[]
+    currency: string
+    sales_start: string
+    sales_end: string
+    promo_codes: { code: string; discount_percentage: number; maximum_users: number; valid_till: string }[]
 }
 
 interface UserTicketSummary {
@@ -240,30 +241,31 @@ interface UserTicketSummary {
 }
 
 interface EventDetails {
-    id:                     string
-    title:                  string
-    category:               string
-    tags:                   string[]
-    event_type:             string
-    start_datetime:         string
-    end_datetime:           string
-    location_type:          string
-    event_media:            { image_url: string; video_url: string; is_featured: boolean }
-    short_description:      string
-    full_description:       string
-    currency:               string
+    id: string
+    title: string
+    category: string
+    tags: string[]
+    event_type: string
+    start_datetime: string
+    end_datetime: string
+    location_type: string
+    event_media: { image_url: string; video_url: string; is_featured: boolean }
+    short_description: string
+    full_description: string
+    currency: string
     organizer_display_name: string
-    organizer_description:  string
-    organizer_id:           string
-    public_email:           string
-    phone_number:           string
-    event_location:         EventLocation
-    social_links:           EventSocialLink[]
-    tickets:                EventTicket[]
-    event_status:           string
-    attendees_count:        number
-    age_restriction:        boolean
-    is_following:           boolean
-    is_favorite:            boolean
-    user_ticket_summary?:   UserTicketSummary
+    organizer_description: string
+    organizer_id: string
+    public_email: string
+    is_featured: boolean
+    phone_number: string
+    event_location: EventLocation
+    social_links: EventSocialLink[]
+    tickets: EventTicket[]
+    event_status: EventStatus
+    attendees_count: number
+    age_restriction: boolean
+    is_following: boolean
+    is_favorite: boolean
+    user_ticket_summary?: UserTicketSummary
 }

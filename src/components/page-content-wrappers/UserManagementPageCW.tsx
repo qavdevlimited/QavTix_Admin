@@ -18,9 +18,9 @@ import {
     ADMIN_WITHDRAWALS_ENDPOINT,
 } from "@/endpoints"
 import {
-    getAdminUsersCards,
-    getAdminAffiliatesCards
-} from "@/actions/user-management"
+    getAdminUsersCardsClient as getAdminUsersCards,
+    getAdminAffiliatesCardsClient as getAdminAffiliatesCards
+} from "@/actions/user-management/client"
 import { mapUserCardsToMetrics, mapAffiliateCardsToSparkline } from "@/helper-fns/mapUserManagementCards"
 import { Icon } from "@iconify/react"
 import { exportData } from "@/helper-fns/exportData"

@@ -23,6 +23,8 @@ interface DashboardPageCWProps {
 
 
 
+import { exportData } from "@/helper-fns/exportData";
+
 export default function DashboardPageCW({
     cardsData,
     ticketAnalytics,
@@ -31,11 +33,20 @@ export default function DashboardPageCW({
 }: DashboardPageCWProps) {
     const s1 = cardsData?.section_one;
 
+    const handleExport = (format: any) => {
+        exportData({
+            data: (activitiesData?.results ?? []) as unknown as Record<string, unknown>[],
+            format,
+            filename: "dashboard_activities",
+            title: "Dashboard Recent Activities",
+        })
+    }
+
     return (
         <main className="pb-12 mt-10 lg:mt-4">
             <div className="flex justify-between items-center gap-5 mb-8">
                 <h2 className={cn(space_grotesk.className, "text-brand-secondary-8 font-bold text-lg")}>Overview</h2>
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 showFormatSelector onExport={handleExport} />
             </div>
 
             <DashboardMetricCardsContainer>

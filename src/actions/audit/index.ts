@@ -1,20 +1,17 @@
-"use server"
+"use server";
 
-import { getServerAxios } from "@/lib/axios"
 import { ADMIN_AUDIT_LOGS_ENDPOINT } from "@/endpoints"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { CACHE_TAGS } from "@/cache-tags"
-import { cookies } from "next/headers"
+import { cacheTag } from "next/cache";
 
 // Audit logs change frequently — 30 s cache TTL for SSR deduplication
 // while still reflecting recent activity quickly.
-export async function getAdminAuditLogs(
-    params?: Record<string, any>,
+export async function getAdminAuditLogs(token: string | undefined, params?: Record<string, any>,
 ): Promise<TabSlice<AdminAuditLog>> {
+    'use cache';
+    cacheTag(CACHE_TAGS.ADMIN_AUDIT_LOGS);
     try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get("admin_access_token")?.value
-
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_AUDIT_LOGS_ENDPOINT}`)
         url.searchParams.set("page", "1")
         if (params) {
@@ -27,8 +24,7 @@ export async function getAdminAuditLogs(
             headers: {
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            next: { tags: [CACHE_TAGS.ADMIN_AUDIT_LOGS], revalidate: 30 },
+            }
         })
 
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }

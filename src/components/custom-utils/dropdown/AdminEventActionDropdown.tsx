@@ -14,7 +14,7 @@ import { DASHBOARD_NAVIGATION_LINKS, EVENT_PROFILE } from "@/enums/navigation"
 import { deleteHostEvent, featureHostEvent, suspendHostEvent } from "@/actions/host-management"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
 import { CONFIRMATION_ACTION_TYPES } from "@/components/modals/resources/confirmationActions"
-import { getEventAttendees } from "@/actions/customers"
+import { getEventAttendeesClient as getEventAttendees } from "@/actions/customers/client"
 import { exportData } from "@/helper-fns/exportData"
 
 
@@ -29,13 +29,14 @@ interface AdminEventActionDropdownProps {
     eventId: string
     eventTitle: string
     eventStatus: EventStatus
+    isFeatured: boolean
     actionsFor?: "event-profile" | "other"
 }
 
 type PendingAction = "suspend" | "unsuspend" | "remove"
 
 
-function buildActions(status: EventStatus): AdminEventAction[] {
+function buildActions(status: EventStatus, isFeatured: boolean): AdminEventAction[] {
     const actions: AdminEventAction[] = []
     const isActive = status === "active" || status === "live"
 
@@ -46,8 +47,11 @@ function buildActions(status: EventStatus): AdminEventAction[] {
     actions.push({ id: "download", label: "Download Attendee List", icon: "hugeicons:download-01" })
     // actions.push({ id: "send-update", label: "Send Update to Buyers", icon: "lucide:mail" })
 
+    if (isFeatured) {
+        actions.push({ id: "feature", label: "Remove from Featured", icon: "flowbite:rectangle-list-outline" })
+    }
+
     if (isActive) {
-        actions.push({ id: "feature", label: "Add to Featured", icon: "flowbite:rectangle-list-outline" })
         actions.push({ id: "suspend", label: "Suspend Event", icon: "hugeicons:pause-circle", variant: "danger" })
     }
 
@@ -65,6 +69,7 @@ export default function AdminEventActionDropdown({
     eventId,
     eventTitle,
     eventStatus,
+    isFeatured,
     actionsFor = "other"
 }: AdminEventActionDropdownProps) {
     const dispatch = useAppDispatch()
@@ -75,15 +80,13 @@ export default function AdminEventActionDropdown({
     const [isOpen, setIsOpen] = useState(false)
     const [showFeaturedModal, setShowFeaturedModal] = useState(false)
     const [isFeaturing, setIsFeaturing] = useState(false)
-    const [openEmail, setOpenEmail] = useState(false)
     const { trigger } = useRevalidate("event-listing")
 
     const pendingActionRef = useRef<PendingAction | null>(null)
-    const actions = buildActions(eventStatus)
+    const actions = buildActions(eventStatus, isFeatured)
 
-    // Prevent the dropdown from closing while an action is in progress
     const handleOpenChange = (next: boolean) => {
-        if (loadingAction) return   // block close entirely while loading
+        if (loadingAction) return
         setIsOpen(next)
     }
 

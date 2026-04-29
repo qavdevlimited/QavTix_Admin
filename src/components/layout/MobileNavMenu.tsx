@@ -58,14 +58,14 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                         animate={{ x: 0 }}
                         exit={{ x: "-100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed left-0 top-0 h-full w-70 bg-brand-accent-1 z-100 shadow-2xl flex flex-col justify-between p-6 overflow-y-auto"
+                        className="fixed left-0 top-0 h-full w-70 bg-white z-100 shadow-2xl flex flex-col justify-between p-6 overflow-y-auto"
                     >
                         <div>
                             <div className="flex items-center justify-between mb-8">
                                 <Logo width={100} />
                                 <button
                                     onClick={onClose}
-                                    className="p-2 rounded-full bg-brand-accent-3/50 text-brand-secondary-9"
+                                    className="p-2 rounded-full bg-brand-primary-3/50 text-brand-secondary-9"
                                 >
                                     <Icon icon="lineicons:close" className="size-3" />
                                 </button>
@@ -84,8 +84,8 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                 className={cn(
                                                     "relative flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 text-[13px]",
                                                     isActive
-                                                        ? "bg-brand-accent-4 text-white font-bold"
-                                                        : "text-brand-secondary-9 hover:bg-brand-accent-3/50"
+                                                        ? "bg-brand-primary-1 text-white font-bold"
+                                                        : "text-brand-secondary-9 hover:bg-brand-primary-1/50"
                                                 )}
                                             >
                                                 <Icon icon={v.icon || ""} className="size-5" />
@@ -121,8 +121,8 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                                         className={cn(
                                                                             "flex-1 py-3 ml-3 pl-3 text-[13px] transition-colors",
                                                                             isSubActive
-                                                                                ? "text-brand-accent-4 bg-brand-accent-3/30 font-semibold rounded-md"
-                                                                                : "text-brand-secondary-7 hover:text-brand-accent-4"
+                                                                                ? "text-brand-secondary-9 bg-brand-accent-1 font-semibold rounded-md"
+                                                                                : "text-brand-secondary-7 hover:text-brand-primary-1/90"
                                                                         )}
                                                                     >
                                                                         {sub.label}
@@ -139,7 +139,7 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                             </ul>
                         </div>
 
-                        <div className="pt-6 border-t border-brand-accent-3/30">
+                        <div className="pt-6 border-t border-brand-primary-3/30">
                             <RegionSwitcher />
                             <AuthUserDetails />
                         </div>

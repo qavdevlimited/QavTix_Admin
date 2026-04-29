@@ -18,15 +18,14 @@ import { space_grotesk } from '@/lib/fonts'
 import CustomInput2 from '@/components/custom-utils/inputs/CustomInput2'
 import { GeneralSettingsForm, generalSettingsSchema } from '@/schemas/settings.schema'
 import {
-    getGeneralSettings,
-    getPoliciesSettings,
-    updateGeneralSettings,
-    updatePoliciesSettings,
-    ResetAllSettings,
-} from '@/actions/settings'
+    getGeneralSettingsClient as getGeneralSettings,
+    getPoliciesSettingsClient as getPoliciesSettings,
+    updateGeneralSettingsClient as updateGeneralSettings,
+    updatePoliciesSettingsClient as updatePoliciesSettings,
+    ResetAllSettingsClient as ResetAllSettings,
+} from '@/actions/settings/client'
 import { Icon } from '@iconify/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-
 export default function GeneralSettingsPage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)

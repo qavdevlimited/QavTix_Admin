@@ -7,6 +7,7 @@ import {
     getAdminFeaturedPayments,
     getAdminSubscriptions,
 } from "@/actions/financials"
+import { cookies } from "next/headers";
 
 export const metadata = {
     title: "Financials | QavTix Admin",
@@ -14,6 +15,8 @@ export const metadata = {
 }
 
 export default async function FinancialsPage() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_access_token")?.value;
 
     const [
         { cards },
@@ -23,12 +26,12 @@ export default async function FinancialsPage() {
         featuredPayments,
         subscriptions,
     ] = await Promise.all([
-        getAdminFinancialCards(),
-        getAdminPendingPayouts(),
-        getAdminApprovedPayouts(),
-        getAdminMarketplaceListings(),
-        getAdminFeaturedPayments(),
-        getAdminSubscriptions(),
+        getAdminFinancialCards(token),
+        getAdminPendingPayouts(token),
+        getAdminApprovedPayouts(token),
+        getAdminMarketplaceListings(token),
+        getAdminFeaturedPayments(token),
+        getAdminSubscriptions(token),
     ])
 
     return (

@@ -1,18 +1,21 @@
 import UserProfilePageCW from "@/components/page-content-wrappers/UserProfilePageCW"
 import { getAdminUserProfile, getAdminUserCards, getAdminUserChart, getAdminUserOrders } from "@/actions/user-management"
+import { cookies } from "next/headers";
 
 interface UserProfilePageProps {
     params: Promise<{ user_id: string }>
 }
 
-export default async function UserProfilePage({ params }: UserProfilePageProps) {
-    const { user_id } = await params
+export default async function UserProfilePage(props: UserProfilePageProps) {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("admin_access_token")?.value;
+    const { user_id } = await props.params
 
     const [{ data: profile }, { cards }, { chart }, initialOrders] = await Promise.all([
-        getAdminUserProfile(user_id),
-        getAdminUserCards(user_id),
-        getAdminUserChart(user_id),
-        getAdminUserOrders(user_id),
+        getAdminUserProfile(token, user_id),
+        getAdminUserCards(token, user_id),
+        getAdminUserChart(token, user_id),
+        getAdminUserOrders(token, user_id),
     ])
 
     return (

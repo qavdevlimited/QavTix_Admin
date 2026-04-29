@@ -10,7 +10,7 @@ import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
 import AdminEventsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/events-listing/AdminEventsTable"
 import { useDataDisplay, TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_EVENTS_ENDPOINT } from "@/endpoints"
-import { getAdminEventCards } from "@/actions/events"
+import { getAdminEventCardsClient as getAdminEventCards } from "@/actions/events/client"
 import { mapAdminEventCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
 import { ApiCategory } from "@/actions/filters"
@@ -24,6 +24,8 @@ interface EventsListingPageCWProps {
     initialCards: AdminEventCards | null
     categories: ApiCategory[]
 }
+
+import { exportData } from "@/helper-fns/exportData"
 
 export default function EventsListingPageCW({
     initialAllEvents,
@@ -78,6 +80,16 @@ export default function EventsListingPageCW({
     }
     const metrics = mapAdminEventCardsToMetrics(cards)
 
+    const handleExport = (format: any) => {
+        const data = activeTabState?.items ?? []
+        exportData({
+            data: data as unknown as Record<string, unknown>[],
+            format,
+            filename: `${activeTab}_events`,
+            title: `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Events`,
+        })
+    }
+
     return (
         <main className="pb-10">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-5">
@@ -87,7 +99,7 @@ export default function EventsListingPageCW({
                     label="KPI Range"
                     icon="solar:calendar-linear"
                 />
-                <ExportButton1 showFormatSelector />
+                <ExportButton1 showFormatSelector onExport={handleExport} />
             </div>
 
             <div className="mb-8">

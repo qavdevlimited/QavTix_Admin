@@ -105,7 +105,8 @@ export default function EventProfileOverviewTabContainer({
                             <AdminEventActionDropdown
                                 eventId={eventId}
                                 eventTitle={event.title}
-                                eventStatus={"active"}
+                                eventStatus={event.event_status}
+                                isFeatured={event.is_featured}
                                 actionsFor="event-profile"
                             />
                         </div>

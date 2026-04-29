@@ -8,7 +8,7 @@ import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import RecentActivityItem from '@/components/slots/activity/RecentActivityItem'
-import { getAdminActivities } from '@/actions/dashboard'
+import { getAdminActivitiesClient as getAdminActivities } from '@/actions/dashboard/client'
 import { space_grotesk } from '@/lib/fonts'
 
 

@@ -1,6 +1,7 @@
 "use server"
 
 import { getServerAxios } from "@/lib/axios"
+import { cookies } from "next/headers"
 
 export interface FetchParams {
     endpoint:     string
@@ -8,7 +9,7 @@ export interface FetchParams {
     filterParams: Record<string, string | string[]>
     page:         number
     search:       string
-    resultsKey?:  string 
+    resultsKey?:  string
 }
 
 export interface FetchResult<T, C = unknown> {
@@ -23,7 +24,11 @@ export interface FetchResult<T, C = unknown> {
 
 export async function fetchPaginatedData<T>(params: FetchParams): Promise<FetchResult<T>> {
     try {
-        const axiosInstance = await getServerAxios()
+        // cookies() is safe here — this is not inside a 'use cache' boundary
+        const cookieStore = await cookies()
+        const token = cookieStore.get("admin_access_token")?.value
+
+        const axiosInstance = await getServerAxios(token)
 
         const requestParams: Record<string, any> = {
             ...params.staticParams,
@@ -33,8 +38,6 @@ export async function fetchPaginatedData<T>(params: FetchParams): Promise<FetchR
         }
 
         const endpoint = params.endpoint.startsWith('/') ? params.endpoint : `/${params.endpoint}`
-
-        console.log(endpoint, requestParams)
 
         const { data } = await axiosInstance.get(endpoint, { params: requestParams })
 
@@ -48,7 +51,7 @@ export async function fetchPaginatedData<T>(params: FetchParams): Promise<FetchR
             count:       paginated?.count      ?? 0,
             next:        paginated?.next       ?? null,
             total_pages: paginated?.total_pages ?? undefined,
-            cards:       d?.cards ?? undefined
+            cards:       d?.cards ?? undefined,
         }
     } catch (err: any) {
         console.log("[fetchPaginatedData] status :", err?.response?.status)

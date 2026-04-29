@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils"
 import { getNiceTicks, formatYTick } from "@/helper-fns/chartFormatters"
 import ChartLoader from "@/components/loaders/ChartLoader"
-import { getHostChart } from "@/actions/host-management"
+import { getHostChartClient as getHostChart } from "@/actions/host-management/client"
 import { space_grotesk } from "@/lib/fonts"
 import TimelineSelector from "@/components/custom-utils/TableDataDisplayAreas/filters/TimelineFilter"
 import { useAppSelector } from "@/lib/redux/hooks"
