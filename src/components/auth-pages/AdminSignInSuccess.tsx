@@ -32,7 +32,7 @@ export default function AdminSignInSuccess({ open }: AdminSignInSuccessProps) {
 
         // Redirect after the full delay
         const redirect = setTimeout(() => {
-            router.push("/dashboard")
+            window.location.href = "/dashboard"
         }, REDIRECT_DELAY)
 
         return () => {
