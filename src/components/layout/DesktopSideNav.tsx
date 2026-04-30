@@ -68,9 +68,9 @@ function DesktopSideNav() {
                                         "grid transition-all duration-300 ease-in-out overflow-hidden",
                                         isSettingsActive ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0"
                                     )}>
-                                        <ul className="relative ml-3 flex flex-col min-h-0 space-y-1.5">
+                                        <div className="relative ml-3 flex flex-col min-h-0 space-y-1.5">
                                             <div className="absolute left-0 top-0 h-[88%] my-auto bottom-0 w-px bg-brand-neutral-5" />
-
+                                            <ul className="flex flex-col w-full">
                                             {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
                                                 const isSubActive = pathName === sub.href
                                                 return (
@@ -94,7 +94,8 @@ function DesktopSideNav() {
                                                     </li>
                                                 )
                                             })}
-                                        </ul>
+                                            </ul>
+                                        </div>
                                     </div>
                                 )}
                             </li>

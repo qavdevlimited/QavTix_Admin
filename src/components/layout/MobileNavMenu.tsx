@@ -107,9 +107,9 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                     "grid transition-all duration-300 ease-in-out overflow-hidden",
                                                     isSettingsActive ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"
                                                 )}>
-                                                    <ul className="relative ml-3 flex flex-col min-h-0">
+                                                    <div className="relative ml-3 flex flex-col min-h-0">
                                                         <div className="absolute left-0 top-0 h-[88%] my-auto bottom-0 w-px bg-brand-neutral-5" />
-
+                                                        <ul className="flex flex-col w-full">
                                                         {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
                                                             const isSubActive = pathName === sub.href;
                                                             return (
@@ -130,7 +130,8 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                                 </li>
                                                             )
                                                         })}
-                                                    </ul>
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             )}
                                         </li>
