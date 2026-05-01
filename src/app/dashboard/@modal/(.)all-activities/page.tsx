@@ -1,4 +1,4 @@
-import { getAdminActivities } from "@/actions/dashboard"
+import { getAdminActivities } from "@/actions/dashboard/index"
 import AllActivitiesModal from "@/components/modals/AllActivitiesModal"
 import { cookies } from "next/headers";
 

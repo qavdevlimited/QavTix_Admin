@@ -1,5 +1,5 @@
 import AuditPageCW from "@/components/page-content-wrappers/AuditPageCW"
-import { getAdminAuditLogs } from "@/actions/audit"
+import { getAdminAuditLogs } from "@/actions/audit/index"
 import { cookies } from "next/headers";
 
 export const metadata = {

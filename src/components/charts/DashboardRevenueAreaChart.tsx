@@ -6,7 +6,8 @@ import {
     ResponsiveContainer, Tooltip, ReferenceLine,
 } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getAdminRevenueAnalyticsClient as getAdminRevenueAnalytics } from '@/actions/dashboard/client';
+import { getAdminRevenueAnalytics } from '@/actions/dashboard/index';
+import { getAuthToken } from '@/helper-fns/getAuthToken';
 import { formatPrice } from '@/helper-fns/formatPrice';
 import { useAppSelector } from '@/lib/redux/hooks';
 import { useIsMounted } from '@/custom-hooks/UseIsMounted';
@@ -72,7 +73,8 @@ export default function DashboardRevenueAreaChart({ initialData }: DashboardReve
         // Always fetch when filter changes — don't try to match against initialData.period
         // since the API returns "year" but our state uses "annual"
         startTransition(async () => {
-            const result = await getAdminRevenueAnalytics(timeFilter)
+            const token = await getAuthToken()
+            const result = await getAdminRevenueAnalytics(token, timeFilter)
             if (result.success && result.data) {
                 setChartData(result.data.data)
             }

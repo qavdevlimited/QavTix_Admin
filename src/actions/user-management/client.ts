@@ -1,49 +1,23 @@
-"use server";
+"use server"
 
-import { cookies } from "next/headers";
-import { getAdminUsers, getAdminUsersCards, getAdminAffiliates, getAdminAffiliatesCards, getAdminWithdrawals, toggleUserSuspension, getAdminUserProfile, getAdminUserCards, getAdminUserChart, getAdminUserOrders } from "./index";
+import { getServerAxios } from "@/lib/axios"
+import { CACHE_TAGS } from "@/cache-tags"
+import { revalidateTag } from "next/cache"
+import { cookies } from "next/headers"
 
 async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies();
-    return cookieStore.get("admin_access_token")?.value;
+    const cookieStore = await cookies()
+    return cookieStore.get("admin_access_token")?.value
 }
 
-export async function getAdminUsersClient(...args: any[]) {
-    return (getAdminUsers as any)(await getToken(), ...args);
-}
-
-export async function getAdminUsersCardsClient(...args: any[]) {
-    return (getAdminUsersCards as any)(await getToken(), ...args);
-}
-
-export async function getAdminAffiliatesClient(...args: any[]) {
-    return (getAdminAffiliates as any)(await getToken(), ...args);
-}
-
-export async function getAdminAffiliatesCardsClient(...args: any[]) {
-    return (getAdminAffiliatesCards as any)(await getToken(), ...args);
-}
-
-export async function getAdminWithdrawalsClient(...args: any[]) {
-    return (getAdminWithdrawals as any)(await getToken(), ...args);
-}
-
-export async function toggleUserSuspensionClient(...args: any[]) {
-    return (toggleUserSuspension as any)(await getToken(), ...args);
-}
-
-export async function getAdminUserProfileClient(...args: any[]) {
-    return (getAdminUserProfile as any)(await getToken(), ...args);
-}
-
-export async function getAdminUserCardsClient(...args: any[]) {
-    return (getAdminUserCards as any)(await getToken(), ...args);
-}
-
-export async function getAdminUserChartClient(...args: any[]) {
-    return (getAdminUserChart as any)(await getToken(), ...args);
-}
-
-export async function getAdminUserOrdersClient(...args: any[]) {
-    return (getAdminUserOrders as any)(await getToken(), ...args);
+export async function toggleUserSuspension(userId: string | number): Promise<{ success: boolean; message?: string }> {
+    try {
+        const token = await getToken()
+        const axios = await getServerAxios(token)
+        await axios.post(`/administrator/admin/users/${userId}/suspend/`)
+        revalidateTag(CACHE_TAGS.ADMIN_USERS, 'max')
+        return { success: true }
+    } catch (error: any) {
+        return { success: false, message: error?.response?.data?.message || "Failed to toggle user suspension" }
+    }
 }

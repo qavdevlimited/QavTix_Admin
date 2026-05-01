@@ -11,7 +11,8 @@ import HostSignupRequestsTable from "@/components/custom-utils/TableDataDisplayA
 import { TableDataDisplayFilter, HostManagementTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_HOSTS_ENDPOINT, ADMIN_HOST_VERIFICATIONS_ENDPOINT } from "@/endpoints"
-import { getAdminHostCardsClient as getAdminHostCards } from "@/actions/host-management/client"
+import { getAdminHostCards } from "@/actions/host-management/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapHostCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { Icon } from "@iconify/react"
 import { space_grotesk } from "@/lib/fonts"
@@ -72,7 +73,8 @@ export default function HostmanagementPageCW({
         const refresh = async () => {
             setIsCardsLoading(true)
             try {
-                const { cards } = await getAdminHostCards(datePreset ? { date_range: datePreset } : undefined)
+                const token = await getAuthToken()
+                const { cards } = await getAdminHostCards(token, datePreset ? { date_range: datePreset } : undefined)
                 setHostCards(cards)
             } catch {
                 setHostCards(null)

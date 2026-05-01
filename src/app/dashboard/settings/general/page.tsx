@@ -17,13 +17,9 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import CustomInput2 from '@/components/custom-utils/inputs/CustomInput2'
 import { GeneralSettingsForm, generalSettingsSchema } from '@/schemas/settings.schema'
-import {
-    getGeneralSettingsClient as getGeneralSettings,
-    getPoliciesSettingsClient as getPoliciesSettings,
-    updateGeneralSettingsClient as updateGeneralSettings,
-    updatePoliciesSettingsClient as updatePoliciesSettings,
-    ResetAllSettingsClient as ResetAllSettings,
-} from '@/actions/settings/client'
+import { getGeneralSettings, getPoliciesSettings } from "@/actions/settings/client"
+import { updateGeneralSettings, updatePoliciesSettings, ResetAllSettings } from "@/actions/settings/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { Icon } from '@iconify/react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 export default function GeneralSettingsPage() {
@@ -45,26 +41,28 @@ export default function GeneralSettingsPage() {
 
     // ── Fetch initial data (general + policies in parallel) ─────────────────
     useEffect(() => {
-        Promise.all([getGeneralSettings(), getPoliciesSettings()]).then(([genRes, polRes]) => {
-            const patch: Partial<GeneralSettingsForm> = {}
+        getAuthToken().then(token => {
+            Promise.all([getGeneralSettings(token), getPoliciesSettings(token)]).then(([genRes, polRes]) => {
+                const patch: Partial<GeneralSettingsForm> = {}
 
-            if (genRes.success) {
-                patch.platformSupportEmail = genRes.data.platform_support_email
-                patch.defaultCurrencyCode = genRes.data.default_currency.code
-                patch.defaultTimezone = genRes.data.default_timezone
-            } else {
-                dispatch(showAlert({ title: 'Failed to load settings', description: genRes.message, variant: 'destructive' }))
-            }
+                if (genRes.success) {
+                    patch.platformSupportEmail = genRes.data.platform_support_email
+                    patch.defaultCurrencyCode = genRes.data.default_currency.code
+                    patch.defaultTimezone = genRes.data.default_timezone
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load settings', description: genRes.message, variant: 'destructive' }))
+                }
 
-            if (polRes.success) {
-                patch.sellerVerificationRequired = polRes.data.seller_verification_required
-                patch.autoApproveListing = polRes.data.auto_approve_listing
-            } else {
-                dispatch(showAlert({ title: 'Failed to load policies', description: polRes.message, variant: 'destructive' }))
-            }
+                if (polRes.success) {
+                    patch.sellerVerificationRequired = polRes.data.seller_verification_required
+                    patch.autoApproveListing = polRes.data.auto_approve_listing
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load policies', description: polRes.message, variant: 'destructive' }))
+                }
 
-            reset(patch as GeneralSettingsForm)
-            dispatch(resetConfirmationStatus())
+                reset(patch as GeneralSettingsForm)
+                dispatch(resetConfirmationStatus())
+            })
         })
     }, [reset, dispatch])
 

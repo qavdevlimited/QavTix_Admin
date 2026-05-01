@@ -1,4 +1,4 @@
-"use server"
+
 
 import { getServerAxios } from "@/lib/axios"
 import { handleApiError } from "@/helper-fns/handleApiErrors"

@@ -1,21 +1,86 @@
-"use server";
+"use server"
 
-import { cookies } from "next/headers";
-import { requestPasswordReset, verifyOtp, resetPassword } from "./index";
+import { redirect } from "next/navigation"
+import {
+    ADMIN_FORGOT_PASSWORD_ENDPOINT,
+    ADMIN_VERIFY_RESET_OTP_ENDPOINT,
+    ADMIN_RESET_PASSWORD_ENDPOINT,
+} from "@/endpoints"
+import { handleApiError } from "@/helper-fns/handleApiErrors"
+import { cookies } from "next/headers"
 
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies();
-    return cookieStore.get("admin_access_token")?.value;
+export const logOut = async () => {
+    const cookieStore = await cookies()
+    cookieStore.delete("admin_access_token")
+    cookieStore.delete("admin_refresh_token")
+    redirect(process.env.NEXT_PUBLIC_APP_DOMAIN || "/")
 }
 
-export async function requestPasswordResetClient(...args: any[]) {
-    return (requestPasswordReset as any)(await getToken(), ...args);
+export async function requestPasswordReset(email: string) {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_FORGOT_PASSWORD_ENDPOINT}`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ email }),
+        })
+
+        const json = await res.json()
+
+        if (!res.ok) {
+            console.log("[requestPasswordReset] status:", res.status, JSON.stringify(json))
+            return { success: false, message: handleApiError(json) }
+        }
+
+        return { success: true }
+
+    } catch (err) {
+        console.log("[requestPasswordReset] error:", err)
+        return { success: false, message: "Request failed. Please try again." }
+    }
 }
 
-export async function verifyOtpClient(...args: any[]) {
-    return (verifyOtp as any)(await getToken(), ...args);
+export async function verifyOtp(email: string, otp: string) {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_VERIFY_RESET_OTP_ENDPOINT}`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ email, otp }),
+        })
+
+        const json = await res.json()
+
+        if (!res.ok) {
+            console.log("[verifyOtp] status:", res.status, JSON.stringify(json))
+            return { success: false, message: handleApiError(json) }
+        }
+
+        return { success: true, token: json.data?.reset_token ?? json.reset_token }
+
+    } catch (err) {
+        console.log("[verifyOtp] error:", err)
+        return { success: false, message: "Verification failed. Please try again." }
+    }
 }
 
-export async function resetPasswordClient(...args: any[]) {
-    return (resetPassword as any)(await getToken(), ...args);
+export async function resetPassword(token: string, newPassword: string) {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_RESET_PASSWORD_ENDPOINT}`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ token, new_password: newPassword }),
+        })
+
+        const json = await res.json()
+
+        if (!res.ok) {
+            console.log("[resetPassword] status:", res.status, JSON.stringify(json))
+            return { success: false, message: handleApiError(json) }
+        }
+
+        return { success: true }
+
+    } catch (err) {
+        console.log("[resetPassword] error:", err)
+        return { success: false, message: "Reset failed. Please try again." }
+    }
 }

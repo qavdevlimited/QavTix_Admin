@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { format } from "date-fns"
-import { fetchPaginatedData } from "@/actions/paginated-data"
+import { fetchPaginatedData } from "@/actions/paginated-data/index"
 import { useOnRevalidate } from "./UseRevalidate"
 import { Country } from "country-state-city"
 

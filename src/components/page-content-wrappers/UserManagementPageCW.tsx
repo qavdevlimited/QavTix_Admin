@@ -17,10 +17,8 @@ import {
     ADMIN_AFFILIATES_ENDPOINT,
     ADMIN_WITHDRAWALS_ENDPOINT,
 } from "@/endpoints"
-import {
-    getAdminUsersCardsClient as getAdminUsersCards,
-    getAdminAffiliatesCardsClient as getAdminAffiliatesCards
-} from "@/actions/user-management/client"
+import { getAdminUsersCards, getAdminAffiliatesCards } from "@/actions/user-management/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapUserCardsToMetrics, mapAffiliateCardsToSparkline } from "@/helper-fns/mapUserManagementCards"
 import { Icon } from "@iconify/react"
 import { exportData } from "@/helper-fns/exportData"
@@ -108,9 +106,10 @@ export default function UserManagementPageCW({
             setIsCardsLoading(true)
             const params = { date_range: datePreset }
             try {
+                const token = await getAuthToken()
                 const [usersRes, affiliatesRes] = await Promise.all([
-                    getAdminUsersCards(params),
-                    getAdminAffiliatesCards(params)
+                    getAdminUsersCards(token, params),
+                    getAdminAffiliatesCards(token, params)
                 ])
                 setUserCards(usersRes.cards)
                 setAffiliateCards(affiliatesRes.cards)

@@ -15,7 +15,9 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { NotificationsSettingsFormData, notificationsSettingsSchema } from '@/schemas/settings.schema'
 import { NOTIFICATION_TYPES } from '@/components-data/settings-data-options'
-import { getNotificationSettingsClient as getNotificationSettings, updateNotificationSettingsClient as updateNotificationSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
+import { getNotificationSettings } from "@/actions/settings/client"
+import { updateNotificationSettings, ResetAllSettings } from "@/actions/settings/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 export default function NotificationsPage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)
@@ -39,32 +41,34 @@ export default function NotificationsPage() {
 
     // Fetch initial data
     useEffect(() => {
-        getNotificationSettings().then(res => {
-            if (res.success) {
-                const d = res.data
-                // derive "enabled" from whether any notification type is true
-                const emailOn = Object.values(d.email_notifications).some(Boolean)
-                const smsOn = Object.values(d.sms_notifications).some(Boolean)
-                reset({
-                    emailNotificationsEnabled: emailOn,
-                    emailNotifications: {
-                        adminAlerts: d.email_notifications.admin_alerts,
-                        fraudAlerts: d.email_notifications.fraud_alerts,
-                        highVolumeSales: d.email_notifications.high_volume_sales,
-                        failedPayouts: d.email_notifications.failed_payouts,
-                    },
-                    smsNotificationsEnabled: smsOn,
-                    smsNotifications: {
-                        adminAlerts: d.sms_notifications.admin_alerts,
-                        fraudAlerts: d.sms_notifications.fraud_alerts,
-                        highVolumeSales: d.sms_notifications.high_volume_sales,
-                        failedPayouts: d.sms_notifications.failed_payouts,
-                    },
-                })
-            } else {
-                dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
-            }
-            setIsLoading(false)
+        getAuthToken().then(token => {
+            getNotificationSettings(token).then(res => {
+                if (res.success) {
+                    const d = res.data
+                    // derive "enabled" from whether any notification type is true
+                    const emailOn = Object.values(d.email_notifications).some(Boolean)
+                    const smsOn = Object.values(d.sms_notifications).some(Boolean)
+                    reset({
+                        emailNotificationsEnabled: emailOn,
+                        emailNotifications: {
+                            adminAlerts: d.email_notifications.admin_alerts,
+                            fraudAlerts: d.email_notifications.fraud_alerts,
+                            highVolumeSales: d.email_notifications.high_volume_sales,
+                            failedPayouts: d.email_notifications.failed_payouts,
+                        },
+                        smsNotificationsEnabled: smsOn,
+                        smsNotifications: {
+                            adminAlerts: d.sms_notifications.admin_alerts,
+                            fraudAlerts: d.sms_notifications.fraud_alerts,
+                            highVolumeSales: d.sms_notifications.high_volume_sales,
+                            failedPayouts: d.sms_notifications.failed_payouts,
+                        },
+                    })
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
+                }
+                setIsLoading(false)
+            })
         })
     }, [reset, dispatch])
 

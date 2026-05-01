@@ -101,6 +101,7 @@ export default function AffiliatesTable({
                                                     id: affiliate.referral_id,
                                                     name: affiliate.affiliate_name,
                                                     email: affiliate.affiliate_email,
+                                                    profileImg: affiliate.profile_picture || undefined,
                                                 }}
                                                 variant="desktop"
                                             />
@@ -168,6 +169,7 @@ export default function AffiliatesTable({
                                         id: affiliate.referral_id,
                                         name: affiliate.affiliate_name,
                                         email: affiliate.affiliate_email,
+                                        profileImg: affiliate.profile_picture || undefined,
                                     }}
                                     variant="mobile"
                                     className="flex-1"

@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils"
 import { space_grotesk } from "@/lib/fonts"
 import { TableDataDisplayFilter, UserProfileTabNFilterOptions } from "../custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import UserPurchaseHistoryTable from "../custom-utils/TableDataDisplayAreas/tables/UserPurchaseHistoryTable"
-import { getAdminUserCardsClient as getAdminUserCards, getAdminUserChartClient as getAdminUserChart } from "@/actions/user-management/client"
+import { getAdminUserCards, getAdminUserChart } from "@/actions/user-management/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapUserProfileCards } from "@/helper-fns/mapUserManagementCards"
 import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import DateRangePresetFilter from "../custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
@@ -72,12 +73,14 @@ export default function UserProfilePageCW({
         setDatePreset(preset)
 
         startCardsTransition(async () => {
-            const { cards: newCards } = await getAdminUserCards(userId, preset ?? undefined)
+            const token = await getAuthToken()
+            const { cards: newCards } = await getAdminUserCards(token, userId, preset ?? undefined)
             setCards(newCards)
         })
 
         startChartTransition(async () => {
-            const { chart: newChart } = await getAdminUserChart(userId, preset ?? undefined)
+            const token = await getAuthToken()
+            const { chart: newChart } = await getAdminUserChart(token, userId, preset ?? undefined)
             setChartData(newChart)
         })
     }

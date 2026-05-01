@@ -13,7 +13,7 @@ import PasswordInput1 from "@/components/custom-utils/inputs/PasswordInput";
 import { AUTH_LINKS } from "@/enums/navigation";
 import { maskEmail } from "@/helper-fns/maskEmail";
 import { space_grotesk } from "@/lib/fonts";
-import { verifyOtp, resetPassword, requestPasswordReset } from "@/actions/auth";
+import { verifyOtp, resetPassword, requestPasswordReset } from "@/actions/auth/client";
 import { resetEmailStore } from "@/lib/local-store/reset-email-store";
 import Link from "next/link";
 

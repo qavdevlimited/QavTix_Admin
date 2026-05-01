@@ -1,5 +1,5 @@
 import EventProfilePageCW from "@/components/page-content-wrappers/EventProfilePageCW"
-import { getAdminEventDetail, getAdminEventAttendees } from "@/actions/events"
+import { getAdminEventDetail, getAdminEventAttendees } from "@/actions/events/index"
 import { cookies } from "next/headers";
 
 interface Props {

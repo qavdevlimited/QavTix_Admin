@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { openConfirmation, resetConfirmationStatus } from '@/lib/redux/slices/confirmationSlice'
 import { openSuccessModal } from '@/lib/redux/slices/successModalSlice'
 import { showAlert } from '@/lib/redux/slices/alertSlice'
-import { approveHostVerification, declineHostVerification } from '@/actions/host-management'
+import { approveHostVerification, declineHostVerification } from '@/actions/host-management/client'
 import { useEffect, useRef } from 'react'
 
 interface ReviewRequestModalProps {

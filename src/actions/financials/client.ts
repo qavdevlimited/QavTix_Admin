@@ -1,51 +1,51 @@
 "use server"
 
-import { cookies } from "next/headers"
 import {
-    getAdminFinancialCards,
-    getAdminResaleCards,
-    getAdminPendingPayouts,
-    getAdminApprovedPayouts,
-    getAdminMarketplaceListings,
-    getAdminFeaturedPayments,
-    getAdminSubscriptions,
-    approvePayout,
-    declinePayout,
-    forcePayout,
-} from "./index"
+    ADMIN_PAYOUT_APPROVE_ENDPOINT,
+    ADMIN_PAYOUT_DECLINE_ENDPOINT,
+    ADMIN_PAYOUT_FORCE_ENDPOINT,
+} from "@/endpoints"
+import { getServerAxios } from "@/lib/axios"
+import { CACHE_TAGS } from "@/cache-tags"
+import { revalidateTag } from "next/cache"
+import { cookies } from "next/headers"
 
 async function getToken(): Promise<string | undefined> {
     const cookieStore = await cookies()
     return cookieStore.get("admin_access_token")?.value
 }
 
-export async function getAdminFinancialCardsClient(params?: Record<string, string>) {
-    return getAdminFinancialCards(await getToken(), params)
+async function postMutation(
+    endpoint: string,
+    body?: Record<string, any>,
+): Promise<{ success: boolean; message?: string }> {
+    try {
+        const token = await getToken()
+        const axios = await getServerAxios(token)
+        await axios.post(endpoint, body)
+        return { success: true }
+    } catch (err: any) {
+        return {
+            success: false,
+            message: err?.response?.data?.message ?? err?.message ?? "Action failed",
+        }
+    }
 }
 
-export async function getAdminResaleCardsClient() {
-    return getAdminResaleCards(await getToken())
+export async function approvePayout(payoutId: string) {
+    const result = await postMutation(ADMIN_PAYOUT_APPROVE_ENDPOINT(payoutId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    return result
 }
 
-export async function getAdminPendingPayoutsClient(params?: Record<string, any>) {
-    return getAdminPendingPayouts(await getToken(), params)
+export async function declinePayout(payoutId: string) {
+    const result = await postMutation(ADMIN_PAYOUT_DECLINE_ENDPOINT(payoutId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    return result
 }
 
-export async function getAdminApprovedPayoutsClient(params?: Record<string, any>) {
-    return getAdminApprovedPayouts(await getToken(), params)
+export async function forcePayout(payoutId: string) {
+    const result = await postMutation(ADMIN_PAYOUT_FORCE_ENDPOINT(payoutId))
+    if (result.success) revalidateTag(CACHE_TAGS.ADMIN_FINANCIAL_CARDS, 'max')
+    return result
 }
-
-export async function getAdminMarketplaceListingsClient(params?: Record<string, any>) {
-    return getAdminMarketplaceListings(await getToken(), params)
-}
-
-export async function getAdminFeaturedPaymentsClient(params?: Record<string, any>) {
-    return getAdminFeaturedPayments(await getToken(), params)
-}
-
-export async function getAdminSubscriptionsClient(params?: Record<string, any>) {
-    return getAdminSubscriptions(await getToken(), params)
-}
-
-// Mutations read their own cookies internally
-export { approvePayout, declinePayout, forcePayout }

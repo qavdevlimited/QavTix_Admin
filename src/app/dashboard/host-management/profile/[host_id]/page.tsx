@@ -1,6 +1,6 @@
 import HostProfilePageCW from "@/components/page-content-wrappers/HostProfilePageCW"
-import { getHostProfile, getHostEarningsCards, getHostChart, getHostEvents } from "@/actions/host-management"
-import { getCategories } from "@/actions/filters"
+import { getHostProfile, getHostEarningsCards, getHostChart, getHostEvents } from "@/actions/host-management/index"
+import { getCategories } from "@/actions/filters/index"
 import { cookies } from "next/headers";
 
 interface HostProfilePageProps {

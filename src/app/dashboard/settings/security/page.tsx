@@ -14,7 +14,9 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import { SecuritySettingsFormData, securitySettingsSchema } from '@/schemas/settings.schema'
 import { FRAUD_SENSITIVITY_OPTIONS } from '@/components-data/settings-data-options'
-import { getFraudSettingsClient as getFraudSettings, updateFraudSettingsClient as updateFraudSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
+import { getFraudSettings } from "@/actions/settings/client"
+import { updateFraudSettings, ResetAllSettings } from "@/actions/settings/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 export default function SecurityAbusePage() {
     const dispatch = useAppDispatch()
     const { lastConfirmedAction, isConfirmed } = useAppSelector(s => s.confirmation)
@@ -33,13 +35,15 @@ export default function SecurityAbusePage() {
 
     // Fetch initial data
     useEffect(() => {
-        getFraudSettings().then(res => {
-            if (res.success) {
-                reset({ fraudDetectionSensitivity: res.data.fraud_sensitivity })
-            } else {
-                dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
-            }
-            setIsLoading(false)
+        getAuthToken().then(token => {
+            getFraudSettings(token).then(res => {
+                if (res.success) {
+                    reset({ fraudDetectionSensitivity: res.data.fraud_sensitivity })
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
+                }
+                setIsLoading(false)
+            })
         })
     }, [reset, dispatch])
 

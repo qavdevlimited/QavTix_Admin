@@ -22,7 +22,9 @@ import { space_grotesk } from '@/lib/fonts'
 import { LocalizationSettingsFormData, localizationSettingsSchema } from '@/schemas/settings.schema'
 import { COUNTRIES, CURRENCIES, DATE_TIME_FORMATS, LANGUAGES } from '@/components-data/settings-data-options'
 import SettingsLocalizationTag from '@/components/custom-utils/tags/SettingsLocalizationTag'
-import { getLocalizationSettingsClient as getLocalizationSettings, updateLocalizationSettingsClient as updateLocalizationSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
+import { getLocalizationSettings } from "@/actions/settings/client"
+import { updateLocalizationSettings, ResetAllSettings } from "@/actions/settings/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 // API sends country names like "Nigeria"; our COUNTRIES uses codes like "NG".
 // These helpers bridge the gap.
 const countryNameToCode = (name: string): string | undefined =>
@@ -56,24 +58,26 @@ export default function LocalizationPage() {
 
     // Fetch initial data
     useEffect(() => {
-        getLocalizationSettings().then(res => {
-            if (res.success) {
-                const d = res.data
-                // API sends country names — convert to codes for UI
-                const countryCodes = (d.supported_countries ?? [])
-                    .map(countryNameToCode)
-                    .filter(Boolean) as string[]
+        getAuthToken().then(token => {
+            getLocalizationSettings(token).then(res => {
+                if (res.success) {
+                    const d = res.data
+                    // API sends country names — convert to codes for UI
+                    const countryCodes = (d.supported_countries ?? [])
+                        .map(countryNameToCode)
+                        .filter(Boolean) as string[]
 
-                reset({
-                    supportedCountries: countryCodes,
-                    supportedCurrencies: d.supported_currencies ?? [],
-                    defaultLanguage: d.language,
-                    dateTimeFormat: d.date_time_format,
-                })
-            } else {
-                dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
-            }
-            setIsLoading(false)
+                    reset({
+                        supportedCountries: countryCodes,
+                        supportedCurrencies: d.supported_currencies ?? [],
+                        defaultLanguage: d.language,
+                        dateTimeFormat: d.date_time_format,
+                    })
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
+                }
+                setIsLoading(false)
+            })
         })
     }, [reset, dispatch])
 

@@ -6,7 +6,7 @@ import {
     getAdminMarketplaceListings,
     getAdminFeaturedPayments,
     getAdminSubscriptions,
-} from "@/actions/financials"
+} from "@/actions/financials/index"
 import { cookies } from "next/headers";
 
 export const metadata = {

@@ -1,5 +1,3 @@
-"use server"
-
 import {
     ADMIN_CONFIG_FEES_ENDPOINT,
     ADMIN_CONFIG_FRAUD_ENDPOINT,
@@ -7,13 +5,9 @@ import {
     ADMIN_CONFIG_LOCALIZATION_ENDPOINT,
     ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT,
     ADMIN_CONFIG_POLICIES_ENDPOINT,
-    ADMIN_CONFIG_RESET_ENDPOINT,
 } from '@/endpoints'
-import { getServerAxios } from '@/lib/axios'
 import { CACHE_TAGS } from '@/cache-tags'
-import { revalidateTag } from 'next/cache'
 import { unstable_cacheTag as cacheTag } from 'next/cache'
-import { cookies } from 'next/headers'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,12 +66,11 @@ export interface AllSettingsData {
     localization: LocalizationSettingsData
 }
 
-type FetchResult<T> = { success: true; data: T } | { success: false; message: string }
-type MutateResult = { success: boolean; message?: string }
-type ResetResult = { success: true; data: AllSettingsData } | { success: false; message: string }
+export type FetchResult<T> = { success: true; data: T } | { success: false; message: string }
+export type MutateResult = { success: boolean; message?: string }
+export type ResetResult = { success: true; data: AllSettingsData } | { success: false; message: string }
 
 // ─── Internal helper: cached fetch using 'use cache' + token arg ──────────────
-// token is passed in from the caller (which reads cookies() outside this scope)
 
 async function cachedGet<T>(
     token: string | undefined,
@@ -130,70 +123,4 @@ export async function getNotificationSettings(token: string | undefined): Promis
 
 export async function getLocalizationSettings(token: string | undefined): Promise<FetchResult<LocalizationSettingsData>> {
     return cachedGet<LocalizationSettingsData>(token, ADMIN_CONFIG_LOCALIZATION_ENDPOINT, CACHE_TAGS.SETTINGS_LOCALIZATION)
-}
-
-// ─── Mutations — cookies() is safe here (not inside cache boundary) ───────────
-
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies()
-    return cookieStore.get('admin_access_token')?.value
-}
-
-async function patchSetting(endpoint: string, payload: object): Promise<MutateResult> {
-    try {
-        const token = await getToken()
-        const axios = await getServerAxios(token)
-        await axios.patch(endpoint, payload)
-        return { success: true }
-    } catch (err: any) {
-        return { success: false, message: err?.response?.data?.message ?? 'Failed to save settings.' }
-    }
-}
-
-export async function updateGeneralSettings(token: string | undefined, data: Partial<GeneralSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_GENERAL_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_GENERAL, 'max')
-    return result
-}
-
-export async function updatePoliciesSettings(token: string | undefined, data: Partial<PoliciesSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_POLICIES_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_POLICIES, 'max')
-    return result
-}
-
-export async function updateFeesSettings(token: string | undefined, data: Partial<FeesSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_FEES_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_FEES, 'max')
-    return result
-}
-
-export async function updateFraudSettings(token: string | undefined, data: Partial<FraudSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_FRAUD_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_FRAUD, 'max')
-    return result
-}
-
-export async function updateNotificationSettings(token: string | undefined, data: Partial<NotificationSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_NOTIFICATIONS, 'max')
-    return result
-}
-
-export async function updateLocalizationSettings(token: string | undefined, data: Partial<LocalizationSettingsData>): Promise<MutateResult> {
-    const result = await patchSetting(ADMIN_CONFIG_LOCALIZATION_ENDPOINT, data)
-    if (result.success) revalidateTag(CACHE_TAGS.SETTINGS_LOCALIZATION, 'max')
-    return result
-}
-
-export async function ResetAllSettings(token: string | undefined): Promise<ResetResult> {
-    try {
-        const tok = await getToken()
-        const axios = await getServerAxios(tok)
-        const res = await axios.post(ADMIN_CONFIG_RESET_ENDPOINT)
-        revalidateTag(CACHE_TAGS.SETTINGS_ALL, 'max')
-        return { success: true, data: res.data.data as AllSettingsData }
-    } catch (err: any) {
-        return { success: false, message: err?.response?.data?.message ?? 'Failed to reset settings.' }
-    }
 }

@@ -5,7 +5,7 @@ import {
     getAdminAffiliates,
     getAdminAffiliatesCards,
     getAdminWithdrawals,
-} from "@/actions/user-management";
+} from "@/actions/user-management/index";
 import { cookies } from "next/headers";
 
 export default async function UserManagementPage() {

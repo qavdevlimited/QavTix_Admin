@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { AccountActionType } from "../modals/resources/user-account-action-status"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import UserAccountActionStatusModal from "../modals/UserAccountActionStatusModal"
-import { toggleUserSuspension } from "@/actions/user-management"
+import { toggleUserSuspension } from "@/actions/user-management/client"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
 

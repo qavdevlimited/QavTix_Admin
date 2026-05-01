@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { toggleHostSuspension, giftHostBadge, approveHostVerification, declineHostVerification, forceHostPayout } from "@/actions/host-management"
+import { toggleHostSuspension, giftHostBadge, approveHostVerification, declineHostVerification, forceHostPayout } from "@/actions/host-management/client"
 import { exportData } from "@/helper-fns/exportData"
 import ReviewRequestModal from "@/components/modals/ReviewRequestModal"
 

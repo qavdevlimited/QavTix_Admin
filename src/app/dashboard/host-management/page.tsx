@@ -1,5 +1,5 @@
 import HostmanagementPageCW from "@/components/page-content-wrappers/HostManagementPageCW"
-import { getAdminHosts, getAdminHostCards, getAdminPendingHosts } from "@/actions/host-management"
+import { getAdminHosts, getAdminHostCards, getAdminPendingHosts } from "@/actions/host-management/index"
 import { cookies } from "next/headers";
 
 export default async function HostManagementPage() {

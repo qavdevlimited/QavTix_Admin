@@ -12,7 +12,8 @@ import HostRevenueChart from "@/components/charts/HostRevenueChart"
 import { TableDataDisplayFilter, HostProfileTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_HOST_EVENTS_ENDPOINT } from "@/endpoints"
-import { getHostEarningsCardsClient as getHostEarningsCards } from "@/actions/host-management/client"
+import { getHostEarningsCards } from "@/actions/host-management/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapHostEarningsCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { cn } from "@/lib/utils"
 import { space_grotesk } from "@/lib/fonts"
@@ -20,8 +21,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { forceHostPayout, toggleHostAutoPayout } from "@/actions/host-management"
-import { ApiCategory } from "@/actions/filters"
+import { forceHostPayout, toggleHostAutoPayout } from "@/actions/host-management/client"
+import { ApiCategory } from "@/actions/filters/client"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
 import { exportData } from "@/helper-fns/exportData"
 
@@ -87,7 +88,9 @@ export default function HostProfilePageCW({
     const handleDatePresetChange = (preset: DatePreset | null) => {
         setDatePreset(preset)
         startCardsTransition(async () => {
+            const token = await getAuthToken()
             const { cards: newCards } = await getHostEarningsCards(
+                token,
                 hostId,
                 preset ? { date_range: preset } : undefined,
             )

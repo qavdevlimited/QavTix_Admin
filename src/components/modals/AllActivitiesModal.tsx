@@ -8,7 +8,8 @@ import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import RecentActivityItem from '@/components/slots/activity/RecentActivityItem'
-import { getAdminActivitiesClient as getAdminActivities } from '@/actions/dashboard/client'
+import { getAdminActivities } from '@/actions/dashboard/index'
+import { getAuthToken } from '@/helper-fns/getAuthToken'
 import { space_grotesk } from '@/lib/fonts'
 
 
@@ -38,7 +39,8 @@ export default function AllActivitiesModal({ initialData }: { initialData?: Admi
 
     const handleLoadMore = () => {
         startTransition(async () => {
-            const res = await getAdminActivities(currentPage + 1)
+            const token = await getAuthToken()
+            const res = await getAdminActivities(token, currentPage + 1)
             if (res.success && res.data) {
                 setActivities(prev => [...prev, ...res.data!.results])
                 setCurrentPage(res.data.page)

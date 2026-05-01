@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
-import { toggleUserSuspension } from "@/actions/user-management"
+import { toggleUserSuspension } from "@/actions/user-management/client"
 import { AccountActionType } from "@/components/modals/resources/user-account-action-status"
 import UserAccountActionStatusModal from "@/components/modals/UserAccountActionStatusModal"
 

@@ -9,7 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
-import { getUpcomingEventsClient as getUpcomingEvents } from "@/actions/dashboard/client"
+import { getUpcomingEvents } from "@/actions/dashboard/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 
 interface EventOption {
     id: string
@@ -50,7 +51,8 @@ export function EventFilter({ value, onChange, icon }: EventFilterProps) {
 
         setLoading(true)
         try {
-            const result = await getUpcomingEvents({ 
+            const token = await getAuthToken()
+            const result = await getUpcomingEvents(token, { 
                 search: query,
                 page: 1,
             })

@@ -1,4 +1,4 @@
-"use server";
+
 
 import { ADMIN_AUDIT_LOGS_ENDPOINT } from "@/endpoints"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"

@@ -1,6 +1,6 @@
 import EventsListingPageCW from "@/components/page-content-wrappers/EventsListingPageCW"
-import { getAdminEvents, getAdminEventCards } from "@/actions/events"
-import { getCategories } from "@/actions/filters"
+import { getAdminEvents, getAdminEventCards } from "@/actions/events/index"
+import { getCategories } from "@/actions/filters/index"
 import { cookies } from "next/headers";
 
 export default async function EventsListingPage() {

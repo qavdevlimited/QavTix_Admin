@@ -1,5 +1,5 @@
 import UserProfilePageCW from "@/components/page-content-wrappers/UserProfilePageCW"
-import { getAdminUserProfile, getAdminUserCards, getAdminUserChart, getAdminUserOrders } from "@/actions/user-management"
+import { getAdminUserProfile, getAdminUserCards, getAdminUserChart, getAdminUserOrders } from "@/actions/user-management/index"
 import { cookies } from "next/headers";
 
 interface UserProfilePageProps {

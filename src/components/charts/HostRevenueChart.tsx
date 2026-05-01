@@ -8,7 +8,8 @@ import {
 import { cn } from "@/lib/utils"
 import { getNiceTicks, formatYTick } from "@/helper-fns/chartFormatters"
 import ChartLoader from "@/components/loaders/ChartLoader"
-import { getHostChartClient as getHostChart } from "@/actions/host-management/client"
+import { getHostChart } from "@/actions/host-management/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { space_grotesk } from "@/lib/fonts"
 import TimelineSelector from "@/components/custom-utils/TableDataDisplayAreas/filters/TimelineFilter"
 import { useAppSelector } from "@/lib/redux/hooks"
@@ -57,7 +58,8 @@ export default function HostRevenueChart({ hostId, initialData, className }: Hos
         startTransition(async () => {
             const params: Record<string, any> = { chart_type: type, year: y }
             if (m) params.month = m
-            const { chart } = await getHostChart(hostId, params)
+            const token = await getAuthToken()
+            const { chart } = await getHostChart(token, hostId, params)
             setChartData(chart)
         })
     }

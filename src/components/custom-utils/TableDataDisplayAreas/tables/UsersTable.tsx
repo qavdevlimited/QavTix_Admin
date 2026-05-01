@@ -120,6 +120,7 @@ export default function UsersTable({
                                                         id: user.user_id,
                                                         name: user.full_name,
                                                         email: user.email,
+                                                        profileImg: user.profile_picture || undefined,
                                                     }}
                                                     variant="desktop"
                                                 />
@@ -207,7 +208,7 @@ export default function UsersTable({
                             <div className="flex items-start justify-between gap-3 mb-2">
                                 {isMounted && (
                                     <UserInfo
-                                        user={{ id: user.user_id, name: user.full_name, email: user.email }}
+                                        user={{ id: user.user_id, profileImg: user.profile_picture || undefined, name: user.full_name, email: user.email }}
                                         variant="mobile"
                                         className="shrink-0"
                                     />

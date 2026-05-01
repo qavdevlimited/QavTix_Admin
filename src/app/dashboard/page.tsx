@@ -3,7 +3,7 @@ import {
     getAdminDashboardCards, 
     getAdminRevenueAnalytics, 
     getAdminTicketAnalytics 
-} from "@/actions/dashboard";
+} from "@/actions/dashboard/index";
 import DashboardPageCW from "@/components/page-content-wrappers/DashboardPageCW";
 import { cookies } from "next/headers";
 

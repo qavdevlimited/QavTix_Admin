@@ -1,5 +1,3 @@
-"use server"
-
 import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_DASHBOARD_CARDS_ENDPOINT,
@@ -9,7 +7,6 @@ import {
     DASHBOARD_OVERVIEW_ENDPOINT,
 } from "@/endpoints"
 import { handleApiError } from "@/helper-fns/handleApiErrors"
-import { revalidateTag } from "next/cache"
 import { cacheTag } from "next/cache"
 
 // ─── Internal cached fetch — token passed as arg, 'use cache' scoped here ─────
@@ -115,11 +112,4 @@ export async function getUpcomingEvents(
         console.error("[getUpcomingEvents] error:", err)
         return { success: false, message: "Failed to load upcoming events." }
     }
-}
-
-// ─── Revalidation helpers ─────────────────────────────────────────────────────
-
-export async function revalidateDashboard() {
-    revalidateTag(CACHE_TAGS.DASHBOARD_CARDS, 'max')
-    revalidateTag(CACHE_TAGS.DASHBOARD_ACTIVITIES, 'max')
 }

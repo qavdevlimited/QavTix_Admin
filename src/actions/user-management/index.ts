@@ -1,5 +1,3 @@
-"use server"
-
 import {
     ADMIN_USERS_ENDPOINT,
     ADMIN_USERS_CARDS_ENDPOINT,
@@ -14,16 +12,9 @@ import {
 import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { CACHE_TAGS } from "@/cache-tags"
-import { revalidateTag } from "next/cache"
 import { cacheTag } from "next/cache"
-import { cookies } from "next/headers"
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
-
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies()
-    return cookieStore.get("admin_access_token")?.value
-}
 
 async function fetchPage<T>(
     token: string | undefined,
@@ -198,18 +189,4 @@ export async function getAdminUserChart(token: string | undefined, userId: strin
 
 export async function getAdminUserOrders(token: string | undefined, userId: string | number) {
     return _getAdminUserOrders(token, userId)
-}
-
-// ─── Mutation — reads its own token (safe, not inside cache boundary) ─────────
-
-export async function toggleUserSuspension(userId: string | number): Promise<{ success: boolean; message?: string }> {
-    try {
-        const token = await getToken()
-        const axios = await getServerAxios(token)
-        await axios.post(`/administrator/admin/users/${userId}/suspend/`)
-        revalidateTag(CACHE_TAGS.ADMIN_USERS, 'max')
-        return { success: true }
-    } catch (error: any) {
-        return { success: false, message: error?.response?.data?.message || "Failed to toggle user suspension" }
-    }
 }

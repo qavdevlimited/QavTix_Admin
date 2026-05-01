@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
-import { searchHosts } from "@/actions/host-management"
+import { searchHosts } from "@/actions/host-management/index"
 
 interface HostFilterProps {
     value?: string | null

@@ -4,7 +4,7 @@ import ActionButton1 from "@/components/custom-utils/buttons/ActionBtn1";
 import TextInput1 from "@/components/custom-utils/inputs/TextInput1";
 import { AUTH_LINKS } from "@/enums/navigation";
 import { space_grotesk } from "@/lib/fonts";
-import { requestPasswordReset } from "@/actions/auth";
+import { requestPasswordReset } from "@/actions/auth/client";
 import { resetEmailStore } from "@/lib/local-store/reset-email-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Icon } from "@iconify/react";

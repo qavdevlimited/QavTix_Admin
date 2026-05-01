@@ -13,7 +13,8 @@ import FilterButtonsActions1 from "./buttons-and-inputs/FilterActionButtons1"
 import { useMediaQuery } from "@/custom-hooks/UseMediaQuery"
 import { MobileBottomSheet } from "../../dropdown/EventFilterDropdownMobileBottomSheet"
 import { useParams } from "next/navigation"
-import { fetchTicketTypesClient as fetchTicketTypes } from "@/actions/filters/client"
+import { fetchTicketTypes } from "@/actions/filters/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import { useAppSelector } from "@/lib/redux/hooks"
 
@@ -59,7 +60,8 @@ export function TicketTypeFilter({
             return
         }
         setLoading(true)
-        const result = await fetchTicketTypes(eventId)
+        const token = await getAuthToken()
+        const result = await fetchTicketTypes(token, eventId)
         cache.current.set(eventId, result)
         setTicketTypes(result)
         setLoading(false)

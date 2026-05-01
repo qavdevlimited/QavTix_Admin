@@ -18,7 +18,8 @@ import {
     mapAdminFinancialCardsToMetrics,
     mapAdminResaleCardsToMetrics,
 } from "@/helper-fns/mapUserManagementCards"
-import { getAdminFinancialCardsClient as getAdminFinancialCards, getAdminResaleCardsClient as getAdminResaleCards } from "@/actions/financials/client"
+import { getAdminFinancialCards, getAdminResaleCards } from "@/actions/financials/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import AdminPendingPayoutsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPendingPayoutsTable"
 import AdminPayoutHistoryTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminPayoutHistoryTable"
 import AdminMarketplaceTable from "@/components/custom-utils/TableDataDisplayAreas/tables/financials/AdminMarketplaceTable"
@@ -118,7 +119,8 @@ export default function FinancialsPageCW({
 
         if (tab === "resale-orders" && !resaleCards) {
             startCardsTransition(async () => {
-                const { cards: rc } = await getAdminResaleCards()
+                const token = await getAuthToken()
+                const { cards: rc } = await getAdminResaleCards(token)
                 setResaleCards(rc)
             })
         }
@@ -127,7 +129,9 @@ export default function FinancialsPageCW({
     const handleDatePresetChange = (preset: DatePreset | null) => {
         setFilters(prev => ({ ...prev, dateRangePreset: preset }))
         startCardsTransition(async () => {
+            const token = await getAuthToken()
             const { cards: freshCards } = await getAdminFinancialCards(
+                token,
                 preset ? { date_range: preset } : undefined,
             )
             setCards(freshCards)
@@ -137,7 +141,9 @@ export default function FinancialsPageCW({
     const handleEventChange = (event: string | null) => {
         setFilters(prev => ({ ...prev, event }))
         startCardsTransition(async () => {
+            const token = await getAuthToken()
             const { cards: freshCards } = await getAdminFinancialCards(
+                token,
                 event ? { event_id: event } : undefined,
             )
             setCards(freshCards)

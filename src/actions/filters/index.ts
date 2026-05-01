@@ -1,10 +1,7 @@
-"use server"
-
 import { CATEGORIES_ENDPOINT, EVENT_TICKET_TYPES_ENDPOINT } from "@/endpoints"
 import { getServerAxios } from "@/lib/axios"
 import { CACHE_TAGS } from "@/cache-tags"
 import { cacheTag } from "next/cache"
-import { cookies } from "next/headers"
 
 export interface ApiCategory {
     id: number
@@ -46,16 +43,12 @@ async function _getCategories(token: string | undefined): Promise<GetCategoriesR
     }
 }
 
-// ─── fetchTicketTypes — reads own token (client component calls this directly) ─
-
 export async function getCategories(token: string | undefined): Promise<GetCategoriesResult> {
     return _getCategories(token)
 }
 
-export async function fetchTicketTypes(eventId: string): Promise<TicketType[]> {
+export async function fetchTicketTypes(token: string | undefined, eventId: string): Promise<TicketType[]> {
     try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get("admin_access_token")?.value
         const axios = await getServerAxios(token)
         const { data } = await axios.get(EVENT_TICKET_TYPES_ENDPOINT(eventId))
         return data?.data ?? []

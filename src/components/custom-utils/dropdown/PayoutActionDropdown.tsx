@@ -13,9 +13,9 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { approvePayout, declinePayout, forcePayout } from "@/actions/financials"
+import { approvePayout, declinePayout, forcePayout } from "@/actions/financials/client"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
-import { toggleHostAutoPayout } from "@/actions/host-management"
+import { toggleHostAutoPayout } from "@/actions/host-management/client"
 import { CONFIRMATION_ACTION_TYPES } from "@/components/modals/resources/confirmationActions"
 
 // ─── Types ────────────────────────────────────────────────────────────────────

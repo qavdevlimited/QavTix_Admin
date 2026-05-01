@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { toggleHostAutoPayout, toggleHostSuspension } from "@/actions/host-management"
+import { toggleHostAutoPayout, toggleHostSuspension } from "@/actions/host-management/client"
 import Link from "next/link"
 import BankLogo from "../financials/BankLogo"
 

@@ -10,10 +10,11 @@ import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
 import AdminEventsTable from "@/components/custom-utils/TableDataDisplayAreas/tables/events-listing/AdminEventsTable"
 import { useDataDisplay, TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_EVENTS_ENDPOINT } from "@/endpoints"
-import { getAdminEventCardsClient as getAdminEventCards } from "@/actions/events/client"
+import { getAdminEventCards } from "@/actions/events/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapAdminEventCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
-import { ApiCategory } from "@/actions/filters"
+import { ApiCategory } from "@/actions/filters/index"
 
 interface EventsListingPageCWProps {
     initialAllEvents: TabSlice<AdminEvent>
@@ -72,7 +73,9 @@ export default function EventsListingPageCW({
     const handleDatePresetChange = (preset: DatePreset | null) => {
         setDatePreset(preset)
         startCardsTransition(async () => {
+            const token = await getAuthToken()
             const { cards: newCards } = await getAdminEventCards(
+                token,
                 preset ? { date_range: preset } : undefined,
             )
             setCards(newCards)

@@ -1,4 +1,4 @@
-"use server"
+
 
 import {
     ADMIN_EVENTS_ENDPOINT,

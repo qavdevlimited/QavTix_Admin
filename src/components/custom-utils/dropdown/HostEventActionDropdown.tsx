@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { featureHostEvent, suspendHostEvent, deleteHostEvent } from "@/actions/host-management"
+import { featureHostEvent, suspendHostEvent, deleteHostEvent } from "@/actions/host-management/client"
 import FeaturedPlanModal from "@/components/modals/FeaturedPlanModal"
 
 interface HostEventAction {

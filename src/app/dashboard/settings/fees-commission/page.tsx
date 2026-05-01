@@ -15,7 +15,9 @@ import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import CustomPercentageInput from '@/components/custom-utils/inputs/CustomPercentageInput'
 import { FeesCommissionsForm, feesCommissionsSchema } from '@/schemas/settings.schema'
-import { getFeesSettingsClient as getFeesSettings, updateFeesSettingsClient as updateFeesSettings, ResetAllSettingsClient as ResetAllSettings } from "@/actions/settings/client"
+import { getFeesSettings } from "@/actions/settings/client"
+import { updateFeesSettings, ResetAllSettings } from "@/actions/settings/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { AnimatePresence, motion } from 'framer-motion'
 export default function FeesCommissionsPage() {
     const dispatch = useAppDispatch()
@@ -40,20 +42,22 @@ export default function FeesCommissionsPage() {
 
     // Fetch initial data
     useEffect(() => {
-        getFeesSettings().then(res => {
-            if (res.success) {
-                reset({
-                    ticketResellCommission: res.data.ticket_resell_commission,
-                    sellerServiceFee: res.data.seller_service_fee,
-                    buyerServiceFee: res.data.buyer_service_fee,
-                    vatPercentage: res.data.vat_percentage ?? 0,
-                    vatEnabled: res.data.vat_enabled,
-                    pricesIncludeVat: res.data.prices_include_vat,
-                })
-            } else {
-                dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
-            }
-            setIsLoading(false)
+        getAuthToken().then(token => {
+            getFeesSettings(token).then(res => {
+                if (res.success) {
+                    reset({
+                        ticketResellCommission: res.data.ticket_resell_commission,
+                        sellerServiceFee: res.data.seller_service_fee,
+                        buyerServiceFee: res.data.buyer_service_fee,
+                        vatPercentage: res.data.vat_percentage ?? 0,
+                        vatEnabled: res.data.vat_enabled,
+                        pricesIncludeVat: res.data.prices_include_vat,
+                    })
+                } else {
+                    dispatch(showAlert({ title: 'Failed to load settings', description: res.message, variant: 'destructive' }))
+                }
+                setIsLoading(false)
+            })
         })
     }, [reset, dispatch])
 

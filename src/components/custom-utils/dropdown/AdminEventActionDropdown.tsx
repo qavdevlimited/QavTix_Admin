@@ -11,10 +11,11 @@ import { showAlert } from "@/lib/redux/slices/alertSlice"
 import FeaturedPlanModal from "@/components/modals/FeaturedPlanModal"
 import { useRouter } from "next/navigation"
 import { DASHBOARD_NAVIGATION_LINKS, EVENT_PROFILE } from "@/enums/navigation"
-import { deleteHostEvent, featureHostEvent, suspendHostEvent } from "@/actions/host-management"
+import { deleteHostEvent, featureHostEvent, suspendHostEvent } from "@/actions/host-management/client"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
 import { CONFIRMATION_ACTION_TYPES } from "@/components/modals/resources/confirmationActions"
-import { getEventAttendeesClient as getEventAttendees } from "@/actions/customers/client"
+import { getEventAttendees } from "@/actions/customers/client"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { exportData } from "@/helper-fns/exportData"
 
 
@@ -94,7 +95,8 @@ export default function AdminEventActionDropdown({
     const handleDownloadAttendees = async () => {
         setLoadingAction("download")
 
-        const result = await getEventAttendees(eventId)
+        const token = await getAuthToken()
+        const result = await getEventAttendees(token, eventId)
 
         if (!result.success || !result.data?.length) {
             dispatch(showAlert({

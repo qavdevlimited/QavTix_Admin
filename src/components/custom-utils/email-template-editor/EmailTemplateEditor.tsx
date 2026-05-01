@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
-import { sendEmailCampaign } from "@/actions/campaigns"
+import { sendEmailCampaign } from "@/actions/campaigns/client"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
 import ToolbarButton from "../buttons/ToolbarButton"
 
