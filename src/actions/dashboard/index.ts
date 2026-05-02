@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_DASHBOARD_CARDS_ENDPOINT,
     ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT,
@@ -12,6 +13,7 @@ async function apiFetch<T>(
     token: string | undefined,
     path: string,
     params?: Record<string, string | number | undefined>,
+    tags?: string[],
 ): Promise<{ success: boolean; data?: T; message?: string }> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
@@ -25,6 +27,7 @@ async function apiFetch<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) {
             return { success: false, message: "Request failed" }
@@ -41,20 +44,20 @@ async function apiFetch<T>(
 export async function getAdminDashboardCards(
     token: string | undefined,
 ): Promise<{ success: boolean; data?: AdminDashboardCardsData; message?: string }> {
-    return apiFetch<AdminDashboardCardsData>(token, ADMIN_DASHBOARD_CARDS_ENDPOINT)
+    return apiFetch<AdminDashboardCardsData>(token, ADMIN_DASHBOARD_CARDS_ENDPOINT, {}, [CACHE_TAGS.DASHBOARD_CARDS])
 }
 
 export async function getAdminTicketAnalytics(
     token: string | undefined,
 ): Promise<{ success: boolean; data?: AdminTicketAnalyticsData; message?: string }> {
-    return apiFetch<AdminTicketAnalyticsData>(token, ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT)
+    return apiFetch<AdminTicketAnalyticsData>(token, ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT, {}, [CACHE_TAGS.DASHBOARD_TICKET_ANALYTICS])
 }
 
 export async function getAdminRevenueAnalytics(
     token: string | undefined,
     period: string = "month",
 ): Promise<{ success: boolean; data?: AdminRevenueData; message?: string }> {
-    return apiFetch<AdminRevenueData>(token, ADMIN_DASHBOARD_REVENUE_ENDPOINT, { period })
+    return apiFetch<AdminRevenueData>(token, ADMIN_DASHBOARD_REVENUE_ENDPOINT, { period }, [CACHE_TAGS.DASHBOARD_REVENUE])
 }
 
 export async function getAdminActivities(
@@ -64,7 +67,8 @@ export async function getAdminActivities(
     return apiFetch<AdminActivitiesData>(
         token,
         ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT,
-        { page }
+        { page },
+        [CACHE_TAGS.DASHBOARD_ACTIVITIES]
     )
 }
 
@@ -72,32 +76,5 @@ export async function getUpcomingEvents(
     token: string | undefined,
     params: UpcomingEventsParams = {},
 ): Promise<GetUpcomingEventsResult> {
-    try {
-        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${DASHBOARD_OVERVIEW_ENDPOINT}`)
-
-        if (params.page != null) url.searchParams.set("page", String(params.page))
-        if (params.search != null) url.searchParams.set("search", params.search)
-        if (params.ordering != null) url.searchParams.set("ordering", params.ordering)
-        if (params.status != null) url.searchParams.set("status", params.status)
-        if (params.category != null) url.searchParams.set("category", String(params.category))
-        if (params.performance != null) url.searchParams.set("performance", params.performance)
-        if (params.start_date != null) url.searchParams.set("start_date", params.start_date)
-        if (params.end_date != null) url.searchParams.set("end_date", params.end_date)
-
-        const res = await fetch(url.toString(), {
-            headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-        })
-
-        if (!res.ok) {
-            return { success: false, message: "Failed to load upcoming events." }
-        }
-
-        const json = await res.json()
-        return { success: true, data: json.data }
-    } catch (err) {
-        return { success: false, message: "Failed to load upcoming events." }
-    }
+    return apiFetch<any>(token, DASHBOARD_OVERVIEW_ENDPOINT, params as any, [CACHE_TAGS.UPCOMING_EVENTS])
 }

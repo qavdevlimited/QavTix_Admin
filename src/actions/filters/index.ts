@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import { CATEGORIES_ENDPOINT, EVENT_TICKET_TYPES_ENDPOINT } from "@/endpoints"
 
 export interface ApiCategory {
@@ -29,6 +30,7 @@ export async function getCategories(token: string | undefined): Promise<GetCateg
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.CATEGORIES], revalidate: 3600 }
         })
         if (!res.ok) return { success: false, data: [] }
         const json = await res.json()
@@ -46,6 +48,7 @@ export async function fetchTicketTypes(token: string | undefined, eventId: strin
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 300 }
         })
         if (!res.ok) return []
         const json = await res.json()

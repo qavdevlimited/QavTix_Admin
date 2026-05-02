@@ -1,2 +1,1 @@
-// No GET actions here
-export {}
+export * from "./client"

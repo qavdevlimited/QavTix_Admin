@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_USERS_ENDPOINT,
     ADMIN_USERS_CARDS_ENDPOINT,
@@ -16,7 +17,8 @@ import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 async function apiFetch<T>(
     token: string | undefined,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    tags?: string[],
 ): Promise<{ success: boolean; data?: T }> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
@@ -30,6 +32,7 @@ async function apiFetch<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) return { success: false }
         const json = await res.json()
@@ -42,7 +45,8 @@ async function apiFetch<T>(
 async function apiFetchList<T>(
     token: string | undefined,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    tags?: string[],
 ): Promise<TabSlice<T>> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
@@ -57,6 +61,7 @@ async function apiFetchList<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()
@@ -76,44 +81,44 @@ async function apiFetchList<T>(
 // ─── Pure GETs — token as arg, no directives ─────────────────────────────────
 
 export async function getAdminUsers(token: string | undefined) {
-    const data = await apiFetchList<AdminCustomer>(token, ADMIN_USERS_ENDPOINT)
+    const data = await apiFetchList<AdminCustomer>(token, ADMIN_USERS_ENDPOINT, {}, [CACHE_TAGS.ADMIN_USERS])
     return { data }
 }
 
 export async function getAdminUsersCards(token: string | undefined, params?: Record<string, any>) {
-    const { data } = await apiFetch<AdminUserCards>(token, ADMIN_USERS_CARDS_ENDPOINT, params)
+    const { data } = await apiFetch<AdminUserCards>(token, ADMIN_USERS_CARDS_ENDPOINT, params, [CACHE_TAGS.ADMIN_USER_CARDS])
     return { cards: data ?? null }
 }
 
 export async function getAdminAffiliates(token: string | undefined) {
-    const data = await apiFetchList<AdminAffiliate>(token, ADMIN_AFFILIATES_ENDPOINT)
+    const data = await apiFetchList<AdminAffiliate>(token, ADMIN_AFFILIATES_ENDPOINT, {}, [CACHE_TAGS.ADMIN_AFFILIATES])
     return { data }
 }
 
 export async function getAdminAffiliatesCards(token: string | undefined, params?: Record<string, any>) {
-    const { data } = await apiFetch<AdminAffiliateCards>(token, ADMIN_AFFILIATES_CARDS_ENDPOINT, params)
+    const { data } = await apiFetch<AdminAffiliateCards>(token, ADMIN_AFFILIATES_CARDS_ENDPOINT, params, [CACHE_TAGS.ADMIN_AFFILIATE_CARDS])
     return { cards: data ?? null }
 }
 
 export async function getAdminUserProfile(token: string | undefined, userId: string | number) {
-    const { data } = await apiFetch<UserProfileDetails>(token, ADMIN_USER_PROFILE_ENDPOINT(userId))
+    const { data } = await apiFetch<UserProfileDetails>(token, ADMIN_USER_PROFILE_ENDPOINT(userId), {}, [CACHE_TAGS.ADMIN_USERS])
     return { data: data ?? null }
 }
 
 export async function getAdminUserCards(token: string | undefined, userId: string | number, dateRange?: DatePreset) {
-    const { data } = await apiFetch<UserKPICards>(token, ADMIN_USER_CARDS_ENDPOINT(userId), dateRange ? { date_range: dateRange } : {})
+    const { data } = await apiFetch<UserKPICards>(token, ADMIN_USER_CARDS_ENDPOINT(userId), dateRange ? { date_range: dateRange } : {}, [CACHE_TAGS.ADMIN_USER_CARDS])
     return { cards: data ?? null }
 }
 
 export async function getAdminUserChart(token: string | undefined, userId: string | number, dateRange?: DatePreset) {
-    const { data } = await apiFetch<UserChartDataPoint[]>(token, ADMIN_USER_CHART_ENDPOINT(userId), dateRange ? { date_range: dateRange } : {})
-    return { chart: data ?? {} }
+    const { data } = await apiFetch<UserChartDataPoint[]>(token, ADMIN_USER_CHART_ENDPOINT(userId), dateRange ? { date_range: dateRange } : {}, [CACHE_TAGS.ADMIN_USER_CARDS])
+    return { chart: data ?? [] }
 }
 
 export async function getAdminWithdrawals(token: string | undefined) {
-    return apiFetchList<AdminWithdrawal>(token, ADMIN_WITHDRAWALS_ENDPOINT)
+    return apiFetchList<AdminWithdrawal>(token, ADMIN_WITHDRAWALS_ENDPOINT, {}, [CACHE_TAGS.ADMIN_FINANCIAL_CARDS])
 }
 
 export async function getAdminUserOrders(token: string | undefined, userId: string | number) {
-    return apiFetchList<UserPurchaseOrder>(token, ADMIN_USER_PURCHASE_HISTORY_ENDPOINT(userId))
+    return apiFetchList<UserPurchaseOrder>(token, ADMIN_USER_PURCHASE_HISTORY_ENDPOINT(userId), {}, [CACHE_TAGS.ADMIN_USERS])
 }

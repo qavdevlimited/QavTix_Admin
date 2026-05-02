@@ -26,7 +26,7 @@ export async function suspendEvent(eventId: string): Promise<ActionResult> {
     try {
         const axios = await getServerAxios()
         await axios.post(`/${ADMIN_HOST_EVENT_SUSPEND_ENDPOINT(eventId)}`)
-        revalidateTag(CACHE_TAGS.ADMIN_EVENTS)
+        revalidateTag(CACHE_TAGS.ADMIN_EVENTS, 'max')
         return { success: true, message: "Event suspended successfully." }
     } catch (err: any) {
         return { success: false, message: handleApiError(err?.response?.data) }
@@ -37,7 +37,7 @@ export async function deleteEvent(eventId: string): Promise<ActionResult> {
     try {
         const axios = await getServerAxios()
         await axios.delete(`/${ADMIN_HOST_EVENT_DELETE_ENDPOINT(eventId)}`)
-        revalidateTag(CACHE_TAGS.ADMIN_EVENTS)
+        revalidateTag(CACHE_TAGS.ADMIN_EVENTS, 'max')
         return { success: true, message: "Event deleted successfully." }
     } catch (err: any) {
         return { success: false, message: handleApiError(err?.response?.data) }
@@ -48,7 +48,7 @@ export async function featureEvent(eventId: string): Promise<ActionResult> {
     try {
         const axios = await getServerAxios()
         await axios.post(`/${ADMIN_HOST_EVENT_FEATURE_ENDPOINT(eventId)}`)
-        revalidateTag(CACHE_TAGS.ADMIN_EVENTS)
+        revalidateTag(CACHE_TAGS.ADMIN_EVENTS, 'max')
         return { success: true, message: "Event featured successfully." }
     } catch (err: any) {
         return { success: false, message: handleApiError(err?.response?.data) }

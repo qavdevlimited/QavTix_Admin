@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import { ADMIN_AUDIT_LOGS_ENDPOINT } from "@/endpoints"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 
@@ -18,7 +19,8 @@ export async function getAdminAuditLogs(
             headers: {
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            }
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_AUDIT_LOGS], revalidate: 300 }
         })
 
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }

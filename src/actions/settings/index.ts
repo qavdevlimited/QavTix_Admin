@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from '@/cache-tags'
 import {
     ADMIN_CONFIG_FEES_ENDPOINT,
     ADMIN_CONFIG_FRAUD_ENDPOINT,
@@ -73,6 +74,7 @@ export type ResetResult = { success: true; data: AllSettingsData } | { success: 
 async function apiGet<T>(
     token: string | undefined,
     endpoint: string,
+    tags?: string[],
 ): Promise<FetchResult<T>> {
     try {
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${endpoint}`
@@ -81,6 +83,7 @@ async function apiGet<T>(
                 'Content-Type': 'application/json',
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) {
             return { success: false, message: 'Failed to load settings.' }
@@ -95,25 +98,25 @@ async function apiGet<T>(
 // ─── GET functions — token passed as arg ──────────────────────────────────────
 
 export async function getGeneralSettings(token: string | undefined): Promise<FetchResult<GeneralSettingsData>> {
-    return apiGet<GeneralSettingsData>(token, ADMIN_CONFIG_GENERAL_ENDPOINT)
+    return apiGet<GeneralSettingsData>(token, ADMIN_CONFIG_GENERAL_ENDPOINT, [CACHE_TAGS.SETTINGS_GENERAL])
 }
 
 export async function getPoliciesSettings(token: string | undefined): Promise<FetchResult<PoliciesSettingsData>> {
-    return apiGet<PoliciesSettingsData>(token, ADMIN_CONFIG_POLICIES_ENDPOINT)
+    return apiGet<PoliciesSettingsData>(token, ADMIN_CONFIG_POLICIES_ENDPOINT, [CACHE_TAGS.SETTINGS_POLICIES])
 }
 
 export async function getFeesSettings(token: string | undefined): Promise<FetchResult<FeesSettingsData>> {
-    return apiGet<FeesSettingsData>(token, ADMIN_CONFIG_FEES_ENDPOINT)
+    return apiGet<FeesSettingsData>(token, ADMIN_CONFIG_FEES_ENDPOINT, [CACHE_TAGS.SETTINGS_FEES])
 }
 
 export async function getFraudSettings(token: string | undefined): Promise<FetchResult<FraudSettingsData>> {
-    return apiGet<FraudSettingsData>(token, ADMIN_CONFIG_FRAUD_ENDPOINT)
+    return apiGet<FraudSettingsData>(token, ADMIN_CONFIG_FRAUD_ENDPOINT, [CACHE_TAGS.SETTINGS_FRAUD])
 }
 
 export async function getNotificationSettings(token: string | undefined): Promise<FetchResult<NotificationSettingsData>> {
-    return apiGet<NotificationSettingsData>(token, ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT)
+    return apiGet<NotificationSettingsData>(token, ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT, [CACHE_TAGS.SETTINGS_NOTIFICATIONS])
 }
 
 export async function getLocalizationSettings(token: string | undefined): Promise<FetchResult<LocalizationSettingsData>> {
-    return apiGet<LocalizationSettingsData>(token, ADMIN_CONFIG_LOCALIZATION_ENDPOINT)
+    return apiGet<LocalizationSettingsData>(token, ADMIN_CONFIG_LOCALIZATION_ENDPOINT, [CACHE_TAGS.SETTINGS_LOCALIZATION])
 }

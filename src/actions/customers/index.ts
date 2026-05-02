@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import { ADMIN_EVENT_ATTENDEES_ENDPOINT } from "@/endpoints"
 
 export async function getEventAttendees(
@@ -10,7 +11,8 @@ export async function getEventAttendees(
             headers: {
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            }
+            },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 300 }
         })
         if (!res.ok) return { success: false, message: "Failed to load attendees." }
         const json = await res.json()

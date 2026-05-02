@@ -1,5 +1,6 @@
 
 
+import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_EVENTS_ENDPOINT,
     ADMIN_EVENTS_CARDS_ENDPOINT,
@@ -21,6 +22,7 @@ export async function getAdminEvents(token: string | undefined, status?: string)
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 300 }
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()
@@ -50,6 +52,7 @@ export async function getAdminEventCards(token: string | undefined, params?: Rec
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENT_CARDS], revalidate: 300 }
         })
         if (!res.ok) return { cards: null }
         const json = await res.json()
@@ -67,6 +70,7 @@ export async function getAdminEventDetail(token: string | undefined, eventId: st
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 300 }
         })
         if (!res.ok) return { data: null }
         const json = await res.json()
@@ -91,6 +95,7 @@ export async function getAdminEventAttendees(token: string | undefined, eventId:
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_EVENTS], revalidate: 300 }
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()

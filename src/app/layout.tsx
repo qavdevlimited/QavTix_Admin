@@ -17,9 +17,7 @@ export const viewport: Viewport = siteViewport
 
 async function getLayoutData(): Promise<AuthUser | null> {
 	try {
-		const cookieStore = await cookies()
-		const token = cookieStore.get("admin_access_token")?.value
-		const axiosInstance = await getServerAxios(token)
+		const axiosInstance = await getServerAxios()
 		const { data } = await axiosInstance.get(ADMIN_PROFILE_ENDPOINT)
 		return data.data as AuthUser
 	} catch {

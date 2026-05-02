@@ -12,7 +12,7 @@ import HostRevenueChart from "@/components/charts/HostRevenueChart"
 import { TableDataDisplayFilter, HostProfileTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
 import { TabSlice, useDataDisplay } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_HOST_EVENTS_ENDPOINT } from "@/endpoints"
-import { getHostEarningsCards } from "@/actions/host-management/client"
+import { getHostEarningsCards, getHostChart, forceHostPayout, toggleHostAutoPayout } from "@/actions/host-management/client"
 import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapHostEarningsCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { cn } from "@/lib/utils"
@@ -21,8 +21,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { openConfirmation, resetConfirmationStatus } from "@/lib/redux/slices/confirmationSlice"
 import { openSuccessModal } from "@/lib/redux/slices/successModalSlice"
 import { showAlert } from "@/lib/redux/slices/alertSlice"
-import { forceHostPayout, toggleHostAutoPayout } from "@/actions/host-management/client"
-import { ApiCategory } from "@/actions/filters/client"
+import { ApiCategory } from "@/actions/filters"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
 import { exportData } from "@/helper-fns/exportData"
 
@@ -58,7 +57,9 @@ export default function HostProfilePageCW({
 
     const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
     const [cards, setCards] = useState<HostEarningsCards | null>(initialCards)
+    const [chartData, setChartData] = useState<HostChartPoint[]>(initialChart)
     const [isCardsLoading, startCardsTransition] = useTransition()
+    const [isChartLoading, startChartTransition] = useTransition()
     const [activeTab, setActiveTab] = useState<string>("all")
     const [filters, setFilters] = useState<Partial<FilterValues>>({})
 
@@ -88,13 +89,19 @@ export default function HostProfilePageCW({
     const handleDatePresetChange = (preset: DatePreset | null) => {
         setDatePreset(preset)
         startCardsTransition(async () => {
-            const token = await getAuthToken()
             const { cards: newCards } = await getHostEarningsCards(
-                token,
                 hostId,
                 preset ? { date_range: preset } : undefined,
             )
             setCards(newCards)
+        })
+
+        startChartTransition(async () => {
+            const { chart: newChart } = await getHostChart(
+                hostId,
+                preset ? { date_range: preset } : undefined,
+            )
+            setChartData(newChart)
         })
     }
 
@@ -190,7 +197,7 @@ export default function HostProfilePageCW({
                     </div>
                     <HostRevenueChart
                         hostId={hostId}
-                        initialData={initialChart}
+                        initialData={chartData}
                     />
                 </div>
             </div>

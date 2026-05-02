@@ -1,3 +1,4 @@
+import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_HOSTS_ENDPOINT,
     ADMIN_HOSTS_CARDS_ENDPOINT,
@@ -14,7 +15,8 @@ import { TabSlice } from "@/custom-hooks/UseDataDisplay"
 async function apiFetch<T>(
     token: string | undefined,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    tags?: string[],
 ): Promise<{ success: boolean; data?: T }> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
@@ -28,6 +30,7 @@ async function apiFetch<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) return { success: false }
         const json = await res.json()
@@ -40,7 +43,8 @@ async function apiFetch<T>(
 async function apiFetchList<T>(
     token: string | undefined,
     path: string,
-    params?: Record<string, any>
+    params?: Record<string, any>,
+    tags?: string[],
 ): Promise<TabSlice<T>> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
@@ -55,6 +59,7 @@ async function apiFetchList<T>(
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [...(tags ?? [])], revalidate: 300 }
         })
         if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
         const json = await res.json()
@@ -74,35 +79,35 @@ async function apiFetchList<T>(
 // ─── Pure GETs — token as arg, no directives ─────────────────────────────────
 
 export async function getAdminHosts(token: string | undefined) {
-    return apiFetchList<AdminHost>(token, ADMIN_HOSTS_ENDPOINT)
+    return apiFetchList<AdminHost>(token, ADMIN_HOSTS_ENDPOINT, {}, [CACHE_TAGS.ADMIN_HOSTS])
 }
 
 export async function getAdminHostCards(token: string | undefined, params?: Record<string, any>) {
-    const { data } = await apiFetch<AdminHostCards>(token, ADMIN_HOSTS_CARDS_ENDPOINT, params)
+    const { data } = await apiFetch<AdminHostCards>(token, ADMIN_HOSTS_CARDS_ENDPOINT, params, [CACHE_TAGS.ADMIN_HOST_CARDS])
     return { cards: data ?? null }
 }
 
 export async function getAdminPendingHosts(token: string | undefined) {
-    return apiFetchList<AdminPendingHost>(token, ADMIN_HOST_VERIFICATIONS_ENDPOINT)
+    return apiFetchList<AdminPendingHost>(token, ADMIN_HOST_VERIFICATIONS_ENDPOINT, {}, [CACHE_TAGS.ADMIN_PENDING_HOSTS])
 }
 
 export async function getHostProfile(token: string | undefined, hostId: string | number) {
-    const { data } = await apiFetch<HostProfileDetails>(token, ADMIN_HOST_PROFILE_ENDPOINT(hostId))
+    const { data } = await apiFetch<HostProfileDetails>(token, ADMIN_HOST_PROFILE_ENDPOINT(hostId), {}, [CACHE_TAGS.ADMIN_HOSTS])
     return { data: data ?? null }
 }
 
 export async function getHostEarningsCards(token: string | undefined, hostId: string | number, params?: Record<string, any>) {
-    const { data } = await apiFetch<HostEarningsCards>(token, ADMIN_HOST_CARDS_ENDPOINT(hostId), params)
+    const { data } = await apiFetch<HostEarningsCards>(token, ADMIN_HOST_CARDS_ENDPOINT(hostId), params, [CACHE_TAGS.ADMIN_HOST_CARDS])
     return { cards: data ?? null }
 }
 
 export async function getHostChart(token: string | undefined, hostId: string | number, params?: Record<string, any>) {
-    const { data } = await apiFetch<HostChartPoint[]>(token, ADMIN_HOST_CHART_ENDPOINT(hostId), params)
+    const { data } = await apiFetch<HostChartPoint[]>(token, ADMIN_HOST_CHART_ENDPOINT(hostId), params, [CACHE_TAGS.ADMIN_HOST_CARDS])
     return { chart: Array.isArray(data) ? data : [] }
 }
 
 export async function getHostEvents(token: string | undefined, hostId: string | number, status?: string) {
-    return apiFetchList<HostEvent>(token, ADMIN_HOST_EVENTS_ENDPOINT(hostId), status ? { status } : undefined)
+    return apiFetchList<HostEvent>(token, ADMIN_HOST_EVENTS_ENDPOINT(hostId), status ? { status } : undefined, [CACHE_TAGS.ADMIN_EVENTS])
 }
 
 export interface HostSearchResult {
@@ -121,6 +126,7 @@ export async function searchHosts(token: string | undefined, search?: string): P
                 "Content-Type": "application/json",
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
+            next: { tags: [CACHE_TAGS.ADMIN_HOSTS], revalidate: 300 }
         })
         if (!res.ok) return []
         const json = await res.json()

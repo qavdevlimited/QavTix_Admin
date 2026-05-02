@@ -75,7 +75,7 @@ export async function ResetAllSettings(): Promise<ResetResult> {
 
 // ─── Interactive GETs ────────────────────────────────────────────────────────
 
-export async function getGeneralSettings(): Promise<FetchResult<GeneralSettingsData>> {
+export async function getGeneralSettings(_token?: string): Promise<FetchResult<GeneralSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_GENERAL_ENDPOINT}`)
@@ -83,7 +83,7 @@ export async function getGeneralSettings(): Promise<FetchResult<GeneralSettingsD
     } catch { return { success: false, message: 'Failed to load general settings.' } }
 }
 
-export async function getPoliciesSettings(): Promise<FetchResult<PoliciesSettingsData>> {
+export async function getPoliciesSettings(_token?: string): Promise<FetchResult<PoliciesSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_POLICIES_ENDPOINT}`)
@@ -91,7 +91,7 @@ export async function getPoliciesSettings(): Promise<FetchResult<PoliciesSetting
     } catch { return { success: false, message: 'Failed to load policies settings.' } }
 }
 
-export async function getFeesSettings(): Promise<FetchResult<FeesSettingsData>> {
+export async function getFeesSettings(_token?: string): Promise<FetchResult<FeesSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_FEES_ENDPOINT}`)
@@ -99,7 +99,7 @@ export async function getFeesSettings(): Promise<FetchResult<FeesSettingsData>> 
     } catch { return { success: false, message: 'Failed to load fees settings.' } }
 }
 
-export async function getFraudSettings(): Promise<FetchResult<FraudSettingsData>> {
+export async function getFraudSettings(_token?: string): Promise<FetchResult<FraudSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_FRAUD_ENDPOINT}`)
@@ -107,7 +107,7 @@ export async function getFraudSettings(): Promise<FetchResult<FraudSettingsData>
     } catch { return { success: false, message: 'Failed to load fraud settings.' } }
 }
 
-export async function getNotificationSettings(): Promise<FetchResult<NotificationSettingsData>> {
+export async function getNotificationSettings(_token?: string): Promise<FetchResult<NotificationSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT}`)
@@ -115,7 +115,7 @@ export async function getNotificationSettings(): Promise<FetchResult<Notificatio
     } catch { return { success: false, message: 'Failed to load notification settings.' } }
 }
 
-export async function getLocalizationSettings(): Promise<FetchResult<LocalizationSettingsData>> {
+export async function getLocalizationSettings(_token?: string): Promise<FetchResult<LocalizationSettingsData>> {
     try {
         const axios = await getServerAxios()
         const { data } = await axios.get(`/${ADMIN_CONFIG_LOCALIZATION_ENDPOINT}`)
