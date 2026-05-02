@@ -1,4 +1,3 @@
-import { CACHE_TAGS } from "@/cache-tags"
 import {
     ADMIN_DASHBOARD_CARDS_ENDPOINT,
     ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT,
@@ -6,19 +5,14 @@ import {
     ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT,
     DASHBOARD_OVERVIEW_ENDPOINT,
 } from "@/endpoints"
-import { handleApiError } from "@/helper-fns/handleApiErrors"
-import { cacheTag } from "next/cache"
 
-// ─── Internal cached fetch — token passed as arg, 'use cache' scoped here ─────
+// ─── Pure fetch helper — token passed as arg, no directives ──────────────────
 
-async function cachedFetch<T>(
+async function apiFetch<T>(
     token: string | undefined,
     path: string,
-    tag: string,
     params?: Record<string, string | number | undefined>,
 ): Promise<{ success: boolean; data?: T; message?: string }> {
-    'use cache'
-    cacheTag(tag)
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${path}`)
         if (params) {
@@ -33,13 +27,12 @@ async function cachedFetch<T>(
             },
         })
         if (!res.ok) {
-            const json = await res.json().catch(() => ({}))
-            return { success: false, message: json?.message ?? "Request failed" }
+            return { success: false, message: "Request failed" }
         }
         const json = await res.json()
         return { success: true, data: json.data as T }
     } catch (err: any) {
-        return { success: false, message: err?.message ?? "Failed to load data." }
+        return { success: false, message: "Failed to load data." }
     }
 }
 
@@ -48,30 +41,30 @@ async function cachedFetch<T>(
 export async function getAdminDashboardCards(
     token: string | undefined,
 ): Promise<{ success: boolean; data?: AdminDashboardCardsData; message?: string }> {
-    return cachedFetch<AdminDashboardCardsData>(token, ADMIN_DASHBOARD_CARDS_ENDPOINT, CACHE_TAGS.DASHBOARD_CARDS)
+    return apiFetch<AdminDashboardCardsData>(token, ADMIN_DASHBOARD_CARDS_ENDPOINT)
 }
 
 export async function getAdminTicketAnalytics(
     token: string | undefined,
 ): Promise<{ success: boolean; data?: AdminTicketAnalyticsData; message?: string }> {
-    return cachedFetch<AdminTicketAnalyticsData>(token, ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT, CACHE_TAGS.DASHBOARD_TICKET_ANALYTICS)
+    return apiFetch<AdminTicketAnalyticsData>(token, ADMIN_DASHBOARD_TICKET_ANALYTICS_ENDPOINT)
 }
 
 export async function getAdminRevenueAnalytics(
     token: string | undefined,
     period: string = "month",
 ): Promise<{ success: boolean; data?: AdminRevenueData; message?: string }> {
-    return cachedFetch<AdminRevenueData>(token, ADMIN_DASHBOARD_REVENUE_ENDPOINT, CACHE_TAGS.DASHBOARD_REVENUE, { period })
+    return apiFetch<AdminRevenueData>(token, ADMIN_DASHBOARD_REVENUE_ENDPOINT, { period })
 }
 
 export async function getAdminActivities(
     token: string | undefined,
     page: number = 1,
 ): Promise<{ success: boolean; data?: AdminActivitiesData; message?: string }> {
-    return cachedFetch<AdminActivitiesData>(
+    return apiFetch<AdminActivitiesData>(
         token,
-        `${ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT}?page=${page}`,
-        `${CACHE_TAGS.DASHBOARD_ACTIVITIES}_page_${page}`,
+        ADMIN_DASHBOARD_ACTIVITIES_ENDPOINT,
+        { page }
     )
 }
 
@@ -79,8 +72,6 @@ export async function getUpcomingEvents(
     token: string | undefined,
     params: UpcomingEventsParams = {},
 ): Promise<GetUpcomingEventsResult> {
-    'use cache'
-    cacheTag(CACHE_TAGS.UPCOMING_EVENTS)
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${DASHBOARD_OVERVIEW_ENDPOINT}`)
 
@@ -101,15 +92,12 @@ export async function getUpcomingEvents(
         })
 
         if (!res.ok) {
-            const json = await res.json()
-            console.error("[getUpcomingEvents] status:", res.status, json)
-            return { success: false, message: handleApiError(json) }
+            return { success: false, message: "Failed to load upcoming events." }
         }
 
         const json = await res.json()
         return { success: true, data: json.data }
     } catch (err) {
-        console.error("[getUpcomingEvents] error:", err)
         return { success: false, message: "Failed to load upcoming events." }
     }
 }

@@ -6,8 +6,6 @@ import {
     ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT,
     ADMIN_CONFIG_POLICIES_ENDPOINT,
 } from '@/endpoints'
-import { CACHE_TAGS } from '@/cache-tags'
-import { unstable_cacheTag as cacheTag } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,16 +68,12 @@ export type FetchResult<T> = { success: true; data: T } | { success: false; mess
 export type MutateResult = { success: boolean; message?: string }
 export type ResetResult = { success: true; data: AllSettingsData } | { success: false; message: string }
 
-// ─── Internal helper: cached fetch using 'use cache' + token arg ──────────────
+// ─── Pure fetch helper — token passed as arg, no directives ──────────────────
 
-async function cachedGet<T>(
+async function apiGet<T>(
     token: string | undefined,
     endpoint: string,
-    tag: string,
 ): Promise<FetchResult<T>> {
-    'use cache'
-    cacheTag(tag)
-    cacheTag(CACHE_TAGS.SETTINGS_ALL)
     try {
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${endpoint}`
         const res = await fetch(url, {
@@ -89,38 +83,37 @@ async function cachedGet<T>(
             },
         })
         if (!res.ok) {
-            const json = await res.json().catch(() => ({}))
-            return { success: false, message: json?.message ?? 'Failed to load settings.' }
+            return { success: false, message: 'Failed to load settings.' }
         }
         const json = await res.json()
         return { success: true, data: json.data as T }
-    } catch (err: any) {
-        return { success: false, message: err?.message ?? 'Failed to load settings.' }
+    } catch {
+        return { success: false, message: 'Failed to load settings.' }
     }
 }
 
-// ─── GET functions — token passed as arg, 'use cache' inside cachedGet ─────────
+// ─── GET functions — token passed as arg ──────────────────────────────────────
 
 export async function getGeneralSettings(token: string | undefined): Promise<FetchResult<GeneralSettingsData>> {
-    return cachedGet<GeneralSettingsData>(token, ADMIN_CONFIG_GENERAL_ENDPOINT, CACHE_TAGS.SETTINGS_GENERAL)
+    return apiGet<GeneralSettingsData>(token, ADMIN_CONFIG_GENERAL_ENDPOINT)
 }
 
 export async function getPoliciesSettings(token: string | undefined): Promise<FetchResult<PoliciesSettingsData>> {
-    return cachedGet<PoliciesSettingsData>(token, ADMIN_CONFIG_POLICIES_ENDPOINT, CACHE_TAGS.SETTINGS_POLICIES)
+    return apiGet<PoliciesSettingsData>(token, ADMIN_CONFIG_POLICIES_ENDPOINT)
 }
 
 export async function getFeesSettings(token: string | undefined): Promise<FetchResult<FeesSettingsData>> {
-    return cachedGet<FeesSettingsData>(token, ADMIN_CONFIG_FEES_ENDPOINT, CACHE_TAGS.SETTINGS_FEES)
+    return apiGet<FeesSettingsData>(token, ADMIN_CONFIG_FEES_ENDPOINT)
 }
 
 export async function getFraudSettings(token: string | undefined): Promise<FetchResult<FraudSettingsData>> {
-    return cachedGet<FraudSettingsData>(token, ADMIN_CONFIG_FRAUD_ENDPOINT, CACHE_TAGS.SETTINGS_FRAUD)
+    return apiGet<FraudSettingsData>(token, ADMIN_CONFIG_FRAUD_ENDPOINT)
 }
 
 export async function getNotificationSettings(token: string | undefined): Promise<FetchResult<NotificationSettingsData>> {
-    return cachedGet<NotificationSettingsData>(token, ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT, CACHE_TAGS.SETTINGS_NOTIFICATIONS)
+    return apiGet<NotificationSettingsData>(token, ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT)
 }
 
 export async function getLocalizationSettings(token: string | undefined): Promise<FetchResult<LocalizationSettingsData>> {
-    return cachedGet<LocalizationSettingsData>(token, ADMIN_CONFIG_LOCALIZATION_ENDPOINT, CACHE_TAGS.SETTINGS_LOCALIZATION)
+    return apiGet<LocalizationSettingsData>(token, ADMIN_CONFIG_LOCALIZATION_ENDPOINT)
 }

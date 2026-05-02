@@ -6,16 +6,11 @@ import {
     ADMIN_EVENT_DETAIL_ENDPOINT,
     ADMIN_EVENT_ATTENDEES_ENDPOINT,
 } from "@/endpoints"
-import { getServerAxios } from "@/lib/axios"
 import { TabSlice } from "@/custom-hooks/UseDataDisplay"
-import { CACHE_TAGS } from "@/cache-tags"
-import { cacheTag } from "next/cache"
 
-// ─── Cached GETs — token as arg, 'use cache' scoped inside ───────────────────
+// ─── Pure GETs — token as arg, no directives ─────────────────────────────────
 
-async function _getAdminEvents(token: string | undefined, status?: string): Promise<TabSlice<AdminEvent>> {
-    'use cache'
-    cacheTag(CACHE_TAGS.ADMIN_EVENTS)
+export async function getAdminEvents(token: string | undefined, status?: string): Promise<TabSlice<AdminEvent>> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENTS_ENDPOINT}`)
         url.searchParams.set("page", "1")
@@ -42,9 +37,7 @@ async function _getAdminEvents(token: string | undefined, status?: string): Prom
     }
 }
 
-async function _getAdminEventCards(token: string | undefined, params?: Record<string, any>): Promise<{ cards: AdminEventCards | null }> {
-    'use cache'
-    cacheTag(CACHE_TAGS.ADMIN_EVENT_CARDS)
+export async function getAdminEventCards(token: string | undefined, params?: Record<string, any>): Promise<{ cards: AdminEventCards | null }> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENTS_CARDS_ENDPOINT}`)
         if (params) {
@@ -66,23 +59,42 @@ async function _getAdminEventCards(token: string | undefined, params?: Record<st
     }
 }
 
-async function _getAdminEventDetail(token: string | undefined, eventId: string): Promise<{ data: EventDetails | null }> {
-    'use cache'
+export async function getAdminEventDetail(token: string | undefined, eventId: string): Promise<{ data: EventDetails | null }> {
     try {
-        const axios = await getServerAxios(token)
-        const { data } = await axios.get(`/${ADMIN_EVENT_DETAIL_ENDPOINT(eventId)}`)
-        return { data: (data?.data ?? null) as EventDetails | null }
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENT_DETAIL_ENDPOINT(eventId)}`
+        const res = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        })
+        if (!res.ok) return { data: null }
+        const json = await res.json()
+        return { data: (json?.data ?? null) as EventDetails | null }
     } catch {
         return { data: null }
     }
 }
 
-async function _getAdminEventAttendees(token: string | undefined, eventId: string, params?: Record<string, any>): Promise<TabSlice<AdminEventAttendee>> {
-    'use cache'
+export async function getAdminEventAttendees(token: string | undefined, eventId: string, params?: Record<string, any>): Promise<TabSlice<AdminEventAttendee>> {
     try {
-        const axios = await getServerAxios(token)
-        const { data } = await axios.get(ADMIN_EVENT_ATTENDEES_ENDPOINT(eventId), { params: { page: 1, ...params } })
-        const d = data?.data ?? data
+        const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_EVENT_ATTENDEES_ENDPOINT(eventId)}`)
+        url.searchParams.set("page", "1")
+        if (params) {
+            Object.entries(params).forEach(([k, v]) => {
+                if (v != null) url.searchParams.set(k, String(v))
+            })
+        }
+
+        const res = await fetch(url.toString(), {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        })
+        if (!res.ok) return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
+        const json = await res.json()
+        const d = json?.data ?? json
         return {
             results: d?.results ?? [],
             count: d?.count ?? 0,
@@ -93,22 +105,4 @@ async function _getAdminEventAttendees(token: string | undefined, eventId: strin
     } catch {
         return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
     }
-}
-
-// ─── Public exports ───────────────────────────────────────────────────────────
-
-export async function getAdminEvents(token: string | undefined, status?: string) {
-    return _getAdminEvents(token, status)
-}
-
-export async function getAdminEventCards(token: string | undefined, params?: Record<string, any>) {
-    return _getAdminEventCards(token, params)
-}
-
-export async function getAdminEventDetail(token: string | undefined, eventId: string) {
-    return _getAdminEventDetail(token, eventId)
-}
-
-export async function getAdminEventAttendees(token: string | undefined, eventId: string, params?: Record<string, any>) {
-    return _getAdminEventAttendees(token, eventId, params)
 }

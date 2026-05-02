@@ -12,18 +12,13 @@ import {
 import { getServerAxios } from '@/lib/axios'
 import { CACHE_TAGS } from '@/cache-tags'
 import { revalidateTag } from 'next/cache'
-import { cookies } from 'next/headers'
-import { GeneralSettingsData, PoliciesSettingsData, FeesSettingsData, FraudSettingsData, NotificationSettingsData, LocalizationSettingsData, MutateResult, ResetResult, AllSettingsData } from './index'
+import { GeneralSettingsData, PoliciesSettingsData, FeesSettingsData, FraudSettingsData, NotificationSettingsData, LocalizationSettingsData, MutateResult, ResetResult, AllSettingsData, FetchResult } from './index'
 
-async function getToken(): Promise<string | undefined> {
-    const cookieStore = await cookies()
-    return cookieStore.get('admin_access_token')?.value
-}
+// ─── Mutations ───────────────────────────────────────────────────────────────
 
 async function patchSetting(endpoint: string, payload: object): Promise<MutateResult> {
     try {
-        const token = await getToken()
-        const axios = await getServerAxios(token)
+        const axios = await getServerAxios()
         await axios.patch(endpoint, payload)
         return { success: true }
     } catch (err: any) {
@@ -69,12 +64,61 @@ export async function updateLocalizationSettings(data: Partial<LocalizationSetti
 
 export async function ResetAllSettings(): Promise<ResetResult> {
     try {
-        const tok = await getToken()
-        const axios = await getServerAxios(tok)
+        const axios = await getServerAxios()
         const res = await axios.post(ADMIN_CONFIG_RESET_ENDPOINT)
         revalidateTag(CACHE_TAGS.SETTINGS_ALL, 'max')
         return { success: true, data: res.data.data as AllSettingsData }
     } catch (err: any) {
         return { success: false, message: err?.response?.data?.message ?? 'Failed to reset settings.' }
     }
+}
+
+// ─── Interactive GETs ────────────────────────────────────────────────────────
+
+export async function getGeneralSettings(): Promise<FetchResult<GeneralSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_GENERAL_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load general settings.' } }
+}
+
+export async function getPoliciesSettings(): Promise<FetchResult<PoliciesSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_POLICIES_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load policies settings.' } }
+}
+
+export async function getFeesSettings(): Promise<FetchResult<FeesSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_FEES_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load fees settings.' } }
+}
+
+export async function getFraudSettings(): Promise<FetchResult<FraudSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_FRAUD_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load fraud settings.' } }
+}
+
+export async function getNotificationSettings(): Promise<FetchResult<NotificationSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load notification settings.' } }
+}
+
+export async function getLocalizationSettings(): Promise<FetchResult<LocalizationSettingsData>> {
+    try {
+        const axios = await getServerAxios()
+        const { data } = await axios.get(`/${ADMIN_CONFIG_LOCALIZATION_ENDPOINT}`)
+        return { success: true, data: data.data }
+    } catch { return { success: false, message: 'Failed to load localization settings.' } }
 }

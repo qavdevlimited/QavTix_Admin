@@ -23,18 +23,10 @@ export async function requestPasswordReset(email: string) {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ email }),
         })
-
         const json = await res.json()
-
-        if (!res.ok) {
-            console.log("[requestPasswordReset] status:", res.status, JSON.stringify(json))
-            return { success: false, message: handleApiError(json) }
-        }
-
+        if (!res.ok) return { success: false, message: handleApiError(json) }
         return { success: true }
-
-    } catch (err) {
-        console.log("[requestPasswordReset] error:", err)
+    } catch {
         return { success: false, message: "Request failed. Please try again." }
     }
 }
@@ -46,18 +38,10 @@ export async function verifyOtp(email: string, otp: string) {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ email, otp }),
         })
-
         const json = await res.json()
-
-        if (!res.ok) {
-            console.log("[verifyOtp] status:", res.status, JSON.stringify(json))
-            return { success: false, message: handleApiError(json) }
-        }
-
+        if (!res.ok) return { success: false, message: handleApiError(json) }
         return { success: true, token: json.data?.reset_token ?? json.reset_token }
-
-    } catch (err) {
-        console.log("[verifyOtp] error:", err)
+    } catch {
         return { success: false, message: "Verification failed. Please try again." }
     }
 }
@@ -69,18 +53,10 @@ export async function resetPassword(token: string, newPassword: string) {
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({ token, new_password: newPassword }),
         })
-
         const json = await res.json()
-
-        if (!res.ok) {
-            console.log("[resetPassword] status:", res.status, JSON.stringify(json))
-            return { success: false, message: handleApiError(json) }
-        }
-
+        if (!res.ok) return { success: false, message: handleApiError(json) }
         return { success: true }
-
-    } catch (err) {
-        console.log("[resetPassword] error:", err)
+    } catch {
         return { success: false, message: "Reset failed. Please try again." }
     }
 }

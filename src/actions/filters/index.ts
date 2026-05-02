@@ -1,7 +1,4 @@
 import { CATEGORIES_ENDPOINT, EVENT_TICKET_TYPES_ENDPOINT } from "@/endpoints"
-import { getServerAxios } from "@/lib/axios"
-import { CACHE_TAGS } from "@/cache-tags"
-import { cacheTag } from "next/cache"
 
 export interface ApiCategory {
     id: number
@@ -22,11 +19,9 @@ export interface TicketType {
     sold_count: number
 }
 
-// ─── Cached GETs — token passed as arg ───────────────────────────────────────
+// ─── Pure GETs — token as arg, no directives ─────────────────────────────────
 
-async function _getCategories(token: string | undefined): Promise<GetCategoriesResult> {
-    'use cache'
-    cacheTag(CACHE_TAGS.CATEGORIES)
+export async function getCategories(token: string | undefined): Promise<GetCategoriesResult> {
     try {
         const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${CATEGORIES_ENDPOINT}`
         const res = await fetch(url, {
@@ -43,15 +38,18 @@ async function _getCategories(token: string | undefined): Promise<GetCategoriesR
     }
 }
 
-export async function getCategories(token: string | undefined): Promise<GetCategoriesResult> {
-    return _getCategories(token)
-}
-
 export async function fetchTicketTypes(token: string | undefined, eventId: string): Promise<TicketType[]> {
     try {
-        const axios = await getServerAxios(token)
-        const { data } = await axios.get(EVENT_TICKET_TYPES_ENDPOINT(eventId))
-        return data?.data ?? []
+        const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/${EVENT_TICKET_TYPES_ENDPOINT(eventId)}`
+        const res = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+        })
+        if (!res.ok) return []
+        const json = await res.json()
+        return json?.data ?? []
     } catch {
         return []
     }
