@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import getActivityTypeText from '@/helper-fns/getActivityTypeText'
 import Timer02 from '../Svg-Icons/Timer02'
+import { EVENT_PROFILE } from '@/enums/navigation'
 
 const activityIcons: Record<string, { icon: string; bgColor: string; iconColor: string }> = {
     new_sale: {
@@ -35,7 +36,7 @@ const activityIcons: Record<string, { icon: string; bgColor: string; iconColor: 
 }
 
 interface RecentActivityItemProps {
-  activity: ActivityItem
+    activity: ActivityItem
 }
 
 export default function RecentActivityItem({ activity }: RecentActivityItemProps) {
@@ -55,9 +56,9 @@ export default function RecentActivityItem({ activity }: RecentActivityItemProps
                     "flex items-center justify-center w-10 h-10 rounded-full shrink-0",
                     iconConfig.bgColor
                 )}>
-                    <Icon 
-                        icon={iconConfig.icon} 
-                        className={cn("w-5 h-5", iconConfig.iconColor)} 
+                    <Icon
+                        icon={iconConfig.icon}
+                        className={cn("w-5 h-5", iconConfig.iconColor)}
                     />
                 </div>
 
@@ -73,8 +74,8 @@ export default function RecentActivityItem({ activity }: RecentActivityItemProps
                     )}
 
                     {activity.eventId && (
-                        <Link 
-                            href={`/events/${activity.eventId}`}
+                        <Link
+                           href={EVENT_PROFILE.href.replace('[event_id]', activity.eventId ?? '')}
                             className="inline-flex items-center gap-1 text-xs text-brand-primary-6 hover:text-brand-primary-7 font-semibold mt-1"
                         >
                             View Event

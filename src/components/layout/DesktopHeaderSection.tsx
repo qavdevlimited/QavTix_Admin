@@ -2,9 +2,7 @@ import Link from "next/link";
 import RegionSwitcher from "../settings/RegionSwitcher";
 import AuthUserDetailsWithActiveStatus from "./AuthUserDetailsWithActiveStatus";
 import { DashboardHeaderSectionPathName } from "./DashboardHeaderSectionPathName";
-import { NotificationBell } from "./NotificationBell";
-
-
+import NotificationBellLink from "./NotificationBellLink";
 
 export default function DesktopHeaderSection() {
     return (
@@ -13,7 +11,7 @@ export default function DesktopHeaderSection() {
 
             <div className="flex items-center gap-4 w-fit">
                 <RegionSwitcher />
-                <NotificationBell />
+                <NotificationBellLink />
                 <AuthUserDetailsWithActiveStatus />
             </div>
         </header>

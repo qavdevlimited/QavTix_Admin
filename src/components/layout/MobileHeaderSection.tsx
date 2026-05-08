@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import Logo from "./Logo";
 import MobileNavMenu from "./MobileNavMenu";
-import { NotificationBell } from "./NotificationBell";
+import NotificationBellLink from "./NotificationBellLink";
 
 export default function MobileHeaderSection() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -26,7 +26,7 @@ export default function MobileHeaderSection() {
                     onClose={() => setIsMenuOpen(false)}
                 />
                 <div className="flex items-center gap-4 w-fit">
-                    <NotificationBell />
+                    <NotificationBellLink />
                     <button
                         aria-label="Toggle menu"
                         onClick={handleOpenMenu}

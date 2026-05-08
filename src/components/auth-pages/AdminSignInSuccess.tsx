@@ -9,7 +9,7 @@ import { AnimatedDialog } from "../custom-utils/dialogs/AnimatedDialog";
 import { DialogDescription, DialogTitle } from "../ui/dialog";
 
 /** Milliseconds to show the success modal before auto-redirecting */
-const REDIRECT_DELAY = 3000
+const REDIRECT_DELAY = 5000
 
 interface AdminSignInSuccessProps {
     open: boolean;

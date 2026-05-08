@@ -8,6 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useIsMounted } from "@/custom-hooks/UseIsMounted";
 import { useUserSettings } from "@/custom-hooks/useUserSettings";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ export default function RegionSwitcher({ className }: { className?: string }) {
     const { region, isPending, updateRegion } = useUserSettings()
 
     const { user } = useAppSelector(store => store.authUser)
+    const isMounted = useIsMounted()
 
     const handleRegionChange = (v: string) => {
         const regionObj = regions.find(r => r.code === v)
@@ -27,6 +29,7 @@ export default function RegionSwitcher({ className }: { className?: string }) {
     }
 
     return (
+        isMounted &&
         <Select value={user?.currency} onValueChange={handleRegionChange}>
             <SelectTrigger
                 disabled={true}

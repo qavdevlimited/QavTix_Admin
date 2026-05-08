@@ -84,8 +84,8 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                 className={cn(
                                                     "relative flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 text-[13px]",
                                                     isActive
-                                                        ? "bg-brand-primary-1 text-white font-bold"
-                                                        : "text-brand-secondary-9 hover:bg-brand-primary-1/50"
+                                                        ? "bg-brand-primary-1 text-brand-primary-6 font-bold"
+                                                        : "hover:bg-brand-primary-1/50 text-brand-secondary-9 font-normal"
                                                 )}
                                             >
                                                 <Icon icon={v.icon || ""} className="size-5" />
@@ -110,26 +110,26 @@ export default function MobileNavMenu({ isOpen, onClose }: MobileNavMenuProps) {
                                                     <div className="relative ml-3 flex flex-col min-h-0">
                                                         <div className="absolute left-0 top-0 h-[88%] my-auto bottom-0 w-px bg-brand-neutral-5" />
                                                         <ul className="flex flex-col w-full">
-                                                        {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
-                                                            const isSubActive = pathName === sub.href;
-                                                            return (
-                                                                <li key={sub.href} className="relative flex items-center">
-                                                                    <div className="absolute -left-[3.5px] z-10 size-2 rounded-full border border-brand-secondary-3/50 bg-brand-secondary-2" />
-                                                                    <Link
-                                                                        href={sub.href}
-                                                                        onClick={onClose}
-                                                                        className={cn(
-                                                                            "flex-1 py-3 ml-3 pl-3 text-[13px] transition-colors",
-                                                                            isSubActive
-                                                                                ? "text-brand-secondary-9 bg-brand-accent-1 font-semibold rounded-md"
-                                                                                : "text-brand-secondary-7 hover:text-brand-primary-1/90"
-                                                                        )}
-                                                                    >
-                                                                        {sub.label}
-                                                                    </Link>
-                                                                </li>
-                                                            )
-                                                        })}
+                                                            {ADMIN_SETTINGS_SUB_LINKS.map((sub) => {
+                                                                const isSubActive = pathName === sub.href;
+                                                                return (
+                                                                    <li key={sub.href} className="relative flex items-center">
+                                                                        <div className="absolute -left-[3.5px] z-10 size-2 rounded-full border border-brand-secondary-3/50 bg-brand-secondary-2" />
+                                                                        <Link
+                                                                            href={sub.href}
+                                                                            onClick={onClose}
+                                                                            className={cn(
+                                                                                "flex-1 py-3 ml-3 pl-3 text-[13px] transition-colors",
+                                                                                isSubActive
+                                                                                    ? "text-brand-secondary-9 bg-brand-accent-1 font-medium rounded-md"
+                                                                                    : "text-brand-secondary-7 hover:text-brand-secondary-8 hover:bg-brand-accent-1/40"
+                                                                            )}
+                                                                        >
+                                                                            {sub.label}
+                                                                        </Link>
+                                                                    </li>
+                                                                )
+                                                            })}
                                                         </ul>
                                                     </div>
                                                 </div>

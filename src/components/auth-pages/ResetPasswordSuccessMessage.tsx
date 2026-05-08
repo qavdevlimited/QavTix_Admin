@@ -4,8 +4,33 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatedDialog } from "../custom-utils/dialogs/AnimatedDialog";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ResetPasswordSuccessMessage() {
+    const router = useRouter()
+    const [countdown, setCountdown] = useState(5)
+
+    useEffect(() => {
+        // Reset countdown when component mounts
+        setCountdown(5)
+
+        // Decrement every second
+        const tick = setInterval(() => {
+            setCountdown(prev => Math.max(0, prev - 1))
+        }, 1000)
+
+        // Redirect after 5 seconds
+        const timer = setTimeout(() => {
+            router.push(AUTH_LINKS.SIGN_IN.href)
+        }, 5000)
+
+        return () => {
+            clearInterval(tick)
+            clearTimeout(timer)
+        }
+    }, [router])
+
     return (
         <AnimatedDialog open={true} showCloseButton={false} className="rounded-[40px]" childrenContainerStyles="px-8 py-20">
             <Image
@@ -36,6 +61,9 @@ export default function ResetPasswordSuccessMessage() {
                     <Link href={AUTH_LINKS.SIGN_IN.href} className="text-brand-accent-6 font-medium">
                         Log in
                     </Link>
+                    <p className="mt-4 text-xs text-brand-neutral-6 animate-pulse">
+                        Redirecting to login in {countdown}s…
+                    </p>
                 </DialogDescription>
             </div>
         </AnimatedDialog>

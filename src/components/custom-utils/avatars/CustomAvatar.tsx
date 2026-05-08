@@ -10,9 +10,13 @@ function CustomAvatar({ profileImg, name, id, size }: { profileImg?: string | nu
             {profileImg ? (
                 <AvatarImage src={profileImg} className="object-cover" />
             ) : null}
-            <AvatarFallback className={`${getAvatarColor(id)} text-white text-lg font-semibold`}>
-                {getInitialsFromName(name)}
-            </AvatarFallback>
+        <AvatarFallback
+            delayMs={0}
+            suppressHydrationWarning
+            className={`${getAvatarColor(id)} text-white text-lg font-semibold`}
+        >
+            {getInitialsFromName(name)}
+        </AvatarFallback>
         </Avatar>
     )
 }

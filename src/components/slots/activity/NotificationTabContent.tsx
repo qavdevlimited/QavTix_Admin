@@ -12,7 +12,7 @@ const PREVIEW_COUNT = 4
 
 export default function NotificationsTab({ notifications }: NotificationsTabProps) {
     const hasUnread = notifications.some(n => !n.is_read)
-    const preview   = notifications.slice(0, PREVIEW_COUNT)
+    const preview = notifications.slice(0, PREVIEW_COUNT)
 
     return (
         <div className="space-y-4 px-4">
@@ -34,8 +34,8 @@ export default function NotificationsTab({ notifications }: NotificationsTabProp
                     ))
                 ) : (
                     <div className="py-12 text-center">
-                        <Icon icon="hugeicons:notification-02" className="w-12 h-12 text-brand-neutral-4 mx-auto mb-3" />
-                        <p className="text-sm text-brand-neutral-6">No notifications</p>
+                        <Icon icon="hugeicons:notification-02" className="w-12 h-12 text-brand-neutral-6 mx-auto mb-3" />
+                        <p className="text-sm text-brand-neutral-7">No notifications</p>
                     </div>
                 )}
             </div>

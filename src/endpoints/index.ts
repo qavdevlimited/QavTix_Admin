@@ -89,3 +89,6 @@ export const ADMIN_CONFIG_FEES_ENDPOINT = 'administrator/admin/config/fees/';
 export const ADMIN_CONFIG_FRAUD_ENDPOINT = 'administrator/admin/config/fraud/';
 export const ADMIN_CONFIG_NOTIFICATIONS_ENDPOINT = 'administrator/admin/config/notifications/';
 export const ADMIN_CONFIG_LOCALIZATION_ENDPOINT = 'administrator/admin/config/localization/';
+
+// Notifications
+export const ADMIN_NOTIFICATIONS_ENDPOINT = 'administrator/admin/notifications/';

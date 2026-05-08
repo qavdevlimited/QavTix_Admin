@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
 
                     {otpError && (
                         <p className="flex items-center gap-1.5 text-sm text-red-500 -mt-6">
-                            <Icon icon="mage:exclamation-circle" className="size-4 shrink-0" />
+                            <Icon icon="bx:error-alt" className="size-4 shrink-0" />
                             {otpError}
                         </p>
                     )}

@@ -41,4 +41,7 @@ export const CACHE_TAGS = {
 
     // Audit
     ADMIN_AUDIT_LOGS: 'admin-audit-logs',
+
+    // Notifications
+    ADMIN_NOTIFICATIONS: 'admin-notifications',
 } as const
