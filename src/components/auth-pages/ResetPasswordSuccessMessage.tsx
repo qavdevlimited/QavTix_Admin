@@ -56,14 +56,16 @@ export default function ResetPasswordSuccessMessage() {
                 <DialogTitle className={`text-2xl font-bold text-brand-secondary-9 mb-2 ${space_grotesk.className}`}>
                     Password changed successfully!
                 </DialogTitle>
-                <DialogDescription className="text-[#616166] text-sm">
-                    Your password has been changed successfully.{" "}
-                    <Link href={AUTH_LINKS.SIGN_IN.href} className="text-brand-accent-6 font-medium">
-                        Log in
-                    </Link>
-                    <p className="mt-4 text-xs text-brand-neutral-6 animate-pulse">
-                        Redirecting to login in {countdown}s…
-                    </p>
+                <DialogDescription className="text-[#616166] text-sm" asChild>
+                    <div>
+                        Your password has been changed successfully.{" "}
+                        <Link href={AUTH_LINKS.SIGN_IN.href} className="text-brand-accent-6 font-medium">
+                            Log in
+                        </Link>
+                        <p className="mt-4 text-xs text-brand-neutral-6 animate-pulse">
+                            Redirecting to login in {countdown}s…
+                        </p>
+                    </div>
                 </DialogDescription>
             </div>
         </AnimatedDialog>

@@ -48,6 +48,7 @@ export default function HostmanagementPageCW({
     const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null })
     const [isCardsLoading, setIsCardsLoading] = useState(false)
     const isMounted = useIsMounted()
+    const firstRender = useRef(true)
     const { user } = useAppSelector(store => store.authUser)
 
     // KPI Cards with rollback
@@ -69,6 +70,11 @@ export default function HostmanagementPageCW({
     // KPI filter only refetches cards — NOT the host table
     useEffect(() => {
         if (!isMounted) return;
+
+        if (firstRender.current) {
+            firstRender.current = false
+            return
+        }
 
         const refresh = async () => {
             setIsCardsLoading(true)

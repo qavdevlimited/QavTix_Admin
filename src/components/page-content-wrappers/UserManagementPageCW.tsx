@@ -59,6 +59,7 @@ export default function UserManagementPageCW({
     const [isCardsLoading, setIsCardsLoading] = useState(false)
 
     const isMounted = useIsMounted()
+    const firstRender = useRef(true)
 
     // KPI Cards state with rollback
     const userCardsRef = useRef<AdminUserCards | null>(initialUserCards)
@@ -98,7 +99,10 @@ export default function UserManagementPageCW({
 
     // Manually fetch cards when date filter changes since they are on separate endpoints
     useEffect(() => {
-        if (!isMounted) {
+        if (!isMounted) return
+
+        if (firstRender.current) {
+            firstRender.current = false
             return
         }
 
