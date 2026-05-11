@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export default function DataCountIndicator({ label, count }:{ label: string, count?: number }){
+export default function DataCountIndicator({ label, count }: { label: string, count?: number }) {
     return (
         <span className="flex items-center gap-2">
             {label}

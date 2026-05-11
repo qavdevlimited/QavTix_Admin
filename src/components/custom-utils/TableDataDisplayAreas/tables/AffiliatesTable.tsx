@@ -135,7 +135,7 @@ export default function AffiliatesTable({
                                         </span>
                                     </td>
                                     <td className="py-4 px-5">
-                                        <p className="text-xs font-semibold text-brand-secondary-9 whitespace-nowrap">
+                                        <p className="text-xs text-center font-semibold text-brand-secondary-9 whitespace-nowrap">
                                             {isMounted && formatPrice(Number(affiliate.commission_earned), currency)}
                                         </p>
                                     </td>

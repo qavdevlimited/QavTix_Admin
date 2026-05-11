@@ -13,9 +13,10 @@ import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { format, parseISO } from "date-fns"
 import AdminEventActionDropdown from "@/components/custom-utils/dropdown/AdminEventActionDropdown"
-import { useState } from "react"
+import { useState, useCallback, useRef } from "react"
 import ShareEventModal from "../modals/ShareEventModal"
 import { EVENT_DETAILS_LINK } from "@/enums/navigation"
+import ActionButton1 from "../custom-utils/buttons/ActionBtn1"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; label?: string }> = {
     "filling-fast": { bg: "bg-warning-tertiary", text: "text-secondary-9", label: "Filling fast" },
@@ -48,6 +49,22 @@ export default function EventProfileOverviewTabContainer({
         : event.event_media
     const imageUrl = featuredMedia?.image_url ?? null
     const [showShare, setShowShare] = useState(false)
+    const [isDownloading, setIsDownloading] = useState(false)
+    const downloadFnRef = useRef<(() => Promise<void>) | null>(null)
+
+    const handleDownloadReady = useCallback((fn: () => Promise<void>) => {
+        downloadFnRef.current = fn
+    }, [])
+
+    const handleDownloadClick = async () => {
+        if (!downloadFnRef.current || isDownloading) return
+        setIsDownloading(true)
+        try {
+            await downloadFnRef.current()
+        } finally {
+            setIsDownloading(false)
+        }
+    }
     const statusCfg = STATUS_CONFIG[event.event_status] ?? { text: "text-neutral-7", bg: "bg-neutral-2" }
 
     const eventUrl = EVENT_DETAILS_LINK.replace("[event_id]", event.id)
@@ -116,6 +133,7 @@ export default function EventProfileOverviewTabContainer({
                                 eventStatus={event.event_status}
                                 isFeatured={event.is_featured}
                                 actionsFor="event-profile"
+                                onDownloadReady={handleDownloadReady}
                             />
                         </div>
 
@@ -195,6 +213,15 @@ export default function EventProfileOverviewTabContainer({
                         <TicketPricingArea
                             tickets={event.tickets ?? []}
                             currency={event.currency}
+                        />
+
+                        <ActionButton1
+                            buttonText={isDownloading ? "Downloading..." : "Download Attendee List"}
+                            className="mt-4"
+                            iconPosition="right"
+                            icon={isDownloading ? "eos-icons:three-dots-loading" : "hugeicons:download-01"}
+                            onClick={handleDownloadClick}
+                            disabled={isDownloading}
                         />
                     </div>
                 </div>

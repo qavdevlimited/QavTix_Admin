@@ -5,6 +5,7 @@ import {
     ADMIN_EVENTS_CARDS_ENDPOINT,
     ADMIN_EVENT_DETAIL_ENDPOINT,
     ADMIN_EVENT_ATTENDEES_ENDPOINT,
+    ADMIN_EVENT_ATTENDEES_EXPORT_ENDPOINT,
     ADMIN_HOST_EVENT_FEATURE_ENDPOINT,
     ADMIN_HOST_EVENT_SUSPEND_ENDPOINT,
     ADMIN_HOST_EVENT_DELETE_ENDPOINT,
@@ -112,5 +113,22 @@ export async function getAdminEventAttendees(eventId: string, params?: Record<st
         }
     } catch {
         return { results: [], count: 0, next: null, previous: null, total_pages: 1 }
+    }
+}
+
+/**
+ * Downloads the attendee list for an event as a CSV ArrayBuffer.
+ * Uses the same arraybuffer pattern as the host-side getAttendeesExport.
+ */
+export async function getAttendeesExport(eventId: string): Promise<{ success: boolean; buffer?: ArrayBuffer; message?: string }> {
+    try {
+        const axios = await getServerAxios()
+        const res = await axios.get(`/${ADMIN_EVENT_ATTENDEES_EXPORT_ENDPOINT(eventId)}`, {
+            responseType: 'arraybuffer',
+        })
+        const buffer: ArrayBuffer = res.data instanceof Buffer ? res.data.buffer : res.data
+        return { success: true, buffer }
+    } catch {
+        return { success: false, message: "Failed to download attendee list." }
     }
 }

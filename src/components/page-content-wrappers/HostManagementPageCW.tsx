@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react"
 import DateRangePresetFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
 import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
 import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1"
@@ -19,8 +19,11 @@ import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { useAppSelector } from "@/lib/redux/hooks"
+import HostBulkActionsBar from "@/components/custom-utils/dropdown/HostBulkActionsBar"
+import { exportData } from "@/helper-fns/exportData"
 
 type ActiveTab = "all-hosts" | "pending-verification"
+
 
 const TAB_LABELS: Record<ActiveTab, string> = {
     "all-hosts": "Host List",
@@ -33,7 +36,6 @@ interface Props {
     initialPendingHosts: TabSlice<AdminPendingHost>
 }
 
-import { exportData } from "@/helper-fns/exportData"
 
 export default function HostmanagementPageCW({
     initialHosts,
@@ -41,12 +43,17 @@ export default function HostmanagementPageCW({
     initialPendingHosts,
 }: Props) {
 
+    console.log(initialHosts)
     const { tabFilterOptions, tabList } = HostManagementTabNFilterOptions
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("all-hosts")
     const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
     const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null })
     const [isCardsLoading, setIsCardsLoading] = useState(false)
+
+    // Bulk selection — reset when tab changes
+    const [selectedHosts, setSelectedHosts] = useState<(string | number)[]>([])
+    useEffect(() => { setSelectedHosts([]) }, [activeTab])
     const isMounted = useIsMounted()
     const firstRender = useRef(true)
     const { user } = useAppSelector(store => store.authUser)
@@ -122,6 +129,11 @@ export default function HostmanagementPageCW({
     const activeState = activeTab === "all-hosts" ? hostsState : pendingState
     const hostMetrics = mapHostCardsToMetrics(hostCards, user?.currency!)
 
+    const tabCounts: Record<string, number> = {
+        "all-hosts": hostsState?.count ?? 0,
+        "pending-verification": pendingState?.count ?? 0,
+    }
+
     const handleExport = (format: any) => {
         const data = activeState?.items ?? []
         const labels: Record<ActiveTab, { filename: string; title: string }> = {
@@ -135,6 +147,43 @@ export default function HostmanagementPageCW({
             title: labels[activeTab].title,
         })
     }
+
+    // Bulk action handler
+    const handleBulkAction = useCallback(async (actionId: BulkHostActionId) => {
+        if (!selectedHosts.length) return
+
+        switch (actionId) {
+            case "bulk-export": {
+                const allItems = (activeState?.items ?? []) as unknown as Record<string, unknown>[]
+                const selectedItems = allItems.filter((item: any) => {
+                    const id = item.host_id ?? item.referral_id
+                    return selectedHosts.includes(id)
+                })
+                const labels: Record<ActiveTab, { filename: string; title: string }> = {
+                    "all-hosts": { filename: "hosts-selected", title: "Host List" },
+                    "pending-verification": { filename: "pending-selected", title: "Pending Verifications" },
+                }
+                exportData({
+                    data: selectedItems,
+                    format: "csv",
+                    filename: labels[activeTab].filename,
+                    title: labels[activeTab].title,
+                })
+                setSelectedHosts([])
+                break
+            }
+
+            case "bulk-suspend":
+            case "bulk-approve":
+            case "bulk-decline": {
+                // Placeholders — wire to bulk endpoints when available
+                console.warn(`[HostBulkActions] ${actionId} — no bulk endpoint yet. IDs:`, selectedHosts)
+                setSelectedHosts([])
+                break
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedHosts, activeState, activeTab])
 
     return (
         <main className="pb-12">
@@ -169,6 +218,14 @@ export default function HostmanagementPageCW({
                     {TAB_LABELS[activeTab]}
                 </h3>
 
+                {/* Bulk actions bar — renders only when rows are selected */}
+                <HostBulkActionsBar
+                    selectedCount={selectedHosts.length}
+                    tab={activeTab}
+                    onAction={handleBulkAction}
+                    onClearSelection={() => setSelectedHosts([])}
+                />
+
                 <DataDisplayTableWrapper
                     tabs={tabList}
                     activeTab={activeTab}
@@ -180,6 +237,7 @@ export default function HostmanagementPageCW({
                     searchPlaceholder={activeTab === "all-hosts" ? "Search by owner or business name..." : "Search verifications..."}
                     onSearch={activeState?.handleSearch}
                     isLoading={activeState?.isLoading}
+                    tabCounts={tabCounts}
                 >
                     {activeTab === "all-hosts" && (
                         <BusinessManagementTable

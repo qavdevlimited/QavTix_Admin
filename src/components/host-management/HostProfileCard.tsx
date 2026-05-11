@@ -169,7 +169,7 @@ export function HostProfileCard({
                         />
                         <Badge
                             variant="secondary"
-                            className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-accent-1 text-brand-accent-6 border border-brand-accent-2 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs"
+                            className="mt-4 whitespace-nowrap bg-brand-accent-1 text-brand-accent-6 border border-brand-accent-2 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs"
                         >
                             {profile.followers.toLocaleString()} Followers
                         </Badge>

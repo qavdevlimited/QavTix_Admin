@@ -14,8 +14,8 @@ import { DASHBOARD_NAVIGATION_LINKS, EVENT_PROFILE } from "@/enums/navigation"
 import { deleteHostEvent, featureHostEvent, suspendHostEvent } from "@/actions/host-management/client"
 import { useRevalidate } from "@/custom-hooks/UseRevalidate"
 import { CONFIRMATION_ACTION_TYPES } from "@/components/modals/resources/confirmationActions"
-import { getEventAttendees } from "@/actions/customers/client"
-import { exportData } from "@/helper-fns/exportData"
+import { getAttendeesExport } from "@/actions/events/client"
+import { downloadBlob } from "@/helper-fns/downloadBlob"
 
 
 interface AdminEventAction {
@@ -31,6 +31,8 @@ interface AdminEventActionDropdownProps {
     eventStatus: EventStatus
     isFeatured: boolean
     actionsFor?: "event-profile" | "other"
+    /** Optional external ref — set by parent so they can call the download handler directly */
+    onDownloadReady?: (fn: () => Promise<void>) => void
 }
 
 type PendingAction = "suspend" | "unsuspend" | "remove"
@@ -70,7 +72,8 @@ export default function AdminEventActionDropdown({
     eventTitle,
     eventStatus,
     isFeatured,
-    actionsFor = "other"
+    actionsFor = "other",
+    onDownloadReady,
 }: AdminEventActionDropdownProps) {
     const dispatch = useAppDispatch()
     const router = useRouter()
@@ -94,9 +97,9 @@ export default function AdminEventActionDropdown({
     const handleDownloadAttendees = async () => {
         setLoadingAction("download")
 
-        const result = await getEventAttendees(eventId)
+        const result = await getAttendeesExport(eventId)
 
-        if (!result.success || !result.data?.length) {
+        if (!result.success || !result.buffer) {
             dispatch(showAlert({
                 title: "Download Failed",
                 description: result.message ?? "No attendee data found for this event.",
@@ -107,17 +110,19 @@ export default function AdminEventActionDropdown({
             return
         }
 
-        await exportData({
-            data: result.data as unknown as Record<string, unknown>[],
-            format: "csv",
-            filename: `attendees_${eventTitle.toLowerCase().replace(/\s+/g, "_")}`,
-            title: `Attendees – ${eventTitle}`,
-            skipKeys: ["profile_picture"],
-        })
+        const blob = new Blob([result.buffer], { type: 'text/csv;charset=utf-8;' })
+        const filename = `attendees_${eventTitle.toLowerCase().replace(/\s+/g, "_")}.csv`
+        downloadBlob(blob, filename)
 
         setLoadingAction(null)
         setIsOpen(false)
     }
+
+    // Expose the handler to the parent (e.g. the overview button)
+    useEffect(() => {
+        onDownloadReady?.(handleDownloadAttendees)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [onDownloadReady])
 
 
     const handleAction = (action: AdminEventAction) => {

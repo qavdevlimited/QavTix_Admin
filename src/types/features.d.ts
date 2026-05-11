@@ -104,3 +104,41 @@ interface BulkEventAction {
     icon: string
     variant?: "danger"
 }
+
+type BulkUserActionId =
+    | "bulk-suspend"
+    | "bulk-unsuspend"
+    | "bulk-ban"
+    | "bulk-export"
+
+interface BulkUserAction {
+    id: BulkUserActionId
+    label: string
+    icon: string
+    variant?: "danger"
+}
+
+type BulkHostActionId =
+    | "bulk-suspend"
+    | "bulk-approve"
+    | "bulk-decline"
+    | "bulk-export"
+
+interface BulkHostAction {
+    id: BulkHostActionId
+    label: string
+    icon: string
+    variant?: "danger"
+}
+
+type BulkFinancialsActionId =
+    | "bulk-approve"
+    | "bulk-decline"
+    | "bulk-export"
+
+interface BulkFinancialsAction {
+    id: BulkFinancialsActionId
+    label: string
+    icon: string
+    variant?: "danger"
+}

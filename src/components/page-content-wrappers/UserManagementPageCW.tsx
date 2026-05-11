@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react"
 import DateRangePresetFilter from "../custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
 import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
 import MetricCardsContainer1 from "../cards/MetricCardsContainer1"
@@ -26,6 +26,7 @@ import { space_grotesk } from "@/lib/fonts"
 import { cn } from "@/lib/utils"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { useAppSelector } from "@/lib/redux/hooks"
+import UserBulkActionsBar from "../custom-utils/dropdown/UserBulkActionsBar"
 
 type ActiveTab = "users" | "affiliates" | "withdrawals"
 
@@ -57,6 +58,9 @@ export default function UserManagementPageCW({
     const [datePreset, setDatePreset] = useState<DatePreset | null>(null)
     const [filters, setFilters] = useState<Partial<FilterValues>>({ userStatus: null, sortBy: null, location: null })
     const [isCardsLoading, setIsCardsLoading] = useState(false)
+
+    // Bulk selection state (separate per logical entity but reset on tab change)
+    const [selectedUsers, setSelectedUsers] = useState<(string | number)[]>([])
 
     const isMounted = useIsMounted()
     const firstRender = useRef(true)
@@ -96,6 +100,9 @@ export default function UserManagementPageCW({
     const mergedFilters: Partial<FilterValues> = {
         ...filters,
     }
+
+    // Clear selection when switching tabs
+    useEffect(() => { setSelectedUsers([]) }, [activeTab])
 
     // Manually fetch cards when date filter changes since they are on separate endpoints
     useEffect(() => {
@@ -177,6 +184,13 @@ export default function UserManagementPageCW({
             ? affiliatesState
             : withdrawalsState
 
+    // Tab count badges
+    const tabCounts: Record<string, number> = {
+        users:       usersState?.count       ?? 0,
+        affiliates:  affiliatesState?.count  ?? 0,
+        withdrawals: withdrawalsState?.count ?? 0,
+    }
+
     // Cards are SSR-prefetched — show loader when table is loading AND cards are still null, or when actively refetching
     const isKpiLoading = isCardsLoading || (activeTab === "affiliates"
         ? (affiliatesState?.isLoading ?? false) && affiliateCards === null
@@ -206,6 +220,45 @@ export default function UserManagementPageCW({
             title: labels[activeTab].title,
         })
     }
+
+    // Bulk action handler
+    const handleBulkAction = useCallback(async (actionId: BulkUserActionId) => {
+        if (!selectedUsers.length) return
+
+        switch (actionId) {
+            case "bulk-export": {
+                // Re-use the existing export helper for just the selected items
+                const allItems = (activeState?.items ?? []) as unknown as Record<string, unknown>[]
+                const selectedItems = allItems.filter((item: any) => {
+                    const id = item.user_id ?? item.referral_id ?? item.payment_id
+                    return selectedUsers.includes(id)
+                })
+                const labels: Record<ActiveTab, { filename: string; title: string }> = {
+                    users:       { filename: "users-selected",       title: "User List" },
+                    affiliates:  { filename: "affiliates-selected",  title: "Affiliate List" },
+                    withdrawals: { filename: "withdrawals-selected", title: "Withdrawal History" },
+                }
+                exportData({
+                    data: selectedItems,
+                    format: "csv",
+                    filename: labels[activeTab].filename,
+                    title:    labels[activeTab].title,
+                })
+                setSelectedUsers([])
+                break
+            }
+
+            case "bulk-suspend":
+            case "bulk-ban": {
+                // Per-user actions — call toggleUserSuspension or equivalent per ID
+                // These are placeholders; wire to your actual bulk endpoints when available.
+                console.warn(`[UserBulkActions] ${actionId} — no bulk endpoint yet. IDs:`, selectedUsers)
+                setSelectedUsers([])
+                break
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedUsers, activeState, activeTab])
 
     return (
         <main className="pb-10">
@@ -253,6 +306,14 @@ export default function UserManagementPageCW({
                     {TAB_LABELS[activeTab]}
                 </h3>
 
+                {/* Bulk actions bar — renders only when rows are selected */}
+                <UserBulkActionsBar
+                    selectedCount={selectedUsers.length}
+                    tab={activeTab}
+                    onAction={handleBulkAction}
+                    onClearSelection={() => setSelectedUsers([])}
+                />
+
                 <DataDisplayTableWrapper
                     tabs={tabList}
                     activeTab={activeTab}
@@ -268,6 +329,7 @@ export default function UserManagementPageCW({
                     }
                     onSearch={activeState?.handleSearch}
                     isLoading={activeState?.isLoading}
+                    tabCounts={tabCounts}
                 >
                     {activeTab === "users" && (
                         <UsersTable

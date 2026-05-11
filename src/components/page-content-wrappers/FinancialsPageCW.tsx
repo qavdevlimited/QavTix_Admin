@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, SetStateAction, useState, useTransition } from "react"
+import { Dispatch, SetStateAction, useState, useTransition, useCallback, useEffect } from "react"
 import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1"
 import DataDisplayTableWrapper from "@/components/custom-utils/TableDataDisplayAreas/DataDisplayTableWrapper"
 import { FinancialsTabNFilterOptions } from "@/components/custom-utils/TableDataDisplayAreas/resources/avaliable-filters"
@@ -29,6 +29,7 @@ import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import { EventFilter } from "../custom-utils/TableDataDisplayAreas/filters/EventFilter"
 import { useAppSelector } from "@/lib/redux/hooks"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
+import FinancialsBulkActionsBar from "@/components/custom-utils/dropdown/FinancialsBulkActionsBar"
 
 interface FinancialsPageCWProps {
     initialPendingPayouts: TabSlice<AdminPayout>
@@ -61,6 +62,10 @@ export default function FinancialsPageCW({
     const [cards, setCards] = useState<AdminFinancialCards | null>(initialCards)
     const [resaleCards, setResaleCards] = useState<AdminResaleCards | null>(initialResaleCards)
     const [isCardsLoading, startCardsTransition] = useTransition()
+
+    // Bulk selection — reset on tab change
+    const [selectedItems, setSelectedItems] = useState<(string | number)[]>([])
+    useEffect(() => { setSelectedItems([]) }, [activeTab])
 
     const isMounted = useIsMounted()
     const currency = useAppSelector(s => s.authUser.user?.currency)
@@ -113,6 +118,15 @@ export default function FinancialsPageCW({
 
     const activeTabState = tabStates[activeTab]
 
+    // Tab count badges — use cached count from each tab's loaded state
+    const tabCounts: Record<string, number> = {
+        "pending-payout":    tabStates["pending-payout"]?.count    ?? 0,
+        "payout-history":    tabStates["payout-history"]?.count    ?? 0,
+        "resale-orders":     tabStates["resale-orders"]?.count     ?? 0,
+        "featured-payments": tabStates["featured-payments"]?.count ?? 0,
+        "subscriptions":     tabStates["subscriptions"]?.count     ?? 0,
+    }
+
     const handleTabChange = (tab: string) => {
         setActiveTab(tab as FinancialsTab)
         setFilters({})
@@ -164,6 +178,37 @@ export default function FinancialsPageCW({
         })
     }
 
+    // Bulk action handler
+    const handleBulkAction = useCallback(async (actionId: BulkFinancialsActionId) => {
+        if (!selectedItems.length) return
+
+        switch (actionId) {
+            case "bulk-export": {
+                const allItems = (activeTabState?.items ?? []) as unknown as Record<string, unknown>[]
+                const selectedRows = allItems.filter((item: any) => {
+                    const id = item.payout_id ?? item.listing_id ?? item.payment_id ?? item.subscription_id
+                    return selectedItems.includes(id)
+                })
+                exportData({
+                    data: selectedRows,
+                    format: "csv",
+                    filename: `financials_${activeTab}_selected`,
+                    title: `Financials - ${activeTab.replace("-", " ")}`,
+                })
+                setSelectedItems([])
+                break
+            }
+            case "bulk-approve":
+            case "bulk-decline": {
+                // Placeholder — wire to bulk payout endpoint when available
+                console.warn(`[FinancialsBulkActions] ${actionId} — no bulk endpoint yet. IDs:`, selectedItems)
+                setSelectedItems([])
+                break
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedItems, activeTabState, activeTab])
+
     return (
         <main className="pb-12">
 
@@ -198,6 +243,14 @@ export default function FinancialsPageCW({
             </div>
 
             {/* ── Tabbed table ──────────────────────────────────── */}
+            {/* Bulk actions bar */}
+            <FinancialsBulkActionsBar
+                selectedCount={selectedItems.length}
+                tab={activeTab}
+                onAction={handleBulkAction}
+                onClearSelection={() => setSelectedItems([])}
+            />
+
             <DataDisplayTableWrapper
                 filters={filters}
                 setFilters={setFilters}
@@ -211,6 +264,7 @@ export default function FinancialsPageCW({
                 currentSearch={activeTabState?.search ?? ""}
                 onSearch={activeTabState?.handleSearch}
                 isLoading={activeTabState?.isLoading}
+                tabCounts={tabCounts}
             >
                 {/* Pending Payouts */}
                 {activeTab === "pending-payout" && (
