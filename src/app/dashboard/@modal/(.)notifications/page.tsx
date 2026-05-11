@@ -1,4 +1,4 @@
-import { getAdminNotifications } from "@/actions/notifications/index"
+import { getAdminNotifications } from "@/actions/notifications/client"
 import AllNotificationsModal from "@/components/modals/AllNotificationsModal"
 import { cookies } from "next/headers";
 
