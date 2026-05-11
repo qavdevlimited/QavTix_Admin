@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import EventFilterTypeBtn from "./buttons-and-inputs/EventFilterTypeBtn"
 import { searchHosts } from "@/actions/host-management/index"
+import { getAuthToken } from "@/helper-fns/getAuthToken"
 
 interface HostFilterProps {
     value?: string | null
@@ -42,7 +43,8 @@ export function HostFilter({ value, onChange, icon, label = "Host" }: HostFilter
 
         setLoading(true)
         try {
-            const results = await searchHosts(query || undefined)
+            const token = await getAuthToken()
+            const results = await searchHosts(token, query || undefined)
             setHosts(results)
             if (key === "") allCache.current = results
             else searchCache.current.set(key, results)

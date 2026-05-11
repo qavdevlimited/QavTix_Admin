@@ -1,33 +1,32 @@
 "use client"
 
-import { Icon }  from "@iconify/react"
-import { cn }    from "@/lib/utils"
+import { Icon } from "@iconify/react"
+import { cn } from "@/lib/utils"
 import { useEffect, useRef, useState } from "react"
 
+/** Derive all-hosts actions from the selected items' statuses */
+function deriveHostActions(items: Array<{ status: string }>): BulkHostAction[] {
+    const suspendable   = items.some(i => i.status === "active" || i.status === "verified")
+    const unsuspendable = items.some(i => i.status === "suspended")
 
-const ALL_HOSTS_BULK_ACTIONS: BulkHostAction[] = [
-    { id: "bulk-suspend", label: "Suspend",  icon: "hugeicons:user-block-01",  variant: "danger" },
-    { id: "bulk-export",  label: "Export",   icon: "hugeicons:download-01"                       },
-]
-
-const PENDING_BULK_ACTIONS: BulkHostAction[] = [
-    { id: "bulk-approve",  label: "Approve All", icon: "hugeicons:checkmark-circle-01"               },
-    { id: "bulk-decline",  label: "Decline All", icon: "hugeicons:cancel-circle",  variant: "danger" },
-    { id: "bulk-export",   label: "Export",      icon: "hugeicons:download-01"                       },
-]
-
-export function getBulkHostActionsForTab(tab: string): BulkHostAction[] {
-    switch (tab) {
-        case "all-hosts":            return ALL_HOSTS_BULK_ACTIONS
-        case "pending-verification": return PENDING_BULK_ACTIONS
-        default:                     return []
-    }
+    const actions: BulkHostAction[] = []
+    if (suspendable)   actions.push({ id: "bulk-suspend",   label: "Suspend",   icon: "hugeicons:user-block-01", variant: "danger" })
+    if (unsuspendable) actions.push({ id: "bulk-unsuspend", label: "Unsuspend", icon: "hugeicons:user-check-01"                   })
+    actions.push(       { id: "bulk-export",   label: "Export",    icon: "hugeicons:download-01"                  })
+    return actions
 }
 
+const PENDING_BULK_ACTIONS: BulkHostAction[] = [
+    { id: "bulk-approve", label: "Approve All", icon: "hugeicons:checkmark-circle-01"              },
+    { id: "bulk-decline", label: "Decline All", icon: "hugeicons:cancel-circle", variant: "danger" },
+    { id: "bulk-export",  label: "Export",      icon: "hugeicons:download-01"                      },
+]
 
 interface HostBulkActionsBarProps {
     selectedCount:    number
     tab:              string
+    /** Actual selected host data — used to derive eligible actions for all-hosts tab */
+    selectedItems?:   Array<{ status: string }>
     onAction:         (actionId: BulkHostActionId) => Promise<void>
     onClearSelection: () => void
 }
@@ -35,21 +34,21 @@ interface HostBulkActionsBarProps {
 export default function HostBulkActionsBar({
     selectedCount,
     tab,
+    selectedItems = [],
     onAction,
     onClearSelection,
 }: HostBulkActionsBarProps) {
 
     const [loadingAction, setLoadingAction] = useState<BulkHostActionId | null>(null)
-    const actions = getBulkHostActionsForTab(tab)
-
     const containerRef = useRef<HTMLDivElement>(null)
+
+    const actions = tab === "pending-verification"
+        ? PENDING_BULK_ACTIONS
+        : deriveHostActions(selectedItems)
 
     useEffect(() => {
         if (selectedCount > 0 && containerRef.current) {
-            containerRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-            })
+            containerRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" })
         }
     }, [selectedCount])
 
@@ -58,23 +57,29 @@ export default function HostBulkActionsBar({
     const handleAction = async (action: BulkHostAction) => {
         if (loadingAction) return
         setLoadingAction(action.id)
-        try {
-            await onAction(action.id)
-        } finally {
-            setLoadingAction(null)
-        }
+        try { await onAction(action.id) } finally { setLoadingAction(null) }
     }
 
     const entityLabel = tab === "pending-verification"
         ? selectedCount === 1 ? "request selected" : "requests selected"
         : selectedCount === 1 ? "host selected" : "hosts selected"
 
+    // Eligibility hints for mixed all-hosts selections
+    const suspendCount   = selectedItems.filter(i => i.status === "active" || i.status === "verified").length
+    const unsuspendCount = selectedItems.filter(i => i.status === "suspended").length
+
+    const hintForAction = (id: BulkHostActionId): string | null => {
+        if (selectedCount <= 1 || tab !== "all-hosts") return null
+        if (id === "bulk-suspend"   && suspendCount   < selectedCount) return `${suspendCount} eligible`
+        if (id === "bulk-unsuspend" && unsuspendCount < selectedCount) return `${unsuspendCount} eligible`
+        return null
+    }
+
     return (
         <div
             ref={containerRef}
             className="flex items-center gap-3 flex-wrap px-4 md:px-5 py-3 bg-brand-primary-1 border border-brand-primary-3 rounded-xl mb-4 animate-in slide-in-from-top-2 duration-200"
         >
-            {/* Selection count badge */}
             <div className="flex items-center gap-2 mr-2">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-brand-primary-6 text-white text-xs font-bold">
                     {selectedCount}
@@ -84,13 +89,13 @@ export default function HostBulkActionsBar({
                 </span>
             </div>
 
-            {/* Divider */}
             <div className="hidden sm:block w-px h-5 bg-brand-neutral-4" />
 
             <div className="flex items-center gap-2 flex-wrap">
                 {actions.map((action) => {
                     const isLoading  = loadingAction === action.id
                     const isDisabled = loadingAction !== null
+                    const hint = hintForAction(action.id)
 
                     return (
                         <button
@@ -105,12 +110,14 @@ export default function HostBulkActionsBar({
                                 isDisabled && "opacity-40 cursor-not-allowed"
                             )}
                         >
-                            {isLoading ? (
-                                <Icon icon="eos-icons:three-dots-loading" className="size-4" />
-                            ) : (
-                                <Icon icon={action.icon} className="size-3.5" />
-                            )}
+                            {isLoading
+                                ? <Icon icon="eos-icons:three-dots-loading" className="size-4" />
+                                : <Icon icon={action.icon} className="size-3.5" />
+                            }
                             {action.label}
+                            {hint && (
+                                <span className="ml-0.5 opacity-60 font-normal">({hint})</span>
+                            )}
                         </button>
                     )
                 })}

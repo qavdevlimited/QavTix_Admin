@@ -121,7 +121,7 @@ export default function AdminEventActionDropdown({
     // Expose the handler to the parent (e.g. the overview button)
     useEffect(() => {
         onDownloadReady?.(handleDownloadAttendees)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [onDownloadReady])
 
 
@@ -264,7 +264,7 @@ export default function AdminEventActionDropdown({
         <>
             <DropdownMenu modal={false} open={isOpen} onOpenChange={handleOpenChange}>
                 <DropdownMenuTrigger asChild>
-                    <button className="px-1 h-fit border border-brand-neutral-5 rounded-md transition-colors hover:bg-brand-neutral-2">
+                    <button className="px-1 h-fit md:border border-brand-neutral-5 rounded-md transition-colors hover:bg-brand-neutral-2">
                         <Icon icon="tabler:dots" className="size-5 text-brand-secondary-9 hidden md:inline-block" />
                         <Icon icon="ix:context-menu" className="size-5 text-brand-secondary-9 md:hidden" />
                     </button>

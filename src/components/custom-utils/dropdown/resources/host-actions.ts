@@ -12,7 +12,7 @@ export function buildHostActions(host: AdminHost, router: AppRouterInstance): Us
     ]
 
     // Only offer Gift Blue Tick if not already verified
-    if (!host.verified) {
+    if (!host.blue_badge) {
         actions.push({
             id: "gift-bluetick",
             label: "Gift Blue Tick",

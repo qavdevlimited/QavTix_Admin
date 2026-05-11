@@ -61,6 +61,11 @@ export default function UserManagementPageCW({
 
     // Bulk selection state (separate per logical entity but reset on tab change)
     const [selectedUsers, setSelectedUsers] = useState<(string | number)[]>([])
+    
+    useEffect(() => {
+        setSelectedUsers([])
+        setFilters({})
+    }, [activeTab])
 
     const isMounted = useIsMounted()
     const firstRender = useRef(true)
@@ -310,6 +315,9 @@ export default function UserManagementPageCW({
                 <UserBulkActionsBar
                     selectedCount={selectedUsers.length}
                     tab={activeTab}
+                    selectedItems={((usersState?.items ?? []) as AdminCustomer[])
+                        .filter(u => selectedUsers.includes(u.user_id))
+                        .map(u => ({ status: u.status }))}
                     onAction={handleBulkAction}
                     onClearSelection={() => setSelectedUsers([])}
                 />
@@ -346,6 +354,8 @@ export default function UserManagementPageCW({
                             totalPages={usersState?.totalPages ?? 1}
                             fetchPage={usersState?.fetchPage}
                             onRefresh={usersState?.refresh}
+                            selectedIds={selectedUsers}
+                            onSelectionChange={setSelectedUsers}
                         />
                     )}
 

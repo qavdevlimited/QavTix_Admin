@@ -13,6 +13,7 @@ import { useAppSelector } from "@/lib/redux/hooks"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import EventInfo from "@/components/custom-utils/event/EventInfo"
+import TableCheckbox from "../../tools/TableCheckbox"
 
 
 
@@ -28,8 +29,13 @@ const STATUS_CONFIG: Record<string, { text: string; bg: string }> = {
 
 function formatLocation(loc: { city?: string; state?: string; country?: string } | string | null | undefined): string {
     if (!loc) return "—"
-    if (typeof loc === "string") return loc
-    return [loc.city, loc.state, loc.country].filter(Boolean).join(", ")
+    if (typeof loc === "string") {
+        const parts = loc.split(",").map(s => s.trim()).filter(Boolean)
+        if (parts.length === 0) return "—"
+        if (parts[0].startsWith("http:") || parts[0].startsWith("https:")) return "Virtual Event"
+        return parts.join(", ")
+    }
+    return [loc.city, loc.state, loc.country].filter(Boolean).join(", ") || "—"
 }
 
 interface AdminEventsTableProps {
@@ -47,6 +53,8 @@ interface AdminEventsTableProps {
     totalPages: number
     fetchPage: (page: number) => void
     onRefresh?: () => void
+    selectedIds?: string[]
+    onSelectionChange?: (ids: string[]) => void
 }
 
 export default function AdminEventsTable({
@@ -62,10 +70,48 @@ export default function AdminEventsTable({
     count,
     fetchPage,
     onRefresh,
+    selectedIds = [],
+    onSelectionChange,
 }: AdminEventsTableProps) {
 
     const { user } = useAppSelector(store => store.authUser)
     const isMounted = useIsMounted()
+
+    const allIds = items.map(i => i.event_id)
+    const isAllSelected = items.length > 0 && allIds.every(id => selectedIds.includes(id))
+    const isSomeSelected = items.length > 0 && allIds.some(id => selectedIds.includes(id)) && !isAllSelected
+
+    const handleSelectAll = (checked: boolean) => {
+        if (!onSelectionChange) return
+        if (checked) {
+            const newIds = new Set([...selectedIds, ...allIds])
+            onSelectionChange(Array.from(newIds))
+        } else {
+            const newIds = selectedIds.filter(id => !allIds.includes(id))
+            onSelectionChange(newIds)
+        }
+    }
+
+    const handleSelectRow = (id: string, checked: boolean) => {
+        if (!onSelectionChange) return
+        if (checked) {
+            onSelectionChange([...selectedIds, id])
+        } else {
+            onSelectionChange(selectedIds.filter(selectedId => selectedId !== id))
+        }
+    }
+
+    const handleRowClick = (id: string, e: React.MouseEvent) => {
+        if (!onSelectionChange) return
+        // Prevent row selection if clicking inside the dropdown or buttons
+        if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="menu"]')) return
+        
+        if (selectedIds.includes(id)) {
+            onSelectionChange(selectedIds.filter(selectedId => selectedId !== id))
+        } else {
+            onSelectionChange([...selectedIds, id])
+        }
+    }
 
     if (isLoading) return <TableLoader />
 
@@ -90,7 +136,17 @@ export default function AdminEventsTable({
                 <table className="w-full text-sm text-brand-secondary-9">
                     <thead className="bg-brand-neutral-3">
                         <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
-                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Status</th>
+                            <th className="py-4 px-5 text-left w-10">
+                                {onSelectionChange && (
+                                    <TableCheckbox
+                                        checked={isAllSelected}
+                                        indeterminate={isSomeSelected}
+                                        onChange={handleSelectAll}
+                                        ariaLabel="Select all events on this page"
+                                    />
+                                )}
+                            </th>
+                            <th className="py-4 px-2 text-left font-bold whitespace-nowrap">Status</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Event</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Date</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Location</th>
@@ -103,9 +159,27 @@ export default function AdminEventsTable({
                     <tbody className="divide-y divide-brand-neutral-2 bg-white">
                         {items.map(event => {
                             const cfg = STATUS_CONFIG[event.status] ?? { text: "text-brand-secondary-6", bg: "bg-brand-neutral-2" }
+                            const isSelected = selectedIds.includes(event.event_id)
                             return (
-                                <tr key={event.event_id} className="hover:bg-brand-neutral-3/70 transition-colors">
-                                    <td className="py-4 px-5">
+                                <tr 
+                                    key={event.event_id} 
+                                    onClick={(e) => handleRowClick(event.event_id, e)}
+                                    className={cn(
+                                        "transition-colors",
+                                        onSelectionChange && "cursor-pointer",
+                                        isSelected ? "bg-brand-primary-1 hover:bg-brand-primary-2" : "hover:bg-brand-neutral-3/70"
+                                    )}
+                                >
+                                    <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                                        {onSelectionChange && (
+                                            <TableCheckbox
+                                                checked={isSelected}
+                                                onChange={(checked) => handleSelectRow(event.event_id, checked === true)}
+                                                aria-label={`Select event ${event.title}`}
+                                            />
+                                        )}
+                                    </td>
+                                    <td className="py-4 px-2">
                                         <p className={cn("px-2 py-0.5 flex items-center rounded-full capitalize font-medium text-[10px]", cfg.text)}>
                                             <span className={cn("size-1.5 rounded-full mr-1 inline-block bg-current")} />
                                             {event.status}
@@ -168,10 +242,28 @@ export default function AdminEventsTable({
             <div className="md:hidden space-y-3">
                 {items.map(event => {
                     const cfg = STATUS_CONFIG[event.status] ?? { text: "text-brand-secondary-6", bg: "bg-brand-neutral-2", dot: "bg-brand-secondary-6" }
+                    const isSelected = selectedIds.includes(event.event_id)
                     return (
-                        <div key={event.event_id} className="border border-brand-neutral-3 rounded-2xl p-4 bg-white space-y-3">
+                        <div 
+                            key={event.event_id} 
+                            onClick={(e) => handleRowClick(event.event_id, e)}
+                            className={cn(
+                                "border rounded-2xl p-4 space-y-3 transition-colors",
+                                onSelectionChange && "cursor-pointer",
+                                isSelected ? "border-brand-primary-5 bg-brand-primary-1" : "border-brand-neutral-3 bg-white"
+                            )}
+                        >
                             <div className="flex items-center gap-3 flex-wrap justify-between">
                                 <div className="flex items-center gap-4 flex-wrap">
+                                    {onSelectionChange && (
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <TableCheckbox
+                                                checked={isSelected}
+                                                onChange={(checked) => handleSelectRow(event.event_id, checked === true)}
+                                                aria-label={`Select event ${event.title}`}
+                                            />
+                                        </div>
+                                    )}
                                     <p className={cn("px-2 py-0.5 flex items-center rounded-full capitalize font-medium text-[10px]", cfg.text)}>
                                         <span className={cn("size-1.5 rounded-full mr-1 inline-block bg-current")} />
                                         {event.status}

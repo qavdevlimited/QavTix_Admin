@@ -1,37 +1,35 @@
 "use client"
 
-import { Icon }  from "@iconify/react"
-import { cn }    from "@/lib/utils"
+import { Icon } from "@iconify/react"
+import { cn } from "@/lib/utils"
 import { useEffect, useRef, useState } from "react"
 
+/** Derive which actions make sense for the current selection */
+function deriveUserActions(items: Array<{ status: string }>): BulkUserAction[] {
+    const statuses = new Set(items.map(i => i.status))
+    const hasActive    = statuses.has("active")
+    const hasSuspended = statuses.has("suspended")
+    const hasBannable  = items.some(i => i.status !== "banned")
 
-const USERS_BULK_ACTIONS: BulkUserAction[] = [
-    { id: "bulk-suspend",   label: "Suspend",   icon: "hugeicons:user-block-01",   variant: "danger" },
-    { id: "bulk-ban",       label: "Ban",        icon: "hugeicons:user-remove-01",  variant: "danger" },
-    { id: "bulk-export",    label: "Export",     icon: "hugeicons:download-01"                        },
-]
-
-const AFFILIATES_BULK_ACTIONS: BulkUserAction[] = [
-    { id: "bulk-export",    label: "Export",     icon: "hugeicons:download-01"   },
-]
-
-const WITHDRAWALS_BULK_ACTIONS: BulkUserAction[] = [
-    { id: "bulk-export",    label: "Export",     icon: "hugeicons:download-01"   },
-]
-
-export function getBulkUserActionsForTab(tab: string): BulkUserAction[] {
-    switch (tab) {
-        case "users":       return USERS_BULK_ACTIONS
-        case "affiliates":  return AFFILIATES_BULK_ACTIONS
-        case "withdrawals": return WITHDRAWALS_BULK_ACTIONS
-        default:            return []
-    }
+    const actions: BulkUserAction[] = []
+    if (hasActive)    actions.push({ id: "bulk-suspend",   label: "Suspend",   icon: "hugeicons:user-block-01",  variant: "danger" })
+    if (hasSuspended) actions.push({ id: "bulk-unsuspend", label: "Unsuspend", icon: "hugeicons:user-check-01"                    })
+    if (hasBannable)  actions.push({ id: "bulk-ban",       label: "Ban",       icon: "hugeicons:user-remove-01", variant: "danger" })
+    actions.push(       { id: "bulk-export",   label: "Export",    icon: "hugeicons:download-01"                        })
+    return actions
 }
 
+const TAB_ENTITY: Record<string, { singular: string; plural: string }> = {
+    users:       { singular: "user",        plural: "users"       },
+    affiliates:  { singular: "affiliate",   plural: "affiliates"  },
+    withdrawals: { singular: "withdrawal",  plural: "withdrawals" },
+}
 
 interface UserBulkActionsBarProps {
     selectedCount:    number
     tab:              string
+    /** The actual data objects for selected rows — used to derive eligible actions */
+    selectedItems?:   Array<{ status: string }>
     onAction:         (actionId: BulkUserActionId) => Promise<void>
     onClearSelection: () => void
 }
@@ -39,21 +37,22 @@ interface UserBulkActionsBarProps {
 export default function UserBulkActionsBar({
     selectedCount,
     tab,
+    selectedItems = [],
     onAction,
     onClearSelection,
 }: UserBulkActionsBarProps) {
 
     const [loadingAction, setLoadingAction] = useState<BulkUserActionId | null>(null)
-    const actions = getBulkUserActionsForTab(tab)
-
     const containerRef = useRef<HTMLDivElement>(null)
+
+    // For affiliates / withdrawals — only export makes sense
+    const actions: BulkUserAction[] = tab === "users"
+        ? deriveUserActions(selectedItems)
+        : [{ id: "bulk-export", label: "Export", icon: "hugeicons:download-01" }]
 
     useEffect(() => {
         if (selectedCount > 0 && containerRef.current) {
-            containerRef.current.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-            })
+            containerRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" })
         }
     }, [selectedCount])
 
@@ -62,18 +61,24 @@ export default function UserBulkActionsBar({
     const handleAction = async (action: BulkUserAction) => {
         if (loadingAction) return
         setLoadingAction(action.id)
-        try {
-            await onAction(action.id)
-        } finally {
-            setLoadingAction(null)
-        }
+        try { await onAction(action.id) } finally { setLoadingAction(null) }
     }
 
-    const entityLabel = tab === "users"
-        ? selectedCount === 1 ? "user selected" : "users selected"
-        : tab === "affiliates"
-            ? selectedCount === 1 ? "affiliate selected" : "affiliates selected"
-            : selectedCount === 1 ? "withdrawal selected" : "withdrawals selected"
+    const entity = TAB_ENTITY[tab] ?? { singular: "item", plural: "items" }
+    const entityLabel = selectedCount === 1 ? `${entity.singular} selected` : `${entity.plural} selected`
+
+    // Eligibility hints for mixed selections
+    const suspendable  = selectedItems.filter(i => i.status === "active").length
+    const unsuspendable = selectedItems.filter(i => i.status === "suspended").length
+    const bannable     = selectedItems.filter(i => i.status !== "banned").length
+
+    const hintForAction = (id: BulkUserActionId): string | null => {
+        if (selectedCount <= 1) return null
+        if (id === "bulk-suspend"   && suspendable   < selectedCount) return `${suspendable} eligible`
+        if (id === "bulk-unsuspend" && unsuspendable < selectedCount) return `${unsuspendable} eligible`
+        if (id === "bulk-ban"       && bannable       < selectedCount) return `${bannable} eligible`
+        return null
+    }
 
     return (
         <div
@@ -90,13 +95,13 @@ export default function UserBulkActionsBar({
                 </span>
             </div>
 
-            {/* Divider */}
             <div className="hidden sm:block w-px h-5 bg-brand-neutral-4" />
 
             <div className="flex items-center gap-2 flex-wrap">
                 {actions.map((action) => {
                     const isLoading  = loadingAction === action.id
                     const isDisabled = loadingAction !== null
+                    const hint = hintForAction(action.id)
 
                     return (
                         <button
@@ -111,12 +116,14 @@ export default function UserBulkActionsBar({
                                 isDisabled && "opacity-40 cursor-not-allowed"
                             )}
                         >
-                            {isLoading ? (
-                                <Icon icon="eos-icons:three-dots-loading" className="size-4" />
-                            ) : (
-                                <Icon icon={action.icon} className="size-3.5" />
-                            )}
+                            {isLoading
+                                ? <Icon icon="eos-icons:three-dots-loading" className="size-4" />
+                                : <Icon icon={action.icon} className="size-3.5" />
+                            }
                             {action.label}
+                            {hint && (
+                                <span className="ml-0.5 opacity-60 font-normal">({hint})</span>
+                            )}
                         </button>
                     )
                 })}

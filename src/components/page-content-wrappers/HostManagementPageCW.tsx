@@ -43,7 +43,6 @@ export default function HostmanagementPageCW({
     initialPendingHosts,
 }: Props) {
 
-    console.log(initialHosts)
     const { tabFilterOptions, tabList } = HostManagementTabNFilterOptions
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("all-hosts")
@@ -53,7 +52,10 @@ export default function HostmanagementPageCW({
 
     // Bulk selection — reset when tab changes
     const [selectedHosts, setSelectedHosts] = useState<(string | number)[]>([])
-    useEffect(() => { setSelectedHosts([]) }, [activeTab])
+    useEffect(() => {
+        setSelectedHosts([])
+        setFilters({})
+    }, [activeTab])
     const isMounted = useIsMounted()
     const firstRender = useRef(true)
     const { user } = useAppSelector(store => store.authUser)
@@ -222,6 +224,9 @@ export default function HostmanagementPageCW({
                 <HostBulkActionsBar
                     selectedCount={selectedHosts.length}
                     tab={activeTab}
+                    selectedItems={((hostsState?.items ?? []) as AdminHost[])
+                        .filter(h => selectedHosts.includes(h.host_id))
+                        .map(h => ({ status: h.status }))}
                     onAction={handleBulkAction}
                     onClearSelection={() => setSelectedHosts([])}
                 />
@@ -254,6 +259,8 @@ export default function HostmanagementPageCW({
                             totalPages={hostsState?.totalPages ?? 1}
                             fetchPage={hostsState?.fetchPage}
                             onRefresh={hostsState?.refresh}
+                            selectedIds={selectedHosts}
+                            onSelectionChange={setSelectedHosts}
                         />
                     )}
 

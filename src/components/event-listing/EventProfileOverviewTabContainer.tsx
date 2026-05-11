@@ -89,12 +89,13 @@ export default function EventProfileOverviewTabContainer({
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`
         : null
 
+
     return (
         <>
             <section>
                 <div className="md:flex justify-between gap-8">
 
-                    <div className="md:w-95">
+                    <div className="md:w-[45%]">
                         <figure>
                             {imageUrl ? (
                                 <Image
@@ -121,7 +122,7 @@ export default function EventProfileOverviewTabContainer({
                         />
                     </div>
 
-                    <div className="flex-1 mt-6 md:mt-0">
+                    <div className="md:w-[53%] mt-6 md:mt-0">
                         {/* Title row */}
                         <div className="flex justify-between gap-5 items-start">
                             <h1 className={cn(space_grotesk.className, "font-bold text-xl md:text-2xl text-brand-secondary-9")}>
@@ -158,7 +159,7 @@ export default function EventProfileOverviewTabContainer({
                                 )}
                             </div>
 
-                            <div className="flex justify-end text-secondary-9 gap-3 items-center">
+                            <div className="flex justify-end text-brand-secondary-9 gap-3 items-center">
                                 <EventIconActionButton
                                     icon="ph:link-bold"
                                     onClick={() => copyToClipboard(`${window.location.origin}/events/${eventId}`)}
@@ -176,27 +177,31 @@ export default function EventProfileOverviewTabContainer({
 
                         {/* Date / Location */}
                         <div className="space-y-3 mt-7">
-                            <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-0.5">
-                                    <Icon icon="hugeicons:calendar-04" className="size-4 shrink-0 text-accent-6" />
-                                    <hr className="w-px h-2 border border-neutral-6" />
-                                    <Icon icon="hugeicons:clock-01" className="size-4 shrink-0 text-accent-6" />
+                            <div className="flex items-start gap-1">
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                    <Icon icon="hugeicons:calendar-04" className="size-4 text-brand-accent-6" />
+                                    <hr className="w-px h-2 border border-brand-neutral-6" />
+                                    <Icon icon="hugeicons:clock-01" className="size-4 text-brand-accent-6" />
                                 </div>
-                                <span className="text-brand-neutral-7 text-sm truncate flex-1">
+                                <span className="text-brand-neutral-7 text-sm wrap-break-words min-w-0 flex-1">
                                     {startDate} {endDate ? `– ${endDate}` : ""}
                                 </span>
                             </div>
 
                             {locationStr && (
-                                <div className="flex items-center gap-1">
-                                    <Icon icon="hugeicons:location-01" className="size-4 shrink-0 text-accent-6" />
+                                <div className="flex items-start gap-1 min-w-0">
+                                    <Icon icon="hugeicons:location-01" className="size-4 shrink-0 text-brand-accent-6" />
                                     {mapsUrl ? (
-                                        <Link href={mapsUrl} target="_blank" className="flex-1 text-brand-neutral-7 flex items-center gap-1">
-                                            <span className="text-sm truncate">{locationStr}</span>
-                                            <Icon icon="system-uicons:arrow-top-right" width="21" height="21" />
+                                        <Link
+                                            href={mapsUrl}
+                                            target="_blank"
+                                            className="flex-1 min-w-0 text-brand-neutral-7 flex items-center gap-1 flex-wrap"
+                                        >
+                                            <span className="text-sm wrap-break-words min-w-0">{locationStr}</span>
+                                            <Icon icon="system-uicons:arrow-top-right" width="21" height="21" className="shrink-0" />
                                         </Link>
                                     ) : (
-                                        <span className="text-sm text-brand-neutral-7 truncate flex-1">{locationStr}</span>
+                                        <span className="text-sm text-brand-neutral-7 wrapbreak-words min-w-0 flex-1">{locationStr}</span>
                                     )}
                                 </div>
                             )}
@@ -217,11 +222,12 @@ export default function EventProfileOverviewTabContainer({
 
                         <ActionButton1
                             buttonText={isDownloading ? "Downloading..." : "Download Attendee List"}
-                            className="mt-4"
+                            className="mt-8 min-w-60"
                             iconPosition="right"
                             icon={isDownloading ? "eos-icons:three-dots-loading" : "hugeicons:download-01"}
-                            onClick={handleDownloadClick}
+                            action={handleDownloadClick}
                             disabled={isDownloading}
+                            isLoading={isDownloading}
                         />
                     </div>
                 </div>

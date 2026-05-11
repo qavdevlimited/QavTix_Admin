@@ -14,6 +14,8 @@ import {
     ADMIN_FINANCIALS_FEATURED_PAYMENTS_ENDPOINT,
     ADMIN_FINANCIALS_SUBSCRIPTIONS_ENDPOINT,
 } from "@/endpoints"
+import FinancialsBulkActionsBar from "@/components/custom-utils/dropdown/FinancialsBulkActionsBar"
+import { exportData } from "@/helper-fns/exportData"
 import {
     mapAdminFinancialCardsToMetrics,
     mapAdminResaleCardsToMetrics,
@@ -29,8 +31,6 @@ import MetricsContainerLoader from "../loaders/MetricsContainerLoader"
 import { EventFilter } from "../custom-utils/TableDataDisplayAreas/filters/EventFilter"
 import { useAppSelector } from "@/lib/redux/hooks"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
-import FinancialsBulkActionsBar from "@/components/custom-utils/dropdown/FinancialsBulkActionsBar"
-
 interface FinancialsPageCWProps {
     initialPendingPayouts: TabSlice<AdminPayout>
     initialApprovedPayouts: TabSlice<AdminPayout>
@@ -42,8 +42,6 @@ interface FinancialsPageCWProps {
 }
 
 type FinancialsTab = typeof FinancialsTabNFilterOptions.tabList[number]["value"]
-
-import { exportData } from "@/helper-fns/exportData"
 
 export default function FinancialsPageCW({
     initialPendingPayouts,
@@ -64,7 +62,7 @@ export default function FinancialsPageCW({
     const [isCardsLoading, startCardsTransition] = useTransition()
 
     // Bulk selection — reset on tab change
-    const [selectedItems, setSelectedItems] = useState<(string | number)[]>([])
+    const [selectedItems, setSelectedItems] = useState<string[]>([])
     useEffect(() => { setSelectedItems([]) }, [activeTab])
 
     const isMounted = useIsMounted()
@@ -130,6 +128,7 @@ export default function FinancialsPageCW({
     const handleTabChange = (tab: string) => {
         setActiveTab(tab as FinancialsTab)
         setFilters({})
+        setSelectedItems([]) // Clear selection on tab change
 
         if (tab === "resale-orders" && !resaleCards) {
             startCardsTransition(async () => {
@@ -244,14 +243,17 @@ export default function FinancialsPageCW({
 
             {/* ── Tabbed table ──────────────────────────────────── */}
             {/* Bulk actions bar */}
-            <FinancialsBulkActionsBar
-                selectedCount={selectedItems.length}
-                tab={activeTab}
-                onAction={handleBulkAction}
-                onClearSelection={() => setSelectedItems([])}
-            />
+            <div className="mt-7">
+                <FinancialsBulkActionsBar
+                    selectedCount={selectedItems.length}
+                    selectedItems={((activeTabState?.items ?? []) as any[])
+                        .filter(e => selectedItems.includes(e.payout_id || e.id || e.order_id || e.subscription_id))
+                        .map(e => ({ status: e.status }))}
+                    onAction={handleBulkAction}
+                    onClearSelection={() => setSelectedItems([])}
+                />
 
-            <DataDisplayTableWrapper
+                <DataDisplayTableWrapper
                 filters={filters}
                 setFilters={setFilters}
                 tabs={tabList}
@@ -282,6 +284,8 @@ export default function FinancialsPageCW({
                         totalPages={activeTabState?.totalPages ?? 1}
                         fetchPage={activeTabState?.fetchPage ?? (() => { })}
                         onRefresh={activeTabState?.refresh}
+                        selectedIds={selectedItems}
+                        onSelectionChange={setSelectedItems}
                     />
                 )}
 
@@ -357,6 +361,7 @@ export default function FinancialsPageCW({
                     />
                 )}
             </DataDisplayTableWrapper>
+            </div>
         </main>
     )
 }

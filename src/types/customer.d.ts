@@ -166,6 +166,7 @@ interface AdminHost {
     status: string;
     verified: boolean;
     date_joined: string;
+    blue_badge: boolean;
 }
 
 

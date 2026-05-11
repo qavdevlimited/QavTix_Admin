@@ -14,6 +14,7 @@ import { formatDateTime } from '@/helper-fns/date-utils'
 import { useAppSelector } from "@/lib/redux/hooks"
 import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
+import TableCheckbox from "../tools/TableCheckbox"
 
 interface BusinessManagementTableProps {
     items: AdminHost[]
@@ -29,6 +30,8 @@ interface BusinessManagementTableProps {
     totalPages: number
     fetchPage: (page: number) => void
     onRefresh?: () => void
+    selectedIds?: (string | number)[]
+    onSelectionChange?: (ids: (string | number)[]) => void
 }
 
 const hostStatusConfig: Record<string, { label: string; className: string }> = {
@@ -50,12 +53,30 @@ export default function BusinessManagementTable({
     totalPages,
     fetchPage,
     onRefresh,
+    selectedIds = [],
+    onSelectionChange,
 }: BusinessManagementTableProps) {
     const { user } = useAppSelector(store => store.authUser)
     const isMounted = useIsMounted()
-
-
     const router = useRouter()
+
+    const pageIds = items.map(h => h.host_id)
+    const allPageSelected = pageIds.length > 0 && pageIds.every(id => selectedIds.includes(id))
+    const somePageSelected = pageIds.some(id => selectedIds.includes(id)) && !allPageSelected
+
+    const toggleRow = (id: string | number) => {
+        if (!onSelectionChange) return
+        onSelectionChange(selectedIds.includes(id) ? selectedIds.filter(s => s !== id) : [...selectedIds, id])
+    }
+
+    const toggleAll = () => {
+        if (!onSelectionChange) return
+        if (allPageSelected) {
+            onSelectionChange(selectedIds.filter(id => !pageIds.includes(id as any)))
+        } else {
+            onSelectionChange([...new Set([...selectedIds, ...pageIds])])
+        }
+    }
 
     if (isLoading) return <TableLoader />
 
@@ -75,6 +96,16 @@ export default function BusinessManagementTable({
                     <table className="w-full">
                         <thead className="bg-brand-neutral-3">
                             <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                {onSelectionChange && (
+                                    <th className="py-4 pl-5 pr-2 w-8">
+                                        <TableCheckbox
+                                            checked={allPageSelected}
+                                            indeterminate={somePageSelected}
+                                            onChange={toggleAll}
+                                            ariaLabel="Select all on this page"
+                                        />
+                                    </th>
+                                )}
                                 <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Business Name</th>
                                 <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Owner</th>
                                 <th className="text-center py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize">Events</th>
@@ -88,21 +119,43 @@ export default function BusinessManagementTable({
                             {items.map((host) => {
                                 const statusCfg = hostStatusConfig[host.status] ?? { label: host.status, className: "text-brand-neutral-7 bg-brand-neutral-2 border-brand-neutral-4" }
                                 const actions = buildHostActions(host, router)
+                                const isSelected = selectedIds.includes(host.host_id)
 
                                 return (
-                                    <tr key={host.host_id} className="hover:bg-brand-neutral-3/70 transition-colors group">
+                                    <tr
+                                        key={host.host_id}
+                                        onClick={() => toggleRow(host.host_id)}
+                                        className={cn(
+                                            "transition-colors group",
+                                            onSelectionChange && "cursor-pointer",
+                                            isSelected
+                                                ? "bg-brand-primary-1 hover:bg-brand-primary-2/40"
+                                                : "hover:bg-brand-neutral-3/70"
+                                        )}
+                                    >
+                                        {onSelectionChange && (
+                                            <td className="py-4 pl-5 pr-2" onClick={e => e.stopPropagation()}>
+                                                <TableCheckbox
+                                                    checked={isSelected}
+                                                    onChange={() => toggleRow(host.host_id)}
+                                                    ariaLabel={`Select ${host.business_name || host.owner_name}`}
+                                                />
+                                            </td>
+                                        )}
                                         <td className="py-4 px-5">
                                             <div className="flex items-center gap-2">
                                                 <p className="text-xs font-medium text-brand-secondary-9">{host.business_name}</p>
                                                 {host.verified && (
                                                     <Icon icon="hugeicons:checkmark-badge-01" className="size-4 text-yellow-500 shrink-0" />
                                                 )}
+                                                {host.blue_badge && (
+                                                    <Icon icon="hugeicons:checkmark-badge-01" className="size-4 text-blue-500 shrink-0" />
+                                                )}
                                             </div>
                                             {host.business_type && (
                                                 <p className="text-[10px] text-brand-neutral-7 mt-0.5">{host.business_type}</p>
                                             )}
                                         </td>
-
                                         <td className="py-4 px-5">
                                             <UserInfo user={{
                                                 email: host.owner_email,
@@ -111,23 +164,19 @@ export default function BusinessManagementTable({
                                                 profileImg: host.profile_picture ?? undefined,
                                             }} />
                                         </td>
-
                                         <td className="py-4 px-5 text-center">
                                             <p className="text-xs text-brand-secondary-9">{host.event_count}</p>
                                         </td>
-
                                         <td className="py-4 px-5">
                                             <p className="text-xs font-bold text-brand-secondary-9">
                                                 {isMounted && formatPrice(Number(host.total_revenue), user?.currency)}
                                             </p>
                                         </td>
-
                                         <td className="py-4 px-5">
                                             <p className="text-xs text-brand-secondary-8 whitespace-nowrap">
                                                 {formatDateTime(host.date_joined)}
                                             </p>
                                         </td>
-
                                         <td className="py-4 px-5">
                                             <Badge className={cn(
                                                 "px-2 py-1 rounded-sm text-[10px] font-medium border-[0.8px] capitalize",
@@ -136,8 +185,7 @@ export default function BusinessManagementTable({
                                                 {statusCfg.label}
                                             </Badge>
                                         </td>
-
-                                        <td className="py-4 px-5 text-right">
+                                        <td className="py-4 px-5 text-right" onClick={e => e.stopPropagation()}>
                                             <HostActionDropdown
                                                 actions={actions}
                                                 hostId={host.host_id}

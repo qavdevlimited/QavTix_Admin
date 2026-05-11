@@ -1,5 +1,3 @@
-"use client"
-
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils"
 import PaginationControls from "../tools/PaginationControl"
@@ -14,6 +12,7 @@ import { buildCustomerActions } from "../../dropdown/resources/customer-actions"
 import { formatDateTime } from "@/helper-fns/date-utils"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import { useAppSelector } from "@/lib/redux/hooks"
+import TableCheckbox from "../tools/TableCheckbox"
 
 interface UsersTableProps {
     items: AdminCustomer[]
@@ -29,6 +28,8 @@ interface UsersTableProps {
     totalPages: number
     fetchPage: (page: number) => void
     onRefresh?: () => void
+    selectedIds?: (string | number)[]
+    onSelectionChange?: (ids: (string | number)[]) => void
 }
 
 export default function UsersTable({
@@ -42,11 +43,36 @@ export default function UsersTable({
     fetchPage,
     count,
     onRefresh,
+    selectedIds = [],
+    onSelectionChange,
 }: UsersTableProps) {
 
     const isMounted = useIsMounted()
     const router = useRouter()
     const currency = useAppSelector(s => s.authUser.user?.currency)
+
+    const pageIds = items.map(u => u.user_id)
+    const allPageSelected = pageIds.length > 0 && pageIds.every(id => selectedIds.includes(id))
+    const somePageSelected = pageIds.some(id => selectedIds.includes(id)) && !allPageSelected
+
+    const toggleRow = (id: string | number) => {
+        if (!onSelectionChange) return
+        onSelectionChange(
+            selectedIds.includes(id)
+                ? selectedIds.filter(s => s !== id)
+                : [...selectedIds, id]
+        )
+    }
+
+    const toggleAll = () => {
+        if (!onSelectionChange) return
+        if (allPageSelected) {
+            onSelectionChange(selectedIds.filter(id => !pageIds.includes(id as any)))
+        } else {
+            const newIds = [...new Set([...selectedIds, ...pageIds])]
+            onSelectionChange(newIds)
+        }
+    }
 
     if (isLoading) return <TableLoader />
 
@@ -85,6 +111,16 @@ export default function UsersTable({
                     <table className="w-full">
                         <thead className="bg-brand-neutral-3">
                             <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                                {onSelectionChange && (
+                                    <th className="py-4 pl-5 pr-2 w-8">
+                                        <TableCheckbox
+                                            checked={allPageSelected}
+                                            indeterminate={somePageSelected}
+                                            onChange={toggleAll}
+                                            ariaLabel="Select all on this page"
+                                        />
+                                    </th>
+                                )}
                                 <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Status</th>
                                 <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Profile Info</th>
                                 <th className="text-left py-4 px-5 text-sm font-bold text-brand-secondary-8 capitalize whitespace-nowrap">Location</th>
@@ -99,12 +135,29 @@ export default function UsersTable({
                             {items.map((user) => {
                                 const statusCfg = usersTableStatusConfig[user.status as UserStatus] ?? usersTableStatusConfig.active
                                 const location = [user.city, user.state, user.country].filter(Boolean).join(", ") || "—"
+                                const isSelected = selectedIds.includes(user.user_id)
 
                                 return (
                                     <tr
                                         key={`user-${user.user_id}`}
-                                        className="hover:bg-brand-neutral-3/70 transition-colors"
+                                        onClick={() => toggleRow(user.user_id)}
+                                        className={cn(
+                                            "transition-colors",
+                                            onSelectionChange && "cursor-pointer",
+                                            isSelected
+                                                ? "bg-brand-primary-1 hover:bg-brand-primary-2/40"
+                                                : "hover:bg-brand-neutral-3/70"
+                                        )}
                                     >
+                                        {onSelectionChange && (
+                                            <td className="py-4 pl-5 pr-2" onClick={e => e.stopPropagation()}>
+                                                <TableCheckbox
+                                                    checked={isSelected}
+                                                    onChange={() => toggleRow(user.user_id)}
+                                                    ariaLabel={`Select ${user.full_name}`}
+                                                />
+                                            </td>
+                                        )}
                                         <td className="py-4 px-5">
                                             <div className="flex items-center gap-1.5 whitespace-nowrap">
                                                 <span className={cn("size-1.5 rounded-full shrink-0", statusCfg.dot)} />
@@ -172,13 +225,28 @@ export default function UsersTable({
                 {items.map((user) => {
                     const statusCfg = usersTableStatusConfig[user.status as UserStatus] ?? usersTableStatusConfig.active
                     const location = [user.city, user.state, user.country].filter(Boolean).join(", ") || "—"
+                    const isSelected = selectedIds.includes(user.user_id)
 
                     return (
                         <div
                             key={`mob-${user.user_id}`}
-                            className="border border-brand-neutral-3 rounded-lg p-3"
+                            onClick={() => toggleRow(user.user_id)}
+                            className={cn(
+                                "border rounded-lg p-3 transition-colors",
+                                onSelectionChange && "cursor-pointer",
+                                isSelected
+                                    ? "border-brand-primary-5 bg-brand-primary-1"
+                                    : "border-brand-neutral-3"
+                            )}
                         >
                             <div className="flex items-center justify-between gap-2 mb-3">
+                                {onSelectionChange && (
+                                    <TableCheckbox
+                                        checked={isSelected}
+                                        onChange={() => toggleRow(user.user_id)}
+                                        ariaLabel={`Select ${user.full_name}`}
+                                    />
+                                )}
                                 <div className="flex justify-between text-brand-secondary-9 text-[10px] flex-wrap items-center gap-2 flex-1">
                                     <div className={cn("flex items-center gap-1 px-2 py-0.5 rounded-full", statusCfg.color)}>
                                         <span className={cn("size-1.5 rounded-full shrink-0", statusCfg.dot)} />

@@ -1,6 +1,6 @@
 "use client"
 
-import { Dispatch, SetStateAction, useEffect, useState, useTransition, useRef, useMemo } from "react"
+import { Dispatch, SetStateAction, useEffect, useState, useTransition, useRef, useMemo, useCallback } from "react"
 import DateRangePresetFilter from "@/components/custom-utils/TableDataDisplayAreas/filters/DateRangePresetFilter"
 import ExportButton1 from "@/lib/features/export/ExportDataBtn1"
 import MetricCardsContainer1 from "@/components/cards/MetricCardsContainer1"
@@ -24,6 +24,7 @@ import { showAlert } from "@/lib/redux/slices/alertSlice"
 import { ApiCategory } from "@/actions/filters"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
 import { exportData } from "@/helper-fns/exportData"
+import HostEventsBulkActionsBar from "@/components/custom-utils/dropdown/HostEventsBulkActionsBar"
 
 interface HostProfilePageCWProps {
     hostId: string
@@ -63,6 +64,13 @@ export default function HostProfilePageCW({
     const [activeTab, setActiveTab] = useState<string>("all")
     const [filters, setFilters] = useState<Partial<FilterValues>>({})
 
+    // Bulk selection — reset on tab change
+    const [selectedEvents, setSelectedEvents] = useState<string[]>([])
+    useEffect(() => {
+        setSelectedEvents([])
+        setFilters({})
+    }, [activeTab])
+
     const eventsEndpoint = ADMIN_HOST_EVENTS_ENDPOINT(hostId)
     const { tabStates } = useDataDisplay<HostEvent>(
         {
@@ -80,6 +88,14 @@ export default function HostProfilePageCW({
     )
 
     const activeTabState = tabStates[activeTab]
+
+    const tabCounts: Record<string, number> = {
+        all:       tabStates["all"]?.count       ?? 0,
+        active:    tabStates["active"]?.count    ?? 0,
+        draft:     tabStates["draft"]?.count     ?? 0,
+        ended:     tabStates["ended"]?.count     ?? 0,
+        cancelled: tabStates["cancelled"]?.count ?? 0,
+    }
 
     const availableCategories = useMemo(
         () => deriveCategories(categories, activeTabState?.cachedItems ?? []),
@@ -154,6 +170,30 @@ export default function HostProfilePageCW({
         })
     }
 
+    const handleBulkAction = useCallback(async (actionId: string) => {
+        if (!selectedEvents.length) return
+        switch (actionId) {
+            case "bulk-export": {
+                const allItems = (activeTabState?.items ?? []) as unknown as Record<string, unknown>[]
+                const rows = allItems.filter((e: any) => selectedEvents.includes(e.event_id))
+                exportData({
+                    data: rows,
+                    format: "csv",
+                    filename: `host_${hostId}_events_selected`,
+                    title: `Host Events – Selected`,
+                })
+                setSelectedEvents([])
+                break
+            }
+            case "bulk-suspend":
+                // Placeholder — wire to bulk suspend endpoint when available
+                console.warn("[HostEventsBulk] bulk-suspend — no endpoint yet. IDs:", selectedEvents)
+                setSelectedEvents([])
+                break
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedEvents, activeTabState, activeTab, hostId])
+
     return (
         <main className="pb-12">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-4">
@@ -207,6 +247,16 @@ export default function HostProfilePageCW({
                     Host Events
                 </h3>
 
+                {/* Bulk actions bar */}
+                <HostEventsBulkActionsBar
+                    selectedCount={selectedEvents.length}
+                    selectedItems={((activeTabState?.items ?? []) as HostEvent[])
+                        .filter(e => selectedEvents.includes(e.event_id))
+                        .map(e => ({ status: e.status }))}
+                    onAction={handleBulkAction}
+                    onClearSelection={() => setSelectedEvents([])}
+                />
+
                 <DataDisplayTableWrapper
                     tabs={tabList}
                     activeTab={activeTab}
@@ -219,6 +269,7 @@ export default function HostProfilePageCW({
                     categories={availableCategories}
                     onSearch={activeTabState?.handleSearch}
                     isLoading={activeTabState?.isLoading}
+                    tabCounts={tabCounts}
                 >
                     <HostEventsTable
                         items={(activeTabState?.items ?? []) as HostEvent[]}
@@ -235,6 +286,8 @@ export default function HostProfilePageCW({
                         totalPages={activeTabState?.totalPages ?? 1}
                         fetchPage={activeTabState?.fetchPage ?? (() => { })}
                         onRefresh={activeTabState?.refresh}
+                        selectedIds={selectedEvents}
+                        onSelectionChange={setSelectedEvents}
                     />
                 </DataDisplayTableWrapper>
             </div>

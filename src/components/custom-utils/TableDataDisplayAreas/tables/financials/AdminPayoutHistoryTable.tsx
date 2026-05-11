@@ -12,6 +12,7 @@ import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
 import UserInfo from "@/components/custom-utils/users/UserInfo"
 import { format, parseISO } from "date-fns"
+import TableCheckbox from "../../tools/TableCheckbox"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
     pending: { text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
@@ -33,15 +34,53 @@ interface AdminPayoutHistoryTableProps {
     fetchPage: (page: number) => void
     hasNext: boolean
     onLoadMore: () => void
+    selectedIds?: string[]
+    onSelectionChange?: (ids: string[]) => void
 }
 
 export default function AdminPayoutHistoryTable({
     items, isLoading, isLoadingMore, isEmpty, isError,
     search, currentPage, totalPages, count, fetchPage,
+    selectedIds = [], onSelectionChange,
 }: AdminPayoutHistoryTableProps) {
 
     const { user } = useAppSelector(store => store.authUser)
     const isMounted = useIsMounted()
+
+    const allIds = items.map(i => i.payout_id)
+    const isAllSelected = items.length > 0 && allIds.every(id => selectedIds.includes(id))
+    const isSomeSelected = items.length > 0 && allIds.some(id => selectedIds.includes(id)) && !isAllSelected
+
+    const handleSelectAll = (checked: boolean) => {
+        if (!onSelectionChange) return
+        if (checked) {
+            const newIds = new Set([...selectedIds, ...allIds])
+            onSelectionChange(Array.from(newIds))
+        } else {
+            const newIds = selectedIds.filter(id => !allIds.includes(id))
+            onSelectionChange(newIds)
+        }
+    }
+
+    const handleSelectRow = (id: string, checked: boolean) => {
+        if (!onSelectionChange) return
+        if (checked) {
+            onSelectionChange([...selectedIds, id])
+        } else {
+            onSelectionChange(selectedIds.filter(selectedId => selectedId !== id))
+        }
+    }
+
+    const handleRowClick = (id: string, e: React.MouseEvent) => {
+        if (!onSelectionChange) return
+        if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="menu"]')) return
+        
+        if (selectedIds.includes(id)) {
+            onSelectionChange(selectedIds.filter(selectedId => selectedId !== id))
+        } else {
+            onSelectionChange([...selectedIds, id])
+        }
+    }
 
     if (isLoading) return <TableLoader />
     if (isError) return <EmptyTicketsState title="Something went wrong" text="Failed to load payout history." />
@@ -58,6 +97,16 @@ export default function AdminPayoutHistoryTable({
                 <table className="w-full text-sm text-brand-secondary-9">
                     <thead className="bg-brand-neutral-3">
                         <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
+                            {onSelectionChange && (
+                                <th className="py-4 px-5 text-left w-10">
+                                    <TableCheckbox
+                                        checked={isAllSelected}
+                                        indeterminate={isSomeSelected}
+                                        onChange={handleSelectAll}
+                                        ariaLabel="Select all payouts on this page"
+                                    />
+                                </th>
+                            )}
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Recipient</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Bank Details</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
@@ -69,8 +118,26 @@ export default function AdminPayoutHistoryTable({
                         {items.map(payout => {
                             const cfg = STATUS_CONFIG[payout.status] ?? STATUS_CONFIG.approved
                             const sellerName = payout.seller.business_name ?? payout.seller.name
+                            const isSelected = selectedIds.includes(payout.payout_id)
                             return (
-                                <tr key={payout.payout_id} className="hover:bg-brand-neutral-3/70 transition-colors">
+                                <tr 
+                                    key={payout.payout_id} 
+                                    onClick={(e) => handleRowClick(payout.payout_id, e)}
+                                    className={cn(
+                                        "transition-colors",
+                                        onSelectionChange && "cursor-pointer",
+                                        isSelected ? "bg-brand-primary-1 hover:bg-brand-primary-2" : "hover:bg-brand-neutral-3/70"
+                                    )}
+                                >
+                                    {onSelectionChange && (
+                                        <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+                                            <TableCheckbox
+                                                checked={isSelected}
+                                                onChange={(checked) => handleSelectRow(payout.payout_id, checked)}
+                                                ariaLabel={`Select payout ${payout.payout_id}`}
+                                            />
+                                        </td>
+                                    )}
                                     <td className="py-4 px-5">
                                         <UserInfo
                                             user={{
@@ -108,12 +175,32 @@ export default function AdminPayoutHistoryTable({
                 {items.map(payout => {
                     const cfg = STATUS_CONFIG[payout.status] ?? STATUS_CONFIG.approved
                     const sellerName = payout.seller.business_name ?? payout.seller.name
+                    const isSelected = selectedIds.includes(payout.payout_id)
                     return (
-                        <div key={payout.payout_id} className="border border-brand-neutral-3 rounded-2xl p-4 bg-white space-y-3">
+                        <div 
+                            key={payout.payout_id} 
+                            onClick={(e) => handleRowClick(payout.payout_id, e)}
+                            className={cn(
+                                "border rounded-2xl p-4 space-y-3 transition-colors",
+                                onSelectionChange && "cursor-pointer",
+                                isSelected ? "border-brand-primary-5 bg-brand-primary-1" : "border-brand-neutral-3 bg-white"
+                            )}
+                        >
                             <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <span className="text-[10px] text-brand-secondary-9">
-                                    <span className="font-bold">Payout ID: </span>{payout.payout_id}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    {onSelectionChange && (
+                                        <div onClick={(e) => e.stopPropagation()} className="mr-1">
+                                            <TableCheckbox
+                                                checked={isSelected}
+                                                onChange={(checked) => handleSelectRow(payout.payout_id, checked)}
+                                                ariaLabel={`Select payout ${payout.payout_id}`}
+                                            />
+                                        </div>
+                                    )}
+                                    <span className="text-[10px] text-brand-secondary-9">
+                                        <span className="font-bold">Payout ID: </span>{payout.payout_id}
+                                    </span>
+                                </div>
                                 <span className="text-[10px] text-brand-secondary-9">
                                     <span className="font-bold">Amount: </span>
                                     {isMounted && formatPrice(parseFloat(payout.amount), user?.currency)}

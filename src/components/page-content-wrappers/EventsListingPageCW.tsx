@@ -11,6 +11,9 @@ import AdminEventsTable from "@/components/custom-utils/TableDataDisplayAreas/ta
 import { useDataDisplay, TabSlice } from "@/custom-hooks/UseDataDisplay"
 import { ADMIN_EVENTS_ENDPOINT } from "@/endpoints"
 import { getAdminEventCards } from "@/actions/events/index"
+import { exportData } from "@/helper-fns/exportData"
+import HostEventsBulkActionsBar from "@/components/custom-utils/dropdown/HostEventsBulkActionsBar"
+import { useCallback, useEffect } from "react"
 import { getAuthToken } from "@/helper-fns/getAuthToken"
 import { mapAdminEventCardsToMetrics } from "@/helper-fns/mapUserManagementCards"
 import { deriveCategories } from "@/helper-fns/deriveCategories"
@@ -25,8 +28,6 @@ interface EventsListingPageCWProps {
     initialCards: AdminEventCards | null
     categories: ApiCategory[]
 }
-
-import { exportData } from "@/helper-fns/exportData"
 
 export default function EventsListingPageCW({
     initialAllEvents,
@@ -46,6 +47,12 @@ export default function EventsListingPageCW({
     const [cards, setCards] = useState<AdminEventCards | null>(initialCards)
     const [isCardsLoading, startCardsTransition] = useTransition()
 
+    const [selectedEvents, setSelectedEvents] = useState<string[]>([])
+    useEffect(() => {
+        setSelectedEvents([])
+        setFilters({})
+    }, [activeTab])
+
     const { tabStates } = useDataDisplay<AdminEvent>(
         {
             endpoint: ADMIN_EVENTS_ENDPOINT,
@@ -63,6 +70,14 @@ export default function EventsListingPageCW({
     )
 
     const activeTabState = tabStates[activeTab]
+
+    const tabCounts = {
+        all: tabStates.all.count,
+        live: tabStates.live.count,
+        suspended: tabStates.suspended.count,
+        ended: tabStates.ended.count,
+        cancelled: tabStates.cancelled.count,
+    }
 
     const availableCategories = useMemo(
         () => deriveCategories(categories, activeTabState?.cachedItems ?? []),
@@ -93,6 +108,30 @@ export default function EventsListingPageCW({
         })
     }
 
+    const handleBulkAction = useCallback(async (actionId: string) => {
+        if (!selectedEvents.length) return
+        switch (actionId) {
+            case "bulk-export": {
+                const allItems = (activeTabState?.items ?? []) as unknown as Record<string, unknown>[]
+                const rows = allItems.filter((e: any) => selectedEvents.includes(e.event_id))
+                exportData({
+                    data: rows,
+                    format: "csv",
+                    filename: `admin_events_selected`,
+                    title: `Admin Events – Selected`,
+                })
+                setSelectedEvents([])
+                break
+            }
+            case "bulk-suspend":
+                // Placeholder — wire to bulk suspend endpoint when available
+                console.warn("[AdminEventsBulk] bulk-suspend — no endpoint yet. IDs:", selectedEvents)
+                setSelectedEvents([])
+                break
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedEvents, activeTabState, activeTab])
+
     return (
         <main className="pb-10">
             <div className="flex justify-between items-center gap-5 mb-5 mt-10 lg:mt-5">
@@ -114,6 +153,15 @@ export default function EventsListingPageCW({
             </div>
 
             <div className="mt-7">
+                <HostEventsBulkActionsBar
+                    selectedCount={selectedEvents.length}
+                    selectedItems={((activeTabState?.items ?? []) as AdminEvent[])
+                        .filter(e => selectedEvents.includes(e.event_id))
+                        .map(e => ({ status: e.status }))}
+                    onAction={handleBulkAction}
+                    onClearSelection={() => setSelectedEvents([])}
+                />
+
                 <DataDisplayTableWrapper
                     activeTab={activeTab}
                     setActiveTab={setActiveTab as Dispatch<SetStateAction<string>>}
@@ -126,6 +174,7 @@ export default function EventsListingPageCW({
                     categories={availableCategories}
                     onSearch={activeTabState?.handleSearch}
                     isLoading={activeTabState?.isLoading}
+                    tabCounts={tabCounts}
                 >
                     <AdminEventsTable
                         items={(activeTabState?.items ?? []) as AdminEvent[]}
@@ -142,6 +191,8 @@ export default function EventsListingPageCW({
                         totalPages={activeTabState?.totalPages ?? 1}
                         fetchPage={activeTabState?.fetchPage ?? (() => { })}
                         onRefresh={activeTabState?.refresh}
+                        selectedIds={selectedEvents}
+                        onSelectionChange={setSelectedEvents}
                     />
                 </DataDisplayTableWrapper>
             </div>

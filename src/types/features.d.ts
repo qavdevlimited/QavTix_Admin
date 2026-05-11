@@ -120,6 +120,7 @@ interface BulkUserAction {
 
 type BulkHostActionId =
     | "bulk-suspend"
+    | "bulk-unsuspend"
     | "bulk-approve"
     | "bulk-decline"
     | "bulk-export"

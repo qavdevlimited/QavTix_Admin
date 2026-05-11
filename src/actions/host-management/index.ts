@@ -118,6 +118,7 @@ export interface HostSearchResult {
 export async function searchHosts(token: string | undefined, search?: string): Promise<HostSearchResult[]> {
     try {
         const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE_URL}/${ADMIN_HOSTS_ENDPOINT}`)
+        console.log(url)
         url.searchParams.set("page", "1")
         if (search) url.searchParams.set("search", search)
 

@@ -156,7 +156,7 @@ export default function HostEventActionDropdown({
             <DropdownMenu modal={false} open={isOpen} onOpenChange={(v) => { !loadingAction && setIsOpen(v) }}>
                 <DropdownMenuTrigger asChild>
                     <button
-                        className="px-1 h-fit border border-brand-neutral-5 rounded-md transition-colors hover:bg-brand-neutral-2"
+                        className="px-1 h-fit md:border border-brand-neutral-5 rounded-md transition-colors hover:bg-brand-neutral-2"
                     >
                         <Icon icon="tabler:dots" className="size-5 text-brand-secondary-9 hidden md:inline-block" />
                         <Icon icon="ix:context-menu" className="size-5 text-brand-secondary-9 md:hidden" />

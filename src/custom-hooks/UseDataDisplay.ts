@@ -73,6 +73,7 @@ const buildFilterParams = (filters: Partial<FilterValues>): Record<string, strin
 
     if (activeStatus) params.status = activeStatus
 
+    if (filters.host) params.host_id = filters.host
     if (filters.host) params.seller_id = filters.host
     if (filters.categories?.length) params.category = filters.categories
     if (filters.dateRange?.from) params.start_date = format(new Date(filters.dateRange.from), 'yyyy-MM-dd')
@@ -181,7 +182,8 @@ const hasActiveFilters = (filters: Partial<FilterValues>): boolean =>
 const useTabState = <T>(
     config: TabConfig<T>,
     filters: Partial<FilterValues>,
-    endpoint: string
+    endpoint: string,
+    isActive: boolean
 ): TabState<T> => {
 
     const [items, setItems] = useState<T[]>(config.initialData.results)
@@ -315,6 +317,7 @@ const useTabState = <T>(
 
     useEffect(() => {
         if (!initialized.current) return
+        if (!isActive) return
         if (prevFilterKey.current === filterKey) return
 
         prevFilterKey.current = filterKey
@@ -334,7 +337,7 @@ const useTabState = <T>(
         searchRef.current = ""
         pageRef.current = 1
         fetchData.current(1, "", false)
-    }, [filterKey])
+    }, [filterKey, isActive])
 
     useEffect(() => {
         initialized.current = true
@@ -427,7 +430,7 @@ export function useDataDisplay<T>(
 
     const stateEntries = config.tabs.map(tab =>
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        [tab.key, useTabState(tab, filters, tab.endpoint ?? config.endpoint)] as const
+        [tab.key, useTabState(tab, filters, tab.endpoint ?? config.endpoint, tab.key === activeTab)] as const
     )
 
     const tabStates = Object.fromEntries(stateEntries) as Record<string, TabState<T>>

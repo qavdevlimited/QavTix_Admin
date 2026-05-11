@@ -100,7 +100,7 @@ export default function AdminUserActionDropdown({
                 <DropdownMenuTrigger asChild disabled={disabled} className="p-0">
                     <button
                         className={cn(
-                            "px-1 h-fit border border-brand-neutral-5 rounded-md transition-colors",
+                            "px-1 h-fit md:border border-brand-neutral-5 rounded-md transition-colors",
                             disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-brand-neutral-2"
                         )}
                         disabled={disabled}
