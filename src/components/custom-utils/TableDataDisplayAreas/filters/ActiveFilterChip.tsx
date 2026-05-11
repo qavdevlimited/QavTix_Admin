@@ -107,11 +107,17 @@ export default function ActiveFilterChips({
     const spendRangeLabel = formatPriceRange(filters.spendRange, currency)
     const amountRangeLabel = formatPriceRange(filters.amountRange, currency)
     const quantityRangeLabel = formatPriceRange(filters.quantityRange)
+    const commissionRangeLabel = formatPriceRange(filters.commissionRange, currency)
+    const eventsRangeLabel = formatPriceRange(filters.eventsRange)
+    const revenueRangeLabel = formatPriceRange(filters.revenueRange, currency)
 
     if (priceRangeLabel) chips.push({ key: 'priceRange', value: priceRangeLabel, label: `Price: ${priceRangeLabel}` })
     if (spendRangeLabel) chips.push({ key: 'spendRange', value: spendRangeLabel, label: `Spend: ${spendRangeLabel}` })
     if (amountRangeLabel) chips.push({ key: 'amountRange', value: amountRangeLabel, label: `Amount: ${amountRangeLabel}` })
     if (quantityRangeLabel) chips.push({ key: 'quantityRange', value: quantityRangeLabel, label: `Qty: ${quantityRangeLabel}` })
+    if (commissionRangeLabel) chips.push({ key: 'commissionRange', value: commissionRangeLabel, label: `Commission: ${commissionRangeLabel}` })
+    if (eventsRangeLabel) chips.push({ key: 'eventsRange', value: eventsRangeLabel, label: `Events: ${eventsRangeLabel}` })
+    if (revenueRangeLabel) chips.push({ key: 'revenueRange', value: revenueRangeLabel, label: `Revenue: ${revenueRangeLabel}` })
 
     // location
     if (filters.location) {
@@ -128,10 +134,10 @@ export default function ActiveFilterChips({
         chips.push({ key: 'action', value: act, label: act })
     })
 
-    // auditAction — array of strings
-    filters.auditAction?.forEach(act => {
-        chips.push({ key: 'auditAction', value: act, label: act })
-    })
+    // auditAction
+    if (filters.auditAction) {
+        chips.push({ key: 'auditAction', value: filters.auditAction, label: `Action: ${filters.auditAction}` })
+    }
 
     // ticketStatus — array of strings
     filters.ticketStatus?.forEach(s => {
@@ -167,7 +173,7 @@ export default function ActiveFilterChips({
             }
 
             // price / quantity ranges — clear the whole range object
-            if (['priceRange', 'spendRange', 'amountRange', 'quantityRange'].includes(key)) {
+            if (['priceRange', 'spendRange', 'amountRange', 'quantityRange', 'commissionRange', 'eventsRange', 'revenueRange'].includes(key)) {
                 return { ...prev, [key]: null }
             }
 
@@ -181,7 +187,7 @@ export default function ActiveFilterChips({
             ...prev,
             categories: [],
             action: [],
-            auditAction: [],
+            auditAction: null,
             ticketStatus: [],
             ticketType: [],
             status: null,
@@ -204,6 +210,9 @@ export default function ActiveFilterChips({
             spendRange: null,
             amountRange: null,
             quantityRange: null,
+            commissionRange: null,
+            eventsRange: null,
+            revenueRange: null,
             location: null,
             user: null,
             dateRangePreset: null,

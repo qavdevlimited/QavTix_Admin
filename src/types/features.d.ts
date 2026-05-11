@@ -20,6 +20,9 @@ interface FilterValues {
     spendRange: PriceRange | null
     amountRange: PriceRange | null
     quantityRange: PriceRange | null
+    commissionRange: PriceRange | null
+    eventsRange: PriceRange | null
+    revenueRange: PriceRange | null
     listingStatus: ListingType | null
     lastActivity?: DateRange
     purchaseDateRange?: DateRange
@@ -45,7 +48,7 @@ interface FilterValues {
     ticketStatus?: string[]
     package?: string | null
     billingCycle?: string | null
-    auditAction?: string[]
+    auditAction?: string | null
     timestamp?: Date | null
 }
 

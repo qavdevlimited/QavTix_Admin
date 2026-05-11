@@ -40,7 +40,7 @@ export default function QuantityFilter({
 
     const hasActiveFilter = value && (value.min > 1 || value.max < defaultMax)
     const displayText = hasActiveFilter
-        ? `${value.min} - ${value.max} pcs`
+        ? `${value.min} - ${value.max}`
         : label
 
     const handleApply = () => {

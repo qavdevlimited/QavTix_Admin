@@ -13,10 +13,10 @@ import { useIsMounted } from "@/custom-hooks/UseIsMounted"
 import { formatPrice } from "@/helper-fns/formatPrice"
 
 const STATUS_CONFIG: Record<string, { text: string; bg: string; border: string }> = {
-    pending:   { text: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200" },
-    active:    { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
-    expired:   { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2", border: "border-brand-neutral-3" },
-    cancelled: { text: "text-red-600",     bg: "bg-red-50",     border: "border-red-200" },
+    pending: { text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" },
+    active: { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+    expired: { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2", border: "border-brand-neutral-3" },
+    cancelled: { text: "text-red-600", bg: "bg-red-50", border: "border-red-200" },
 }
 
 const PLAN_COLORS: Record<string, string> = {
@@ -66,7 +66,7 @@ export default function AdminFeaturedPaymentsTable({
                         <tr className="text-brand-secondary-8 text-sm border-b border-brand-neutral-3">
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Event</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Host</th>
-                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Package</th>
+                            <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Plan Type</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Amount</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Payment Date</th>
                             <th className="py-4 px-5 text-left font-bold whitespace-nowrap">Method</th>

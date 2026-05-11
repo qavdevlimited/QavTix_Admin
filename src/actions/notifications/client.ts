@@ -1,3 +1,5 @@
+"use server"
+
 import { getServerAxios } from "@/lib/axios"
 import { ADMIN_NOTIFICATIONS_ENDPOINT } from "@/endpoints"
 

@@ -52,9 +52,9 @@ function QuantityInput({ value, label, placeholder, onChange }: {
 export function QuantityRangeInputs({ min, max, onMinChange, onMaxChange }: QuantityRangeInputsProps) {
     return (
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
-            <QuantityInput value={min} label="Min. quantity" placeholder="1" onChange={onMinChange} />
+            <QuantityInput value={min} label="Min." placeholder="1" onChange={onMinChange} />
             <span className="text-brand-neutral-6 text-sm pb-4">to</span>
-            <QuantityInput value={max} label="Max. quantity" placeholder="10" onChange={onMaxChange} />
+            <QuantityInput value={max} label="Max." placeholder="10" onChange={onMaxChange} />
         </div>
     )
 }

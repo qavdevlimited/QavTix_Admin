@@ -35,6 +35,9 @@ export type FilterKey =
   | 'billingCycle'
   | 'auditAction'
   | 'timestamp'
+  | 'commissionRange'
+  | 'eventsRange'
+  | 'revenueRange'
 
 
 export const ALL_FILTERS = {
@@ -187,6 +190,21 @@ export const ALL_FILTERS = {
     value: 'timestamp',
     label: 'Timestamp',
     icon: 'solar:calendar-linear'
+  },
+  commissionRange: {
+    value: 'commissionRange',
+    label: 'Commission Range',
+    icon: 'hugeicons:dollar-square'
+  },
+  eventsRange: {
+    value: 'eventsRange',
+    label: 'No. Of Events',
+    icon: 'hugeicons:calendar-03'
+  },
+  revenueRange: {
+    value: 'revenueRange',
+    label: 'Revenue',
+    icon: 'hugeicons:dollar-square'
   }
 } as const satisfies Record<FilterKey, TableDataDisplayFilter>
 
@@ -315,6 +333,8 @@ export const HostManagementTabNFilterOptions = {
       ALL_FILTERS.userStatus,
       ALL_FILTERS.sortBy,
       ALL_FILTERS.dateRange,
+      ALL_FILTERS.eventsRange,
+      ALL_FILTERS.revenueRange,
     ],
     'pending-verification': [
       ALL_FILTERS.sortBy,
@@ -337,7 +357,8 @@ export const UserManagementTabNFilterOptions = {
       { ...ALL_FILTERS.spendRange, label: "Total Spend" }
     ],
     affiliates: [
-      ALL_FILTERS.lastActivity
+      ALL_FILTERS.lastActivity,
+      { ...ALL_FILTERS.commissionRange, label: "Commission" }
     ],
     withdrawals: [
       ALL_FILTERS.status,

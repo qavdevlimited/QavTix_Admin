@@ -122,7 +122,7 @@ export default function ReviewRequestModal({
             open={open}
             onOpenChange={onOpenChange}
             showCloseButton={false}
-            className="max-w-[320px]! w-full p-0!"
+            className="md:max-w-[320px]! w-full p-0!"
         >
             <button
                 onClick={() => onOpenChange(false)}

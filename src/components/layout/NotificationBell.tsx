@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Icon } from "@iconify/react"
 import { cn } from "@/lib/utils"
-import { getAdminNotifications } from "@/actions/notifications/index"
+import { getAdminNotifications } from "@/actions/notifications/client"
 
 interface NotificationBellProps {
     /** Custom click handler for opening a popup or navigating to a page */

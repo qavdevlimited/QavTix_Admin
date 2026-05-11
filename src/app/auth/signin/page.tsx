@@ -47,10 +47,10 @@ export default function AdminSignInPage() {
     const onSubmit: SubmitHandler<AdminSignInValues> = async (data) => {
         setSubmitError(null);
         try {
-            const res = await axios.post("/api/auth/login", data);
+            const res = await axios.post("/api/auth/login", data)
             if (res.data.temp_token) {
-                setTempToken(res.data.temp_token);
-                setStep(2);
+                setTempToken(res.data.temp_token)
+                setStep(2)
             }
         } catch (error) {
             let message = "Login failed"

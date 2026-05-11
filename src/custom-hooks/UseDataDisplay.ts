@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { format } from "date-fns"
-import { fetchPaginatedData } from "@/actions/paginated-data/index"
+import { fetchPaginatedData } from "@/actions/paginated-data/client"
 import { useOnRevalidate } from "./UseRevalidate"
 import { Country } from "country-state-city"
 
@@ -114,10 +114,16 @@ const buildFilterParams = (filters: Partial<FilterValues>): Record<string, strin
     if (filters.amountRange?.max != null) params.max_amount = String(filters.amountRange.max)
     if (filters.quantityRange?.min != null && filters.quantityRange.min > 0) params.qty_min = String(filters.quantityRange.min)
     if (filters.quantityRange?.max != null) params.qty_max = String(filters.quantityRange.max)
+    if (filters.commissionRange?.min != null && filters.commissionRange.min > 0) params.commision_min = String(filters.commissionRange.min)
+    if (filters.commissionRange?.max != null) params.commision_max = String(filters.commissionRange.max)
+    if (filters.eventsRange?.min != null && filters.eventsRange.min > 0) params.min_events = String(filters.eventsRange.min)
+    if (filters.eventsRange?.max != null) params.max_events = String(filters.eventsRange.max)
+    if (filters.revenueRange?.min != null && filters.revenueRange.min > 0) params.min_revenue = String(filters.revenueRange.min)
+    if (filters.revenueRange?.max != null) params.max_revenue = String(filters.revenueRange.max)
     if (filters.ticketStatus?.length) params.status = filters.ticketStatus
     if (filters.package) params.plan_slug = filters.package
     if (filters.billingCycle) params.billing_cycle = filters.billingCycle
-    if (filters.auditAction?.length) params.action = filters.auditAction
+    if (filters.auditAction) params.action = filters.auditAction
     if (filters.timestamp) params.timestamp = filters.timestamp.toISOString()
 
     return params
@@ -159,9 +165,15 @@ const hasActiveFilters = (filters: Partial<FilterValues>): boolean =>
         filters.amountRange?.max ||
         filters.quantityRange?.min ||
         filters.quantityRange?.max ||
+        filters.commissionRange?.min ||
+        filters.commissionRange?.max ||
+        filters.eventsRange?.min ||
+        filters.eventsRange?.max ||
+        filters.revenueRange?.min ||
+        filters.revenueRange?.max ||
         filters.package ||
         filters.billingCycle ||
-        filters.auditAction?.length ||
+        filters.auditAction ||
         filters.timestamp
     )
 
@@ -234,9 +246,15 @@ const useTabState = <T>(
         String(filters.amountRange?.max ?? ''),
         String(filters.quantityRange?.min ?? ''),
         String(filters.quantityRange?.max ?? ''),
+        String(filters.commissionRange?.min ?? ''),
+        String(filters.commissionRange?.max ?? ''),
+        String(filters.eventsRange?.min ?? ''),
+        String(filters.eventsRange?.max ?? ''),
+        String(filters.revenueRange?.min ?? ''),
+        String(filters.revenueRange?.max ?? ''),
         filters.package ?? '',
         filters.billingCycle ?? '',
-        filters.auditAction?.join(',') ?? '',
+        filters.auditAction ?? '',
         filters.timestamp?.toISOString() ?? '',
     ].join('|')
 

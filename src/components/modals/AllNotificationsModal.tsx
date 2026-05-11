@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { space_grotesk } from '@/lib/fonts'
 import NotificationItem from '@/components/slots/notifications/NotificationItem'
-import { getAdminNotifications, markAdminNotificationsAsRead } from '@/actions/notifications/index'
+import { getAdminNotifications, markAdminNotificationsAsRead } from '@/actions/notifications/client'
 
 const FILTER_OPTIONS = [
     { label: 'Event Updates', value: 'event_update' },

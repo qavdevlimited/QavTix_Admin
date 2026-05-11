@@ -249,7 +249,7 @@ interface EventDetails {
     start_datetime: string
     end_datetime: string
     location_type: string
-    event_media: { image_url: string; video_url: string; is_featured: boolean }
+    event_media: { image_url: string; video_url: string; is_featured: boolean }[]
     short_description: string
     full_description: string
     currency: string

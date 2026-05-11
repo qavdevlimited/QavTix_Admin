@@ -17,15 +17,20 @@ import { useState } from "react"
 import ShareEventModal from "../modals/ShareEventModal"
 import { EVENT_DETAILS_LINK } from "@/enums/navigation"
 
-const STATUS_CONFIG: Record<string, { text: string; bg: string }> = {
-    active: { text: "text-emerald-700", bg: "bg-emerald-50" },
-    live: { text: "text-emerald-700", bg: "bg-emerald-50" },
-    draft: { text: "text-amber-600", bg: "bg-amber-50" },
-    suspended: { text: "text-orange-600", bg: "bg-orange-50" },
-    ended: { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2" },
-    cancelled: { text: "text-red-600", bg: "bg-red-50" },
-    banned: { text: "text-red-700", bg: "bg-red-100" },
-    "sold-out": { text: "text-brand-secondary-5", bg: "bg-brand-neutral-2" },
+const STATUS_CONFIG: Record<string, { text: string; bg: string; label?: string }> = {
+    "filling-fast": { bg: "bg-warning-tertiary", text: "text-secondary-9", label: "Filling fast" },
+    "selling-fast": { bg: "bg-warning-tertiary", text: "text-secondary-9", label: "Selling fast" },
+    "near-capacity": { bg: "bg-danger-tertiary", text: "text-secondary-9", label: "Near capacity" },
+    new: { bg: "bg-accent-6", text: "text-white", label: "New" },
+    "sold-out": { bg: "bg-white border border-danger-default/20", text: "text-danger-default", label: "Sold out" },
+    "starts-soon": { bg: "bg-primary-1", text: "text-primary-9", label: "Starts soon" },
+    draft: { bg: "bg-neutral-3", text: "text-neutral-7", label: "Draft" },
+    active: { bg: "bg-postive-tertiary", text: "text-postive-default", label: "Active" },
+    live: { bg: "bg-postive-tertiary", text: "text-postive-default", label: "Live" },
+    ended: { bg: "bg-neutral-3", text: "text-neutral-7", label: "Ended" },
+    cancelled: { bg: "bg-white border border-danger-default/20", text: "text-danger-default", label: "Cancelled" },
+    banned: { bg: "bg-white border border-danger-default/20", text: "text-danger-default", label: "Banned" },
+    suspended: { bg: "bg-warning-tertiary", text: "text-secondary-9", label: "Suspended" },
 }
 
 interface EventProfileOverviewTabContainerProps {
@@ -38,9 +43,12 @@ export default function EventProfileOverviewTabContainer({
     eventId,
 }: EventProfileOverviewTabContainerProps) {
 
-    const imageUrl = event.event_media?.image_url ?? null
+    const featuredMedia = Array.isArray(event.event_media)
+        ? event.event_media.find(m => m.is_featured) ?? event.event_media[0]
+        : event.event_media
+    const imageUrl = featuredMedia?.image_url ?? null
     const [showShare, setShowShare] = useState(false)
-    const statusCfg = STATUS_CONFIG[event.event_status] ?? { text: "text-brand-secondary-6", bg: "bg-brand-neutral-2" }
+    const statusCfg = STATUS_CONFIG[event.event_status] ?? { text: "text-neutral-7", bg: "bg-neutral-2" }
 
     const eventUrl = EVENT_DETAILS_LINK.replace("[event_id]", event.id)
 
@@ -113,7 +121,7 @@ export default function EventProfileOverviewTabContainer({
 
                         {/* Status + action icons */}
                         <div className="flex items-center flex-wrap gap-8 gap-y-4 md:justify-between mt-3">
-                            <div className="space-x-3">
+                            <div className="flex flex-wrap items-center gap-3">
                                 {statusCfg && (
                                     <Badge
                                         variant="default"
@@ -122,11 +130,13 @@ export default function EventProfileOverviewTabContainer({
                                             statusCfg.bg, statusCfg.text,
                                         )}
                                     >
-                                        {event.event_status}
+                                        {statusCfg.label ?? event.event_status}
                                     </Badge>
                                 )}
                                 {event.age_restriction && (
-                                    <Image src="/images/vectors/18+.svg" width={40} height={40} alt="18+" className="inline size-7 pointer-events-none select-auto" />
+                                    <Badge className={cn(space_grotesk.className, "rounded-full p-2 text-xs bg-red-500 font-medium text-white size-7")}>
+                                        18+
+                                    </Badge>
                                 )}
                             </div>
 

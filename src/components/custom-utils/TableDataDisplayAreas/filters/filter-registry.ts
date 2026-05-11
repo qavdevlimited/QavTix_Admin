@@ -155,6 +155,18 @@ export const filterRegistry: Partial<Record<FilterKey, FilterRegistryEntry<any>>
     component: AdminAuditActionFilter,
     stateKey: 'auditAction'
   },
+  commissionRange: {
+    component: PriceFilter,
+    stateKey: 'commissionRange'
+  },
+  eventsRange: {
+    component: QuantityFilter,
+    stateKey: 'eventsRange'
+  },
+  revenueRange: {
+    component: PriceFilter,
+    stateKey: 'revenueRange'
+  },
   timestamp: {
     component: AdminTimestampFilter,
     stateKey: 'timestamp'

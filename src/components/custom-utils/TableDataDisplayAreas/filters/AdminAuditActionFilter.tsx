@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -18,47 +17,47 @@ export const AUDIT_ACTION_OPTIONS = [
     { value: "event_feature", label: "Event Featured" },
     { value: "event_delete", label: "Event Deleted" },
     { value: "host_approve", label: "Host Approved" },
-    { value: "host_decline", label: "Host Declined" },
+    { value: "host_reject", label: "Host Rejected" },
     { value: "host_suspend", label: "Host Suspended" },
     { value: "user_suspend", label: "User Suspended" },
+    { value: "user_unsuspend", label: "User Unsuspended" },
     { value: "user_ban", label: "User Banned" },
     { value: "payout_approve", label: "Payout Approved" },
     { value: "payout_decline", label: "Payout Declined" },
     { value: "payout_force", label: "Payout Forced" },
+    { value: "withdrawal_approve", label: "Withdrawal Approved" },
+    { value: "withdrawal_reject", label: "Withdrawal Rejected" },
     { value: "auto_payout", label: "Auto-Payout" },
     { value: "badge_gift", label: "Badge Gifted" },
     { value: "other", label: "Other" },
 ]
 
 interface AuditActionFilterProps {
-    value?: string[]
-    onChange: (value: string[]) => void
+    value?: string | null
+    onChange: (value: string | null) => void
     icon?: string
     label?: string
 }
 
-export function AdminAuditActionFilter({ value = [], onChange, icon }: AuditActionFilterProps) {
+export function AdminAuditActionFilter({ value = null, onChange, icon }: AuditActionFilterProps) {
     const [isOpen, setIsOpen] = useState(false)
-    const [selected, setSelected] = useState<string[]>(value)
+    const [selected, setSelected] = useState<string | null>(value)
 
     const handleToggle = (val: string) => {
-        const next = selected.includes(val)
-            ? selected.filter(v => v !== val)
-            : [...selected, val]
+        const next = selected === val ? null : val
         setSelected(next)
         onChange(next)
+        setIsOpen(false)
     }
 
     const handleClear = () => {
-        setSelected([])
-        onChange([])
+        setSelected(null)
+        onChange(null)
     }
 
-    const displayText = selected.length === 0
+    const displayText = !selected
         ? "Action"
-        : selected.length === 1
-            ? AUDIT_ACTION_OPTIONS.find(o => o.value === selected[0])?.label ?? "Action"
-            : `${selected.length} Actions`
+        : AUDIT_ACTION_OPTIONS.find(o => o.value === selected)?.label ?? "Action"
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -66,7 +65,7 @@ export function AdminAuditActionFilter({ value = [], onChange, icon }: AuditActi
                 <EventFilterTypeBtn
                     icon={icon ?? "hugeicons:cursor-magic-selection-02"}
                     displayText={displayText}
-                    hasActiveFilter={selected.length > 0}
+                    hasActiveFilter={!!selected}
                 />
             </DropdownMenuTrigger>
 
@@ -87,7 +86,7 @@ export function AdminAuditActionFilter({ value = [], onChange, icon }: AuditActi
                 <div className="max-h-64 overflow-y-auto pr-0.5">
                     <div className="flex flex-wrap gap-1.5 py-1">
                         {AUDIT_ACTION_OPTIONS.map(opt => {
-                            const isSelected = selected.includes(opt.value)
+                            const isSelected = selected === opt.value
                             return (
                                 <button
                                     key={opt.value}
@@ -108,14 +107,14 @@ export function AdminAuditActionFilter({ value = [], onChange, icon }: AuditActi
                         })}
                     </div>
 
-                    {selected.length > 0 && (
+                    {selected && (
                         <>
                             <DropdownMenuSeparator className="my-2 bg-brand-neutral-2" />
                             <button
                                 onClick={() => { handleClear(); setIsOpen(false) }}
                                 className="w-full text-center py-1.5 text-[11px] font-medium text-brand-neutral-6 hover:text-red-500 transition-colors"
                             >
-                                Clear All
+                                Clear
                             </button>
                         </>
                     )}

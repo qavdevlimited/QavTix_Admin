@@ -8,7 +8,10 @@ import ActionButton1 from "@/components/custom-utils/buttons/ActionBtn1"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
+    Tooltip,
+    TooltipContent,
     TooltipProvider,
+    TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Switch } from "@/components/ui/switch"
 import { useEffect, useState } from "react"
@@ -28,22 +31,26 @@ interface HostProfileCardProps {
     className?: string
 }
 
-const socialPlatformIcon = (url: string) => {
-    if (url.includes("twitter") || url.includes("x.com")) return "hugeicons:new-twitter"
-    if (url.includes("instagram")) return "hugeicons:instagram"
-    if (url.includes("facebook")) return "fa6-brands:facebook"
-    if (url.includes("tiktok")) return "ic:baseline-tiktok"
-    if (url.includes("youtube")) return "mynaui:youtube-solid"
-    return "humbleicons:globe"
+const PLATFORM_ICONS: Record<string, string> = {
+    twitter: "hugeicons:new-twitter",
+    instagram: "hugeicons:instagram",
+    instagrame: "hugeicons:instagram",
+    youtube: "mynaui:youtube-solid",
+    tiktok: "ic:baseline-tiktok",
+    facebook: "fa6-brands:facebook",
+    website: "humbleicons:globe",
+    linkedin: "hugeicons:linkedin-01",
 }
 
-const socialAriaLabel = (url: string) => {
-    if (url.includes("twitter") || url.includes("x.com")) return "Twitter / X"
-    if (url.includes("instagram")) return "Instagram"
-    if (url.includes("facebook")) return "Facebook"
-    if (url.includes("tiktok")) return "TikTok"
-    if (url.includes("youtube")) return "YouTube"
-    return "Website"
+function getPlatformFromUrl(url: string) {
+    const lowerUrl = url.toLowerCase()
+    if (lowerUrl.includes('facebook.com')) return 'facebook'
+    if (lowerUrl.includes('instagram.com')) return 'instagram'
+    if (lowerUrl.includes('x.com') || lowerUrl.includes('twitter.com')) return 'twitter'
+    if (lowerUrl.includes('tiktok.com')) return 'tiktok'
+    if (lowerUrl.includes('linkedin.com')) return 'linkedin'
+    if (lowerUrl.includes('youtube.com')) return 'youtube'
+    return 'website'
 }
 
 export function HostProfileCard({
@@ -59,6 +66,11 @@ export function HostProfileCard({
     const pendingActionRef = useRef<"suspend" | "unsuspend" | null>(null)
 
     const isSuspended = accountStatus === "suspended"
+
+    const socialLinks = (profile.relevant_links || [])
+        .map(obj => obj?.url)
+        .filter((url): url is string => typeof url === "string" && url.trim().length > 0)
+        .map((url) => ({ platform: getPlatformFromUrl(url), url }))
 
     const handleSuspendOrRestore = () => {
         pendingActionRef.current = isSuspended ? "unsuspend" : "suspend"
@@ -157,7 +169,7 @@ export function HostProfileCard({
                         />
                         <Badge
                             variant="secondary"
-                            className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-accent-1 text-brand-accent-6 border border-brand-accent-2 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs"
+                            className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-brand-accent-1 text-brand-accent-6 border border-brand-accent-2 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-xs"
                         >
                             {profile.followers.toLocaleString()} Followers
                         </Badge>
@@ -293,43 +305,58 @@ export function HostProfileCard({
                             >
                                 <Icon icon="humbleicons:globe" className="size-5" />
                             </Link>
-                            {profile.relevant_links?.[0] && Object.entries(profile.relevant_links[0]).map(([platform, url]) => {
-                                if (!url) return null;
-                                return (
-                                    <Link
-                                        key={platform}
-                                        href={url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-700 hover:text-gray-900 transition-colors"
-                                        aria-label={socialAriaLabel(platform)}
-                                    >
-                                        <Icon
-                                            icon={socialPlatformIcon(platform)}
-                                            className="size-5"
-                                        />
-                                    </Link>
-                                )
-                            })}
+                            {socialLinks.map(({ platform, url }, i) => (
+                                <Link
+                                    key={i}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-700 hover:text-gray-900 transition-colors"
+                                >
+                                    <Icon
+                                        icon={PLATFORM_ICONS[platform.toLowerCase()] ?? "humbleicons:globe"}
+                                        className="size-5"
+                                    />
+                                </Link>
+                            ))}
                         </div>
                     </div>
 
                     {/* Auto Payout */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-gray-500">Allow auto payout</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <p className="text-sm font-bold text-brand-secondary-9">Auto Payout</p>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        aria-label="Auto Payout: what this means"
+                                        className="text-brand-accent-6 hover:text-gray-600 transition-colors"
+                                    >
+                                        <Icon icon="carbon:information" className="size-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-brand-secondary-8">
+                                    <p className="max-w-xs">Automatically process a seller’s payout as soon as they request it, without manual approval.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-gray-500">Allow auto payout</span>
 
-                        <div className="relative w-10 h-6 flex justify-center items-center">
-                            {isAutoPayoutLoading && (
-                                <div className="absolute inset-0 flex items-center justify-center z-10">
-                                    <Icon icon="eos-icons:three-dots-loading" className="size-10 text-brand-primary-6" />
-                                </div>
-                            )}
-                            <Switch
-                                checked={autoPayout}
-                                disabled={isAutoPayoutLoading}
-                                onCheckedChange={handleToggleAutoPayout}
-                                className={`data-[state=checked]:bg-blue-600 transition-opacity ${isAutoPayoutLoading ? "opacity-0" : "opacity-100"}`}
-                            />
+                            <div className="relative w-10 h-6 flex justify-center items-center">
+                                {isAutoPayoutLoading && (
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        <Icon icon="eos-icons:three-dots-loading" className="size-10 text-brand-primary-6" />
+                                    </div>
+                                )}
+                                <Switch
+                                    checked={autoPayout}
+                                    disabled={isAutoPayoutLoading}
+                                    onCheckedChange={handleToggleAutoPayout}
+                                    className={`data-[state=checked]:bg-blue-600 transition-opacity ${isAutoPayoutLoading ? "opacity-0" : "opacity-100"}`}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

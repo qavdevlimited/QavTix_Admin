@@ -108,11 +108,10 @@ export default function DashboardPageCW({
                 <div className="w-full lg:w-fit">
                     <div className="grid justify-items-center md:gap-x-8 grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:grid-cols-1 gap-y-8">
                         <div className="w-full lg:max-w-80">
-                            <ActivitySectionCW activitiesData={activitiesData} />
-                        </div>
-
-                        <div className="w-full lg:max-w-80">
                             <SalesBreakdownChart ticketAnalytics={ticketAnalytics} />
+                        </div>
+                        <div className="w-full lg:max-w-80">
+                            <ActivitySectionCW activitiesData={activitiesData} />
                         </div>
                     </div>
                 </div>
