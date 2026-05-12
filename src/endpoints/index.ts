@@ -63,7 +63,7 @@ export const ADMIN_EVENTS_ENDPOINT = 'administrator/admin/events/';
 export const ADMIN_EVENTS_CARDS_ENDPOINT = 'administrator/admin/events/cards';
 export const ADMIN_EVENT_DETAIL_ENDPOINT = (eventId: string) => `public/event/${eventId}/`;
 export const ADMIN_EVENT_ATTENDEES_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/attendees/`;
-export const ADMIN_EVENT_ATTENDEES_EXPORT_ENDPOINT = (eventId: string) => `administrator/admin/events/${eventId}/attendees/export/`;
+export const ADMIN_EVENT_ATTENDEES_EXPORT_ENDPOINT = (eventId: string) => `administrator/admin/events/download/${eventId}/attendees/`;
 
 // Admin Financials
 export const ADMIN_FINANCIALS_CARDS_ENDPOINT = 'administrator/admin/financials/cards/';
