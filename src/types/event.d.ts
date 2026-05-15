@@ -54,7 +54,7 @@ interface StatusOption {
 
 
 
-type EventStatus = "active" | "suspended" | "live" | "draft" | "ended" | "sold-out" | "cancelled" | "banned"
+type EventStatus = "active" | "suspended" | "live" | "draft" | "ended" | "sold_out" | "cancelled" | "banned" | "started" | "starts_soon" | "filling_fast" | "selling_fast" | "near_capacity"
 type EventPerformance = "fully_booked" | "almost_full" | "moderate_sales" | "low_sales" | "no_sales"
 
 interface IEvent {

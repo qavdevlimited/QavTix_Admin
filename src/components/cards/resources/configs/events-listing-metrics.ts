@@ -2,7 +2,7 @@ export type EventsListingMetrics =
     | 'live'
     | 'suspended'
     | 'ended'
-    | 'sold-out';
+    | 'sold_out';
 
 
 
@@ -31,8 +31,8 @@ export const eventsListingAnalyticsMetricsConfig: Record<EventsListingMetrics, M
         icon: "fluent-mdl2:end-point-solid",
         iconColor: 'text-[#EF4444]',
     },
-    'sold-out': {
-        id: 'sold-out',
+    'sold_out': {
+        id: 'sold_out',
         value: '11',
         label: 'Sold Out',
         description: 'Events fully booked',

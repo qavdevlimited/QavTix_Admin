@@ -23,7 +23,7 @@ export default function NotificationItem({ notification }: NotificationItemProps
 
     return (
         <div className={cn(
-            'flex items-start gap-3 py-4 border-b border-brand-neutral-2 last:border-0',
+            'flex items-start w-full gap-3 py-2 border-b border-brand-neutral-2 last:border-0',
             'px-4 -mx-4 rounded-lg transition-colors',
             isUnread ? 'bg-brand-primary-1 hover:bg-brand-primary-2/50' : 'hover:bg-brand-neutral-1'
         )}>
