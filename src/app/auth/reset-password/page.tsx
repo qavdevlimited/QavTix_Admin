@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -166,7 +166,7 @@ export default function ResetPasswordPage() {
                     <CountdownTimer
                         key={timerKey}
                         initialSeconds={OTP_EXPIRY_SECONDS}
-                        onExpire={() => setTimerExpired(true)}
+                        onExpire={useCallback(() => setTimerExpired(true), [])}
                     />
 
                     <ActionButton1
