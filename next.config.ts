@@ -1,50 +1,38 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    compress: true,
 
+    experimental: {
+        optimizePackageImports: ["@iconify/react", "framer-motion", "date-fns", "lucide-react"],
+    },
 
     images: {
+        formats: ["image/avif", "image/webp"],
+        minimumCacheTTL: 60 * 60 * 24 * 7,
         remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "res.cloudinary.com",
-                pathname: '/**'
-            },
-            {
-                protocol: "https",
-                hostname: "example.com",
-                pathname: '/**'
-            },
-            {
-                protocol: "https",
-                hostname: "www.google.com",
-                pathname: '/**'
-            },
-            {
-                protocol: "https",
-                hostname: "logo.clearbit.com",
-                pathname: '/**'
-            },
+            { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+            { protocol: "https", hostname: "example.com", pathname: "/**" },
+            { protocol: "https", hostname: "www.google.com", pathname: "/**" },
+            { protocol: "https", hostname: "logo.clearbit.com", pathname: "/**" },
         ],
     },
-    // Define named cache-life profiles for use with 'use cache' / cacheLife()
+
+    // Named cache-life profiles for use with 'use cache' / cacheLife()
     cacheLife: {
-        // "max" profile: long-lived cache, revalidate every 24h, never expires
         max: {
-            stale: 300,          // 5 min client-side stale
-            revalidate: 86400,   // 24 h server-side revalidation window
-            expire: 86400,       // max 24 h before forced expire
+            stale: 300,
+            revalidate: 86400,
+            expire: 86400,
         },
-        // "settings" profile: moderate — settings can change but rarely
         settings: {
-            stale: 60,           // 1 min client-side stale
-            revalidate: 3600,    // 1 h server revalidation
+            stale: 60,
+            revalidate: 3600,
             expire: 3600,
         },
-        // "frequent" profile: data that changes more often (cards, lists)
         frequent: {
-            stale: 30,           // 30 s client-side stale
-            revalidate: 300,     // 5 min server revalidation
+            stale: 30,
+            revalidate: 300,
             expire: 600,
         },
     },

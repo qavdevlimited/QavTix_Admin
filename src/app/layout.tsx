@@ -13,10 +13,12 @@ import { cookies } from "next/headers"
 export const metadata: Metadata = siteMetadata
 export const viewport: Viewport = siteViewport
 
-// ─── Auth data fetcher — always inside Suspense, so cookies() is safe ─────────
 
 async function getLayoutData(): Promise<AuthUser | null> {
 	try {
+		const cookieStore = await cookies()
+		const token = cookieStore.get('admin_access_token')?.value
+		if (!token) return null
 		const axiosInstance = await getServerAxios()
 		const { data } = await axiosInstance.get(ADMIN_PROFILE_ENDPOINT)
 		return data.data as AuthUser

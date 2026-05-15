@@ -68,6 +68,11 @@ export default function ResetPasswordPage() {
             return
         }
 
+        if (timerExpired) {
+            setOtpError("Code has expired. Please request a new one.")
+            return
+        }
+
         if (!email) {
             setOtpError("Session expired. Please restart the reset process.")
             return

@@ -76,7 +76,7 @@ export default function AdminSignInSuccess({ open }: AdminSignInSuccessProps) {
                     </DialogDescription>
 
                     {/* Auto-redirect indicator */}
-                    <p className="text-xs text-brand-neutral-6 animate-pulse">
+                    <p className="text-xs text-brand-neutral-7 animate-pulse">
                         Redirecting to dashboard in {countdown}s…
                     </p>
                 </div>
